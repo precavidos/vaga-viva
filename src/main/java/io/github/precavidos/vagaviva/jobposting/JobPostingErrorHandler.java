@@ -8,12 +8,12 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 /**
- * Input errors for job postings. Spring's default handling logs the rejected
+ * Input errors for controllers that receive a job posting's text. Spring's default handling logs the rejected
  * value, which here would be the posting's text; these responses neither echo
  * nor log it (ADR 0003). The details are user-facing, so they stay in
  * Portuguese.
  */
-@RestControllerAdvice(assignableTypes = JobPostingController.class)
+@RestControllerAdvice(annotations = ReceivesJobPostingText.class)
 class JobPostingErrorHandler {
 
 	@ExceptionHandler(MethodArgumentNotValidException.class)

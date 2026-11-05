@@ -69,9 +69,19 @@ _Evitar_: roteiro, trilha, currículo
 _No código_: `ProjectPlan`
 
 **Domínio fictício**:
-O negócio inventado onde o projeto se passa (por exemplo, agendamento de clínica).
+O negócio inventado onde o projeto se passa; cada arquétipo tem um só (no Java/Spring, agendamento de clínica).
 _Evitar_: cenário, tema, case
 _No código_: `FictionalDomain`
+
+**Catálogo de missões**:
+Todas as missões que o repositório-modelo de um arquétipo oferece; o plano do projeto escolhe entre elas.
+_Evitar_: banco de missões, lista de exercícios
+_No código_: `MissionCatalog`
+
+**Teto de dificuldade**:
+A dificuldade máxima das missões de um plano, definida pelo menor nível citado na vaga; vaga sem nível conta como júnior.
+_Evitar_: limite, nível máximo
+_No código_: `difficultyCap`
 
 ## O projeto do aluno
 
@@ -79,6 +89,21 @@ _No código_: `FictionalDomain`
 Unidade de trabalho do plano, com objetivo claro e testes que falham até o aluno implementá-la; as missões vêm em ordem crescente de dificuldade.
 _Evitar_: tarefa, exercício, desafio, issue
 _No código_: `Mission`
+
+**Missão central**:
+Missão que entra em todo plano, qualquer que seja a vaga.
+_Evitar_: missão obrigatória, missão base
+_No código_: `Mission.core`
+
+**Missão por competência**:
+Missão opcional que entra no plano porque exercita competências pedidas pela vaga.
+_Evitar_: missão bônus, missão extra
+_No código_: `Reason.SKILL_MATCH`
+
+**Missão padrão**:
+Missão opcional usada para completar um plano quando a vaga casou com poucas competências.
+_Evitar_: missão de reserva, coringa
+_No código_: `Reason.DEFAULT`
 
 **Repositório-modelo**:
 O repositório de partida de um arquétipo, com o código inicial e os testes de todas as missões possíveis.

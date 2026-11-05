@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import io.github.precavidos.vagaviva.vocabulary.Skill;
 
 @RestController
+@ReceivesJobPostingText
 @RequestMapping("/api/job-postings")
 class JobPostingController {
 
