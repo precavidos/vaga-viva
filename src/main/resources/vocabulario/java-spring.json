@@ -1,0 +1,206 @@
+{
+  "arquetipo": "java-spring",
+  "competencias": [
+    {
+      "id": "java",
+      "rotulo": "Programação em Java",
+      "esco": {
+        "uri": "http://data.europa.eu/esco/skill/19a8293b-8e95-4de3-983f-77484079c389",
+        "rotuloPt": "Java (programação informática)",
+        "rotuloEn": "Java (computer programming)"
+      },
+      "termos": []
+    },
+    {
+      "id": "orientacao-a-objetos",
+      "rotulo": "Programação orientada a objetos",
+      "esco": {
+        "uri": "http://data.europa.eu/esco/skill/5b9cde20-f1b9-4adc-bfb3-dbf70b14138d",
+        "rotuloPt": "utilizar programação orientada a objetos",
+        "rotuloEn": "use object-oriented programming"
+      },
+      "termos": ["orientação a objetos", "programação orientada a objetos", "POO", "OOP"]
+    },
+    {
+      "id": "padroes-de-projeto",
+      "rotulo": "Padrões de projeto de software",
+      "esco": {
+        "uri": "http://data.europa.eu/esco/skill/2b7a79e5-84d8-4880-be66-3d9bb05bea17",
+        "rotuloPt": "utilizar padrões de conceção de software",
+        "rotuloEn": "use software design patterns"
+      },
+      "termos": ["padrões de projeto", "design patterns"]
+    },
+    {
+      "id": "testes-automatizados",
+      "rotulo": "Testes automatizados",
+      "esco": {
+        "uri": "http://data.europa.eu/esco/skill/6a322874-e32f-4cd8-9683-badce67a7f73",
+        "rotuloPt": "desenvolver testes de software automatizados",
+        "rotuloEn": "develop automated software tests"
+      },
+      "termos": ["testes automatizados", "testes unitários", "testes de integração", "TDD"]
+    },
+    {
+      "id": "depuracao",
+      "rotulo": "Depuração de software",
+      "esco": {
+        "uri": "http://data.europa.eu/esco/skill/2522a6ce-3202-4ac8-9f5b-b9cb5a3a83a1",
+        "rotuloPt": "depurar software",
+        "rotuloEn": "debug software"
+      },
+      "termos": ["depuração", "debugging"]
+    },
+    {
+      "id": "design-de-apis",
+      "rotulo": "Design de APIs",
+      "esco": {
+        "uri": "http://data.europa.eu/esco/skill/b0096dc5-2e2d-4bc1-8172-05bf486c3968",
+        "rotuloPt": "conceber interfaces para aplicações",
+        "rotuloEn": "design application interfaces"
+      },
+      "termos": ["design de APIs", "desenho de APIs"]
+    },
+    {
+      "id": "sql",
+      "rotulo": "SQL",
+      "esco": {
+        "uri": "http://data.europa.eu/esco/skill/598de5b0-5b58-4ea7-8058-a4bc4d18c742",
+        "rotuloPt": "SQL",
+        "rotuloEn": "SQL"
+      },
+      "termos": []
+    },
+    {
+      "id": "postgresql",
+      "rotulo": "PostgreSQL",
+      "esco": {
+        "uri": "http://data.europa.eu/esco/skill/a8d07b5a-c1a1-42c6-9d53-db9c7a2ca996",
+        "rotuloPt": "PostgreSQL",
+        "rotuloEn": "PostgreSQL"
+      },
+      "termos": []
+    },
+    {
+      "id": "modelagem-de-dados",
+      "rotulo": "Modelagem de banco de dados",
+      "esco": {
+        "uri": "http://data.europa.eu/esco/skill/84f58e3d-8669-4d83-8c1d-5dd1e73a654f",
+        "rotuloPt": "criar modelos de bases de dados",
+        "rotuloEn": "create database diagrams"
+      },
+      "termos": ["modelagem de dados", "modelagem de banco de dados", "modelo relacional"]
+    },
+    {
+      "id": "controle-de-versao",
+      "rotulo": "Controle de versão",
+      "esco": {
+        "uri": "http://data.europa.eu/esco/skill/9d2e926f-53d9-41f5-98f3-19dfaa687f3f",
+        "rotuloPt": "ferramentas de gestão de configuração de software",
+        "rotuloEn": "tools for software configuration management"
+      },
+      "termos": ["controle de versão", "versionamento de código"]
+    },
+    {
+      "id": "maven",
+      "rotulo": "Apache Maven",
+      "esco": {
+        "uri": "http://data.europa.eu/esco/skill/0d168770-4d9c-4096-b048-a6577818d306",
+        "rotuloPt": "Apache Maven",
+        "rotuloEn": "Apache Maven"
+      },
+      "termos": []
+    },
+    {
+      "id": "seguranca-web",
+      "rotulo": "Segurança de aplicações web",
+      "esco": {
+        "uri": "http://data.europa.eu/esco/skill/902fb91c-3113-4004-9b4f-79aa86b638b7",
+        "rotuloPt": "ameaças de segurança das aplicações web",
+        "rotuloEn": "web application security threats"
+      },
+      "termos": ["segurança de aplicações", "segurança de aplicações web"]
+    },
+    {
+      "id": "spring",
+      "rotulo": "Spring Framework",
+      "termos": []
+    },
+    {
+      "id": "persistencia-orm",
+      "rotulo": "Mapeamento objeto-relacional (ORM)",
+      "termos": ["ORM", "mapeamento objeto-relacional"]
+    },
+    {
+      "id": "conteineres",
+      "rotulo": "Contêineres",
+      "termos": ["contêineres", "containers", "conteinerização"]
+    },
+    {
+      "id": "integracao-continua",
+      "rotulo": "Integração e entrega contínuas",
+      "termos": ["integração contínua", "entrega contínua", "CI/CD"]
+    }
+  ],
+  "tecnologias": [
+    { "id": "java", "nome": "Java", "termos": ["Java"], "competencias": ["java"] },
+    {
+      "id": "spring-boot",
+      "nome": "Spring Boot",
+      "termos": ["Spring Boot", "Spring Framework", "Spring MVC", "Spring Data", "Spring Security"],
+      "competencias": ["spring"]
+    },
+    {
+      "id": "hibernate",
+      "nome": "Hibernate / JPA",
+      "termos": ["Hibernate", "JPA", "Jakarta Persistence"],
+      "competencias": ["persistencia-orm"]
+    },
+    { "id": "sql", "nome": "SQL", "termos": ["SQL"], "competencias": ["sql"] },
+    {
+      "id": "postgresql",
+      "nome": "PostgreSQL",
+      "termos": ["PostgreSQL", "Postgres"],
+      "competencias": ["postgresql", "sql"]
+    },
+    { "id": "maven", "nome": "Maven", "termos": ["Maven"], "competencias": ["maven"] },
+    {
+      "id": "git",
+      "nome": "Git",
+      "termos": ["Git", "GitHub", "GitLab", "Bitbucket"],
+      "competencias": ["controle-de-versao"]
+    },
+    {
+      "id": "junit",
+      "nome": "JUnit",
+      "termos": ["JUnit", "Mockito", "AssertJ", "Testcontainers"],
+      "competencias": ["testes-automatizados"]
+    },
+    {
+      "id": "rest",
+      "nome": "REST",
+      "termos": ["RESTful", "API REST", "APIs REST", "REST API", "REST APIs"],
+      "competencias": ["design-de-apis"]
+    },
+    {
+      "id": "docker",
+      "nome": "Docker",
+      "termos": ["Docker", "Docker Compose"],
+      "competencias": ["conteineres"]
+    },
+    {
+      "id": "ferramentas-de-ci",
+      "nome": "Ferramentas de CI",
+      "termos": ["GitHub Actions", "Jenkins", "GitLab CI"],
+      "competencias": ["integracao-continua"]
+    },
+    { "id": "owasp", "nome": "OWASP", "termos": ["OWASP"], "competencias": ["seguranca-web"] }
+  ],
+  "termosRecusados": [
+    { "termo": "Spring", "motivo": "sozinho, pode ser a estação do ano em vagas em inglês (\"Spring 2027 internship\")" },
+    { "termo": "REST", "motivo": "sozinho, é palavra comum em inglês (\"the rest of the team\")" },
+    { "termo": "SOLID", "motivo": "é adjetivo comum em inglês (\"solid experience\")" },
+    { "termo": "Boot", "motivo": "sozinho, não identifica o Spring Boot" },
+    { "termo": "Data", "motivo": "palavra comum em português e inglês" }
+  ]
+}
