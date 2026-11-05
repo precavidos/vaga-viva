@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Vaga Viva</title>
+  <meta name="description" content="O aluno cola uma vaga real e recebe no GitHub um projeto de estudo sob medida, com missões e testes, e um revisor que pergunta em vez de dar a resposta.">
+  <meta property="og:title" content="Vaga Viva">
+  <meta property="og:description" content="Aprender fazendo com vagas reais, com um revisor que não dá a resposta.">
+  <meta property="og:type" content="website">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23166534'/%3E%3Cpath d='M9 16.5l4.5 4.5L23 11' stroke='white' stroke-width='3.2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+  <style>
+    :root {
+      --bg: #fbfaf7;
+      --surface: #ffffff;
+      --text: #1c1917;
+      --muted: #57534e;
+      --line: #e7e5e4;
+      --accent: #166534;
+      --accent-soft: #dcfce7;
+      --red: #b91c1c;
+      --red-soft: #fee2e2;
+      --code-bg: #f5f5f4;
+      --shadow: 0 1px 2px rgba(28, 25, 23, .06), 0 8px 24px rgba(28, 25, 23, .06);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #12110f;
+        --surface: #1c1a17;
+        --text: #f5f5f4;
+        --muted: #a8a29e;
+        --line: #2e2b27;
+        --accent: #4ade80;
+        --accent-soft: #14532d;
+        --red: #f87171;
+        --red-soft: #450a0a;
+        --code-bg: #26231f;
+        --shadow: none;
+      }
+    }
+    * { box-sizing: border-box; }
+    html { -webkit-text-size-adjust: 100%; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font: 17px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+    a { color: var(--accent); }
+    a:focus-visible, .button:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+    .wrap { max-width: 1040px; margin: 0 auto; padding: 0 20px; }
+    .skip { position: absolute; left: -9999px; }
+    .skip:focus { left: 16px; top: 16px; background: var(--surface); padding: 8px 12px; z-index: 10; }
+
+    header.top { border-bottom: 1px solid var(--line); }
+    header.top .wrap { display: flex; align-items: center; justify-content: space-between; height: 64px; gap: 16px; }
+    .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 18px; color: var(--text); text-decoration: none; }
+    .brand svg { flex: none; }
+    .top nav a { color: var(--muted); text-decoration: none; font-size: 15px; }
+    .top nav a:hover { color: var(--text); }
+
+    .hero { padding: 72px 0 56px; }
+    .hero-grid { display: grid; grid-template-columns: 1.1fr .9fr; gap: 48px; align-items: center; }
+    .badge {
+      display: inline-block; font-size: 13px; font-weight: 600; letter-spacing: .02em;
+      color: var(--accent); background: var(--accent-soft); padding: 4px 10px; border-radius: 999px;
+    }
+    h1 { font-size: clamp(36px, 6vw, 56px); line-height: 1.08; letter-spacing: -.02em; margin: 18px 0 16px; }
+    .lead { font-size: 20px; color: var(--muted); margin: 0 0 28px; max-width: 34em; }
+    .actions { display: flex; flex-wrap: wrap; gap: 12px; }
+    .button {
+      display: inline-block; padding: 12px 20px; border-radius: 10px; font-weight: 600; text-decoration: none;
+      background: var(--accent); color: var(--bg); border: 1px solid var(--accent);
+    }
+    .button.ghost { background: transparent; color: var(--text); border-color: var(--line); }
+
+    .repo-card {
+      background: var(--surface); border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow);
+      overflow: hidden; font-size: 15px;
+    }
+    .repo-card .bar { display: flex; align-items: center; gap: 8px; padding: 12px 16px; border-bottom: 1px solid var(--line); font-weight: 600; }
+    .repo-card .bar span { color: var(--muted); font-weight: 400; }
+    .repo-card ul { list-style: none; margin: 0; padding: 6px 0; }
+    .repo-card li { display: flex; align-items: center; gap: 10px; padding: 9px 16px; }
+    .dot { width: 10px; height: 10px; border-radius: 50%; flex: none; background: var(--red); }
+    .dot.ok { background: var(--accent); }
+    .repo-card .tag { margin-left: auto; padding-left: 8px; font-size: 12px; color: var(--muted); white-space: nowrap; }
+    .repo-card .review { margin: 0; padding: 14px 16px; border-top: 1px solid var(--line); background: var(--code-bg); }
+    .repo-card .review strong { display: block; font-size: 13px; color: var(--muted); font-weight: 600; margin-bottom: 4px; }
+
+    section { padding: 56px 0; border-top: 1px solid var(--line); }
+    h2 { font-size: clamp(26px, 4vw, 34px); line-height: 1.2; letter-spacing: -.01em; margin: 0 0 12px; }
+    .section-lead { color: var(--muted); margin: 0 0 32px; max-width: 40em; }
+
+    .problem { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+    .card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 22px; }
+    .card h3 { margin: 0 0 8px; font-size: 18px; }
+    .card p { margin: 0; color: var(--muted); }
+
+    ol.steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; counter-reset: step; }
+    ol.steps li { counter-increment: step; }
+    ol.steps li::before {
+      content: counter(step); display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%;
+      background: var(--accent-soft); color: var(--accent); font-weight: 700; margin-bottom: 12px;
+    }
+
+    .audience { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .audience ul { margin: 12px 0 0; padding-left: 20px; color: var(--muted); }
+
+    .principles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+
+    .status-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; max-width: 40em; }
+    .status-list li { display: flex; gap: 12px; align-items: baseline; }
+    .status-list .pill { flex: none; font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 999px; }
+    .pill.done { background: var(--accent-soft); color: var(--accent); }
+    .pill.next { background: var(--code-bg); color: var(--muted); }
+
+    footer { border-top: 1px solid var(--line); padding: 32px 0 48px; color: var(--muted); font-size: 14px; }
+    footer p { margin: 4px 0; }
+
+    @media (max-width: 860px) {
+      .hero { padding: 48px 0 40px; }
+      .hero-grid, .audience { grid-template-columns: 1fr; gap: 32px; }
+      .problem, .principles { grid-template-columns: 1fr; }
+      ol.steps { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 520px) {
+      body { font-size: 16px; }
+      .wrap { padding: 0 16px; }
+      ol.steps { grid-template-columns: 1fr; }
+      .top nav { display: none; }
+      .repo-card .bar span { display: none; }
+      .repo-card .bar { overflow-wrap: anywhere; }
+      .lead { font-size: 18px; }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip" href="#conteudo">Pular para o conteúdo</a>
+
+  <header class="top">
+    <div class="wrap">
+      <a class="brand" href="#" aria-label="Vaga Viva, início">
+        <svg width="28" height="28" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="currentColor" style="color: var(--accent)"/><path d="M9 16.5l4.5 4.5L23 11" stroke="var(--bg)" stroke-width="3.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Vaga Viva
+      </a>
+      <nav aria-label="Seções">
+        <a href="#como-funciona">Como funciona</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="conteudo">
+    <div class="hero">
+      <div class="wrap hero-grid">
+        <div>
+          <span class="badge">Hack Brasil 2026 · Acesso à educação</span>
+          <h1>Aprender fazendo com vagas reais.</h1>
+          <p class="lead">O aluno cola uma vaga de emprego e recebe no próprio GitHub um projeto de estudo sob medida: missões, testes que falham até ele implementar e um revisor que faz perguntas em vez de dar a resposta.</p>
+          <div class="actions">
+            <a class="button" href="https://github.com/precavidos/vaga-viva">Ver no GitHub</a>
+            <a class="button ghost" href="#como-funciona">Como funciona</a>
+          </div>
+        </div>
+
+        <figure class="repo-card" aria-label="Exemplo de repositório gerado para um aluno">
+          <div class="bar">maria/vaga-viva-clinic-scheduling <span>· Missões</span></div>
+          <ul>
+            <li><span class="dot ok" aria-hidden="true"></span>Missão 1: Cadastro de pacientes<span class="tag">concluída</span></li>
+            <li><span class="dot ok" aria-hidden="true"></span>Missão 2: Pacientes no banco de dados<span class="tag">concluída</span></li>
+            <li><span class="dot" aria-hidden="true"></span>Missão 3: Listagem paginada de consultas<span class="tag">testes vermelhos</span></li>
+            <li><span class="dot" aria-hidden="true"></span>Missão 4: Regras de agendamento<span class="tag">a fazer</span></li>
+            <li><span class="dot" aria-hidden="true"></span>Missão 5: Consulta de horários livres<span class="tag">a fazer</span></li>
+          </ul>
+          <p class="review"><strong>Revisor do Vaga Viva</strong>O teste espera a página 2 com 10 consultas, mas a sua resposta trouxe 20. Onde o tamanho da página é definido na sua consulta?</p>
+        </figure>
+      </div>
+    </div>
+
+    <section aria-labelledby="problema">
+      <div class="wrap">
+        <h2 id="problema">O problema</h2>
+        <p class="section-lead">Começar na área de tecnologia exige experiência que quem está começando ainda não tem.</p>
+        <div class="problem">
+          <div class="card">
+            <h3>Poucas vagas de entrada</h3>
+            <p>As vagas de estágio e júnior estão cada vez mais disputadas e pedem experiência prática.</p>
+          </div>
+          <div class="card">
+            <h3>Estudo longe da vaga</h3>
+            <p>Tutoriais genéricos não mostram o que uma vaga real pede, nem em que ordem aprender.</p>
+          </div>
+          <div class="card">
+            <h3>Respostas prontas demais</h3>
+            <p>Ferramentas que entregam o código fazem o projeto por você, e o aprendizado fica para trás.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="como-funciona" aria-labelledby="como-funciona-titulo">
+      <div class="wrap">
+        <h2 id="como-funciona-titulo">Como funciona</h2>
+        <p class="section-lead">Da vaga ao primeiro pull request, sem sair do GitHub.</p>
+        <ol class="steps">
+          <li class="card">
+            <h3>Cole a vaga</h3>
+            <p>O aluno cola o texto de uma vaga real ou encaminha por e-mail.</p>
+          </li>
+          <li class="card">
+            <h3>Receba um plano</h3>
+            <p>As competências da vaga viram um plano de 5 a 6 missões, em ordem crescente de dificuldade.</p>
+          </li>
+          <li class="card">
+            <h3>Construa no seu GitHub</h3>
+            <p>Um repositório nasce na conta do aluno, com uma issue por missão e testes que falham até ele implementar.</p>
+          </li>
+          <li class="card">
+            <h3>Revisão que pergunta</h3>
+            <p>A cada pull request, o revisor responde com perguntas e dicas graduais, nunca com a solução.</p>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <section aria-labelledby="para-quem">
+      <div class="wrap">
+        <h2 id="para-quem">Para quem</h2>
+        <div class="audience">
+          <div class="card">
+            <h3>Alunos</h3>
+            <p>Quem quer uma primeira vaga e precisa mostrar o que sabe fazer.</p>
+            <ul>
+              <li>Um projeto alinhado ao que a vaga pede.</li>
+              <li>Um portfólio real, na própria conta do GitHub.</li>
+              <li>Ajuda que faz pensar, em vez de entregar o código pronto.</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3>Professores</h3>
+            <p>Quem acompanha turmas de programação e quer saber onde cada aluno travou.</p>
+            <ul>
+              <li>Toda a turma recebe o mesmo projeto, a partir de uma vaga escolhida.</li>
+              <li>Um painel mostra a missão de cada aluno e quem está travado.</li>
+              <li>Um resumo semanal chega por e-mail.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section aria-labelledby="principios">
+      <div class="wrap">
+        <h2 id="principios">Princípios</h2>
+        <div class="principles">
+          <div class="card">
+            <h3>Competências com nome</h3>
+            <p>As habilidades da vaga são reconhecidas num vocabulário fechado, baseado na ESCO. O sistema prefere deixar de reconhecer a inventar.</p>
+          </div>
+          <div class="card">
+            <h3>Regras decidem, IA explica</h3>
+            <p>A escolha das missões segue regras fixas; a IA só escreve os textos. Se ela falhar, o aluno recebe o projeto mesmo assim.</p>
+          </div>
+          <div class="card">
+            <h3>Privacidade desde o início</h3>
+            <p>O texto da vaga é lido em memória e não é guardado. Do aluno, ficam só o usuário do GitHub e o e-mail, com consentimento.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section aria-labelledby="status">
+      <div class="wrap">
+        <h2 id="status">Onde estamos</h2>
+        <p class="section-lead">Em construção para o Hack Brasil 2026, com submissão em 30 de novembro.</p>
+        <ul class="status-list">
+          <li><span class="pill done">pronto</span>Leitura da vaga: nível, tecnologias e competências.</li>
+          <li><span class="pill done">pronto</span>Plano do projeto com missões escolhidas pelas competências da vaga.</li>
+          <li><span class="pill next">em andamento</span>Criação do repositório do aluno pelo GitHub App.</li>
+          <li><span class="pill next">a seguir</span>Revisor de pull requests com perguntas e dicas em 3 níveis.</li>
+          <li><span class="pill next">a seguir</span>Modo turma e painel do professor.</li>
+        </ul>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <p>Vaga Viva · Hack Brasil 2026 · <a href="https://github.com/precavidos/vaga-viva">Código no GitHub</a> (licença MIT)</p>
+      <p>Usa a classificação <a href="https://esco.ec.europa.eu">ESCO</a>, © União Europeia, sob a licença CC BY 4.0.</p>
+    </div>
+  </footer>
+</body>
+</html>
