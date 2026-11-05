@@ -3,16 +3,16 @@ package io.github.precavidos.vagaviva.vocabulario;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
-import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Pattern;
 
 import tools.jackson.databind.json.JsonMapper;
 
@@ -31,6 +31,8 @@ public final class VocabularioDeCompetencias {
 	private final List<TecnologiaNomeada> tecnologias;
 
 	private final List<TermoRecusado> termosRecusados;
+
+	private final Map<String, Pattern> padroes = new ConcurrentHashMap<>();
 
 	private VocabularioDeCompetencias(Arquivo arquivo) {
 		this.arquetipo = arquivo.arquetipo();
@@ -79,6 +81,47 @@ public final class VocabularioDeCompetencias {
 
 	public List<TermoRecusado> termosRecusados() {
 		return termosRecusados;
+	}
+
+	/**
+	 * Reconhece no texto as tecnologias e competências do vocabulário. Um termo
+	 * só casa como palavra inteira ("Java" não casa com "JavaScript"), ignorando
+	 * caixa, acentos e espaços extras.
+	 */
+	public Reconhecimento reconhecer(String texto) {
+		String normalizado = normalizar(texto);
+		var evidencias = new LinkedHashMap<String, List<String>>();
+		competencias.values().forEach(c -> {
+			List<String> encontrados = encontrar(c.termos(), normalizado);
+			if (!encontrados.isEmpty()) {
+				evidencias.computeIfAbsent(c.id(), id -> new ArrayList<>()).addAll(encontrados);
+			}
+		});
+		var tecnologiasReconhecidas = new ArrayList<Reconhecimento.TecnologiaReconhecida>();
+		for (TecnologiaNomeada tecnologia : tecnologias) {
+			List<String> encontrados = encontrar(tecnologia.termos(), normalizado);
+			if (encontrados.isEmpty()) {
+				continue;
+			}
+			tecnologiasReconhecidas.add(new Reconhecimento.TecnologiaReconhecida(tecnologia, encontrados));
+			tecnologia.competencias()
+				.forEach(id -> evidencias.computeIfAbsent(id, chave -> new ArrayList<>()).addAll(encontrados));
+		}
+		var competenciasReconhecidas = competencias.values()
+			.stream()
+			.filter(c -> evidencias.containsKey(c.id()))
+			.map(c -> new Reconhecimento.CompetenciaReconhecida(c, evidencias.get(c.id())))
+			.toList();
+		return new Reconhecimento(tecnologiasReconhecidas, competenciasReconhecidas);
+	}
+
+	private List<String> encontrar(List<String> termos, String textoNormalizado) {
+		return termos.stream().filter(termo -> padraoDe(termo).matcher(textoNormalizado).find()).toList();
+	}
+
+	private Pattern padraoDe(String termo) {
+		return padroes.computeIfAbsent(termo, t -> Pattern
+			.compile("(?<![\\p{L}\\p{N}])" + Pattern.quote(normalizar(t)) + "(?![\\p{L}\\p{N}])"));
 	}
 
 	private static Map<String, Competencia> indexar(List<Competencia> lista, List<String> problemas) {
@@ -141,10 +184,8 @@ public final class VocabularioDeCompetencias {
 		}
 	}
 
-	/** Forma usada para comparar termos: sem acentos, minúscula e com espaços simples. */
-	static String normalizar(String termo) {
-		String semAcentos = Normalizer.normalize(termo, Normalizer.Form.NFD).replaceAll("\\p{M}", "");
-		return semAcentos.toLowerCase(Locale.ROOT).strip().replaceAll("\\s+", " ");
+	private static String normalizar(String termo) {
+		return Normalizacao.normalizar(termo);
 	}
 
 	private record Arquivo(String arquetipo, List<Competencia> competencias, List<TecnologiaNomeada> tecnologias,
