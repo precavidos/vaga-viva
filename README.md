@@ -12,10 +12,20 @@ Em construção. Este repositório foi criado do zero durante o Hack Brasil 2026
 
 ## Stack planejada
 
-- Spring Boot 3, Java 21 e PostgreSQL
+- Spring Boot 4.1, Java 21 e PostgreSQL 17 (Flyway para migrações)
 - GitHub App e GitHub Actions
 - LLM para redigir o plano do projeto e as perguntas do revisor
 - Resend para e-mail
+
+## Como rodar
+
+Requisitos: Java 21 e Docker.
+
+```bash
+docker compose up -d   # PostgreSQL local
+./mvnw spring-boot:run # API em http://localhost:8080/actuator/health
+./mvnw verify          # testes (sobem um PostgreSQL via Testcontainers)
+```
 
 ## Princípios
 
