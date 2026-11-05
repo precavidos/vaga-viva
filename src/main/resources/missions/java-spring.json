@@ -1,0 +1,99 @@
+{
+  "archetype": "java-spring",
+  "domain": {
+    "id": "clinic-scheduling",
+    "name": "Agendamento de clínica",
+    "description": "Sistema de uma clínica para cadastrar pacientes e agendar consultas com profissionais de saúde."
+  },
+  "missions": [
+    {
+      "id": "patients-api",
+      "title": "Cadastro de pacientes",
+      "summary": "Criar a API REST para cadastrar, buscar, alterar e remover pacientes.",
+      "difficulty": 1,
+      "core": true,
+      "skills": ["java", "spring", "api-design"]
+    },
+    {
+      "id": "persistence",
+      "title": "Pacientes no banco de dados",
+      "summary": "Guardar os pacientes no PostgreSQL com JPA e criar o esquema com uma migração.",
+      "difficulty": 2,
+      "core": true,
+      "skills": ["orm", "postgresql", "sql", "data-modeling"]
+    },
+    {
+      "id": "scheduling-rules",
+      "title": "Regras de agendamento",
+      "summary": "Agendar consultas respeitando o horário de funcionamento, sem sobreposição e sem datas no passado.",
+      "difficulty": 3,
+      "core": true,
+      "skills": ["object-oriented-programming", "automated-testing"]
+    },
+    {
+      "id": "input-validation",
+      "title": "Validação e mensagens de erro",
+      "summary": "Recusar dados inválidos com mensagens de erro claras e no formato padrão da API.",
+      "difficulty": 2,
+      "core": false,
+      "skills": ["api-design"]
+    },
+    {
+      "id": "bug-hunt",
+      "title": "Caça ao bug",
+      "summary": "Encontrar e corrigir um defeito escondido no cálculo da duração das consultas.",
+      "difficulty": 2,
+      "core": false,
+      "skills": ["debugging", "automated-testing"]
+    },
+    {
+      "id": "pagination",
+      "title": "Listagem paginada de consultas",
+      "summary": "Listar as consultas de um profissional com paginação e ordenação por data.",
+      "difficulty": 2,
+      "core": false,
+      "skills": ["api-design", "spring"]
+    },
+    {
+      "id": "ci-pipeline",
+      "title": "Pipeline de integração contínua",
+      "summary": "Rodar o build e os testes automaticamente a cada push com GitHub Actions.",
+      "difficulty": 2,
+      "core": false,
+      "skills": ["continuous-integration", "version-control", "maven"]
+    },
+    {
+      "id": "availability-query",
+      "title": "Consulta de horários livres",
+      "summary": "Calcular, com uma consulta SQL, os horários livres de um profissional em um dia.",
+      "difficulty": 3,
+      "core": false,
+      "skills": ["sql", "data-modeling", "postgresql"]
+    },
+    {
+      "id": "containerization",
+      "title": "Aplicação em contêiner",
+      "summary": "Empacotar a aplicação em uma imagem Docker e subir tudo com Docker Compose.",
+      "difficulty": 3,
+      "core": false,
+      "skills": ["containers"]
+    },
+    {
+      "id": "reminder-strategies",
+      "title": "Lembretes por e-mail e SMS",
+      "summary": "Enviar lembretes de consulta por canais diferentes, aplicando um padrão de projeto.",
+      "difficulty": 4,
+      "core": false,
+      "skills": ["design-patterns", "object-oriented-programming"]
+    },
+    {
+      "id": "api-security",
+      "title": "Proteção da API",
+      "summary": "Exigir autenticação e separar o que recepcionistas e profissionais podem fazer.",
+      "difficulty": 4,
+      "core": false,
+      "skills": ["web-security", "spring"]
+    }
+  ],
+  "defaultMissions": ["input-validation", "bug-hunt", "pagination"]
+}
