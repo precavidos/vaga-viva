@@ -1,0 +1,15 @@
+# PostgreSQL para desenvolvimento local: docker compose up -d
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: vagaviva
+      POSTGRES_USER: vagaviva
+      POSTGRES_PASSWORD: vagaviva
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:
