@@ -45,7 +45,9 @@ export GITHUB_CLIENT_ID=...
 export GITHUB_CLIENT_SECRET=...
 ```
 
-A chave privada do app (*private key*) ainda não é necessária; ela entra junto com os webhooks do revisor.
+Há um modelo em `.env.example`; o `.env` está no `.gitignore`.
+
+A chave privada do app (*private key*) ainda não é necessária; ela entra junto com os webhooks do revisor. Quando for gerada, guarde o arquivo `.pem` como veio do GitHub (arquivos `*.pem` também estão no `.gitignore`), em vez de colar o conteúdo de várias linhas no `.env`.
 
 ## 4. Repositório-modelo
 
