@@ -37,3 +37,7 @@ docker compose up -d   # PostgreSQL local
 ## Licença
 
 [MIT](LICENSE)
+
+## Dados de terceiros
+
+O vocabulário de competências usa a classificação [ESCO](https://esco.ec.europa.eu) (European Skills, Competences, Qualifications and Occupations), © União Europeia, reutilizada sob a licença [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Os rótulos ESCO vêm da API oficial e podem ser conferidos com `python scripts/esco/atualizar_rotulos.py <arquivo>`.
