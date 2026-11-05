@@ -1,4 +1,4 @@
-package io.github.precavidos.vagaviva.vaga;
+package io.github.precavidos.vagaviva.jobposting;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -6,38 +6,38 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
-class DetectorDeNivelTests {
+class SeniorityDetectorTests {
 
 	@ParameterizedTest
 	@CsvSource(delimiter = '|', textBlock = """
-			Vaga de Estágio em Desenvolvimento         | ESTAGIO
-			Procuramos estagiária de backend           | ESTAGIO
-			Software Engineering Internship            | ESTAGIO
+			Vaga de Estágio em Desenvolvimento         | INTERN
+			Procuramos estagiária de backend           | INTERN
+			Software Engineering Internship            | INTERN
 			Desenvolvedor Java Júnior                  | JUNIOR
 			Junior Backend Developer                   | JUNIOR
 			Dev Jr. Java                               | JUNIOR
-			Desenvolvedor Java Pleno                   | PLENO
-			Engenheira de Software Pleno               | PLENO
-			Nível: pleno                               | PLENO
-			Mid-level Java Developer                   | PLENO
+			Desenvolvedor Java Pleno                   | MID
+			Engenheira de Software Pleno               | MID
+			Nível: pleno                               | MID
+			Mid-level Java Developer                   | MID
 			Desenvolvedor Sênior                       | SENIOR
 			Senior Software Engineer                   | SENIOR
 			""")
-	void detectaUmNivel(String texto, Nivel esperado) {
-		assertThat(DetectorDeNivel.detectar(texto)).containsExactly(esperado);
+	void detectsASingleLevel(String text, SeniorityLevel expected) {
+		assertThat(SeniorityDetector.detect(text)).containsExactly(expected);
 	}
 
 	@ParameterizedTest
 	@ValueSource(strings = { "Exigimos pleno domínio de inglês", "Sistema em pleno funcionamento",
 			"O Sr. João fará a entrevista", "Desenvolvedor Java", "" })
-	void naoInventaNivel(String texto) {
-		assertThat(DetectorDeNivel.detectar(texto)).isEmpty();
+	void doesNotInventALevel(String text) {
+		assertThat(SeniorityDetector.detect(text)).isEmpty();
 	}
 
 	@ParameterizedTest
 	@ValueSource(strings = { "Desenvolvedor Júnior/Pleno", "Vaga júnior ou pleno", "Dev Pleno/Júnior" })
-	void detectaFaixaDeNiveisEmOrdem(String texto) {
-		assertThat(DetectorDeNivel.detectar(texto)).containsExactly(Nivel.JUNIOR, Nivel.PLENO);
+	void detectsARangeOfLevelsInOrder(String text) {
+		assertThat(SeniorityDetector.detect(text)).containsExactly(SeniorityLevel.JUNIOR, SeniorityLevel.MID);
 	}
 
 }

@@ -12,7 +12,7 @@
 	<artifactId>vaga-viva</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>vaga-viva</name>
-	<description>Vaga Viva: projetos de estudo gerados a partir de vagas reais</description>
+	<description>Vaga Viva: study projects generated from real job postings</description>
 	<url>https://github.com/precavidos/vaga-viva</url>
 	<licenses>
 		<license>

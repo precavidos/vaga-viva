@@ -1,0 +1,350 @@
+{
+  "archetype": "java-spring",
+  "skills": [
+    {
+      "id": "java",
+      "label": "Programação em Java",
+      "esco": {
+        "uri": "http://data.europa.eu/esco/skill/19a8293b-8e95-4de3-983f-77484079c389",
+        "preferredLabelPt": "Java (programação informática)",
+        "preferredLabelEn": "Java (computer programming)"
+      },
+      "terms": []
+    },
+    {
+      "id": "object-oriented-programming",
+      "label": "Programação orientada a objetos",
+      "esco": {
+        "uri": "http://data.europa.eu/esco/skill/5b9cde20-f1b9-4adc-bfb3-dbf70b14138d",
+        "preferredLabelPt": "utilizar programação orientada a objetos",
+        "preferredLabelEn": "use object-oriented programming"
+      },
+      "terms": [
+        "orientação a objetos",
+        "programação orientada a objetos",
+        "POO",
+        "OOP"
+      ]
+    },
+    {
+      "id": "design-patterns",
+      "label": "Padrões de projeto de software",
+      "esco": {
+        "uri": "http://data.europa.eu/esco/skill/2b7a79e5-84d8-4880-be66-3d9bb05bea17",
+        "preferredLabelPt": "utilizar padrões de conceção de software",
+        "preferredLabelEn": "use software design patterns"
+      },
+      "terms": [
+        "padrões de projeto",
+        "design patterns"
+      ]
+    },
+    {
+      "id": "automated-testing",
+      "label": "Testes automatizados",
+      "esco": {
+        "uri": "http://data.europa.eu/esco/skill/6a322874-e32f-4cd8-9683-badce67a7f73",
+        "preferredLabelPt": "desenvolver testes de software automatizados",
+        "preferredLabelEn": "develop automated software tests"
+      },
+      "terms": [
+        "testes automatizados",
+        "testes unitários",
+        "testes de integração",
+        "TDD"
+      ]
+    },
+    {
+      "id": "debugging",
+      "label": "Depuração de software",
+      "esco": {
+        "uri": "http://data.europa.eu/esco/skill/2522a6ce-3202-4ac8-9f5b-b9cb5a3a83a1",
+        "preferredLabelPt": "depurar software",
+        "preferredLabelEn": "debug software"
+      },
+      "terms": [
+        "depuração",
+        "debugging"
+      ]
+    },
+    {
+      "id": "api-design",
+      "label": "Design de APIs",
+      "esco": {
+        "uri": "http://data.europa.eu/esco/skill/b0096dc5-2e2d-4bc1-8172-05bf486c3968",
+        "preferredLabelPt": "conceber interfaces para aplicações",
+        "preferredLabelEn": "design application interfaces"
+      },
+      "terms": [
+        "design de APIs",
+        "desenho de APIs"
+      ]
+    },
+    {
+      "id": "sql",
+      "label": "SQL",
+      "esco": {
+        "uri": "http://data.europa.eu/esco/skill/598de5b0-5b58-4ea7-8058-a4bc4d18c742",
+        "preferredLabelPt": "SQL",
+        "preferredLabelEn": "SQL"
+      },
+      "terms": []
+    },
+    {
+      "id": "postgresql",
+      "label": "PostgreSQL",
+      "esco": {
+        "uri": "http://data.europa.eu/esco/skill/a8d07b5a-c1a1-42c6-9d53-db9c7a2ca996",
+        "preferredLabelPt": "PostgreSQL",
+        "preferredLabelEn": "PostgreSQL"
+      },
+      "terms": []
+    },
+    {
+      "id": "data-modeling",
+      "label": "Modelagem de banco de dados",
+      "esco": {
+        "uri": "http://data.europa.eu/esco/skill/84f58e3d-8669-4d83-8c1d-5dd1e73a654f",
+        "preferredLabelPt": "criar modelos de bases de dados",
+        "preferredLabelEn": "create database diagrams"
+      },
+      "terms": [
+        "modelagem de dados",
+        "modelagem de banco de dados",
+        "modelo relacional"
+      ]
+    },
+    {
+      "id": "version-control",
+      "label": "Controle de versão",
+      "esco": {
+        "uri": "http://data.europa.eu/esco/skill/9d2e926f-53d9-41f5-98f3-19dfaa687f3f",
+        "preferredLabelPt": "ferramentas de gestão de configuração de software",
+        "preferredLabelEn": "tools for software configuration management"
+      },
+      "terms": [
+        "controle de versão",
+        "versionamento de código"
+      ]
+    },
+    {
+      "id": "maven",
+      "label": "Apache Maven",
+      "esco": {
+        "uri": "http://data.europa.eu/esco/skill/0d168770-4d9c-4096-b048-a6577818d306",
+        "preferredLabelPt": "Apache Maven",
+        "preferredLabelEn": "Apache Maven"
+      },
+      "terms": []
+    },
+    {
+      "id": "web-security",
+      "label": "Segurança de aplicações web",
+      "esco": {
+        "uri": "http://data.europa.eu/esco/skill/902fb91c-3113-4004-9b4f-79aa86b638b7",
+        "preferredLabelPt": "ameaças de segurança das aplicações web",
+        "preferredLabelEn": "web application security threats"
+      },
+      "terms": [
+        "segurança de aplicações",
+        "segurança de aplicações web"
+      ]
+    },
+    {
+      "id": "spring",
+      "label": "Spring Framework",
+      "terms": []
+    },
+    {
+      "id": "orm",
+      "label": "Mapeamento objeto-relacional (ORM)",
+      "terms": [
+        "ORM",
+        "mapeamento objeto-relacional"
+      ]
+    },
+    {
+      "id": "containers",
+      "label": "Contêineres",
+      "terms": [
+        "contêineres",
+        "containers",
+        "conteinerização"
+      ]
+    },
+    {
+      "id": "continuous-integration",
+      "label": "Integração e entrega contínuas",
+      "terms": [
+        "integração contínua",
+        "entrega contínua",
+        "CI/CD"
+      ]
+    }
+  ],
+  "technologies": [
+    {
+      "id": "java",
+      "name": "Java",
+      "terms": [
+        "Java"
+      ],
+      "skills": [
+        "java"
+      ]
+    },
+    {
+      "id": "spring-boot",
+      "name": "Spring Boot",
+      "terms": [
+        "Spring Boot",
+        "Spring Framework",
+        "Spring MVC",
+        "Spring Data",
+        "Spring Security"
+      ],
+      "skills": [
+        "spring"
+      ]
+    },
+    {
+      "id": "hibernate",
+      "name": "Hibernate / JPA",
+      "terms": [
+        "Hibernate",
+        "JPA",
+        "Jakarta Persistence"
+      ],
+      "skills": [
+        "orm"
+      ]
+    },
+    {
+      "id": "sql",
+      "name": "SQL",
+      "terms": [
+        "SQL"
+      ],
+      "skills": [
+        "sql"
+      ]
+    },
+    {
+      "id": "postgresql",
+      "name": "PostgreSQL",
+      "terms": [
+        "PostgreSQL",
+        "Postgres"
+      ],
+      "skills": [
+        "postgresql",
+        "sql"
+      ]
+    },
+    {
+      "id": "maven",
+      "name": "Maven",
+      "terms": [
+        "Maven"
+      ],
+      "skills": [
+        "maven"
+      ]
+    },
+    {
+      "id": "git",
+      "name": "Git",
+      "terms": [
+        "Git",
+        "GitHub",
+        "GitLab",
+        "Bitbucket"
+      ],
+      "skills": [
+        "version-control"
+      ]
+    },
+    {
+      "id": "junit",
+      "name": "JUnit",
+      "terms": [
+        "JUnit",
+        "Mockito",
+        "AssertJ",
+        "Testcontainers"
+      ],
+      "skills": [
+        "automated-testing"
+      ]
+    },
+    {
+      "id": "rest",
+      "name": "REST",
+      "terms": [
+        "RESTful",
+        "API REST",
+        "APIs REST",
+        "REST API",
+        "REST APIs"
+      ],
+      "skills": [
+        "api-design"
+      ]
+    },
+    {
+      "id": "docker",
+      "name": "Docker",
+      "terms": [
+        "Docker",
+        "Docker Compose"
+      ],
+      "skills": [
+        "containers"
+      ]
+    },
+    {
+      "id": "ci-tools",
+      "name": "CI tools",
+      "terms": [
+        "GitHub Actions",
+        "Jenkins",
+        "GitLab CI"
+      ],
+      "skills": [
+        "continuous-integration"
+      ]
+    },
+    {
+      "id": "owasp",
+      "name": "OWASP",
+      "terms": [
+        "OWASP"
+      ],
+      "skills": [
+        "web-security"
+      ]
+    }
+  ],
+  "rejectedTerms": [
+    {
+      "term": "Spring",
+      "reason": "on its own, it may be the season in English postings (\"Spring 2027 internship\")"
+    },
+    {
+      "term": "REST",
+      "reason": "on its own, it is a common English word (\"the rest of the team\")"
+    },
+    {
+      "term": "SOLID",
+      "reason": "a common English adjective (\"solid experience\")"
+    },
+    {
+      "term": "Boot",
+      "reason": "on its own, it does not identify Spring Boot"
+    },
+    {
+      "term": "Data",
+      "reason": "a common word in Portuguese and English"
+    }
+  ]
+}
