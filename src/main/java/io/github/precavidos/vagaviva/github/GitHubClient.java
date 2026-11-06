@@ -67,16 +67,16 @@ public class GitHubClient implements GitHubApi {
 			.toBodilessEntity();
 	}
 
-	/** Reads a file from the repository's default branch, or nothing if it does not exist. */
+	/** Reads a file from the repository's default branch, or nothing if it does not exist. Fails with 422 if the path is not a regular file. */
 	@Override
 	public Optional<GitHubFile> readFile(String token, String repositoryFullName, String path) {
-		FileResponse response;
+		JsonNode response;
 		try {
 			response = http.get()
 				.uri("/repos/" + repositoryFullName + "/contents/" + path)
 				.headers(h -> h.setBearerAuth(token))
 				.retrieve()
-				.body(FileResponse.class);
+				.body(JsonNode.class);
 		}
 		catch (GitHubApiException e) {
 			if (e.status() == 404) {
@@ -84,9 +84,14 @@ public class GitHubClient implements GitHubApi {
 			}
 			throw e;
 		}
+		if (response == null || !"file".equals(response.path("type").asString(null))
+				|| !response.hasNonNull("content")) {
+			throw new GitHubApiException(422, "Not a regular file");
+		}
 		// GitHub wraps the Base64 content at 60 columns, so the MIME decoder skips the line breaks.
-		String content = new String(Base64.getMimeDecoder().decode(response.content()), StandardCharsets.UTF_8);
-		return Optional.of(new GitHubFile(content, response.sha()));
+		String content = new String(Base64.getMimeDecoder().decode(response.get("content").asString()),
+				StandardCharsets.UTF_8);
+		return Optional.of(new GitHubFile(content, response.path("sha").asString(null)));
 	}
 
 	/** Replaces a file on the default branch; {@code sha} is the blob sha from {@link #readFile}. */
@@ -117,10 +122,6 @@ public class GitHubClient implements GitHubApi {
 	@Override
 	public GitHubUser currentUser(String token) {
 		return http.get().uri("/user").headers(h -> h.setBearerAuth(token)).retrieve().body(GitHubUser.class);
-	}
-
-	/** The parts of GitHub's file response that Vaga Viva reads. */
-	private record FileResponse(String content, String sha) {
 	}
 
 	private static GitHubApiException toException(ClientHttpResponse response) throws java.io.IOException {

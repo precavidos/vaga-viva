@@ -237,6 +237,17 @@ class StudentRepositoryProvisionerTests {
 		assertThat(github.updates).hasSize(1);
 	}
 
+	@Test
+	void readmeFailureDoesNotFailProvisioning() {
+		github.failUpdateFile.add(403);
+
+		ProvisionedRepository repository = provisioner.provision("token", "maria", PLAN);
+
+		assertThat(repository.missionIssues()).hasSize(PLAN.missions().size());
+		assertThat(github.issues).hasSize(6);
+		assertThat(github.updates).isEmpty();
+	}
+
 	record File(String repository, String path, String content) {
 	}
 
@@ -259,6 +270,8 @@ class StudentRepositoryProvisionerTests {
 		final List<File> updates = new ArrayList<>();
 
 		final Deque<Integer> failReadFile = new ArrayDeque<>();
+
+		final Deque<Integer> failUpdateFile = new ArrayDeque<>();
 
 		/** The README of the generated repository; {@code null} means the file does not exist. */
 		String readme = TEMPLATE_README;
@@ -287,6 +300,7 @@ class StudentRepositoryProvisionerTests {
 		@Override
 		public void updateFile(String token, String repositoryFullName, String path, String commitMessage,
 				String content, String sha) {
+			failIfQueued(failUpdateFile);
 			updates.add(new File(repositoryFullName, path, content));
 		}
 

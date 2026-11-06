@@ -83,10 +83,17 @@ public class StudentRepositoryProvisioner {
 		}
 		String intro = texts.projectIntro().orElseGet(() -> DefaultStudentTexts.projectIntro(plan, vocabulary));
 		String section = StudentReadme.projectSection(intro, missions, issues);
-		whenReady(() -> {
-			addProjectSection(token, repository.fullName(), plan, section);
-			return null;
-		});
+		try {
+			whenReady(() -> {
+				addProjectSection(token, repository.fullName(), plan, section);
+				return null;
+			});
+		}
+		catch (RuntimeException e) {
+			// The section is cosmetic: every issue already carries its context.
+			log.warn("Could not add the project section to the README ({}); provisioning continues",
+					e instanceof GitHubApiException g ? "status " + g.status() : e.getClass().getSimpleName());
+		}
 		return new ProvisionedRepository(repository.fullName(), repository.htmlUrl(), issues);
 	}
 

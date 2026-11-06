@@ -84,7 +84,7 @@ class GitHubClientTests {
 			.andExpect(method(HttpMethod.GET))
 			.andExpect(header("Authorization", "Bearer " + TOKEN))
 			.andRespond(withSuccess("""
-					{ "content": "%s\\n", "sha": "abc123", "encoding": "base64" }""".formatted(wrapped),
+					{ "type": "file", "content": "%s\\n", "sha": "abc123", "encoding": "base64" }""".formatted(wrapped),
 					MediaType.APPLICATION_JSON));
 
 		GitHubFile file = client.readFile(TOKEN, "maria/vaga-viva-clinica", "README.md").orElseThrow();
@@ -101,6 +101,34 @@ class GitHubClientTests {
 					{ "message": "Not Found" }"""));
 
 		assertThat(client.readFile(TOKEN, "maria/vaga-viva-clinica", "README.md")).isEmpty();
+	}
+
+	@Test
+	void readingADirectoryFails() {
+		github.expect(requestTo(API + "/repos/maria/vaga-viva-clinica/contents/README.md"))
+			.andRespond(withSuccess("[]", MediaType.APPLICATION_JSON));
+
+		assertThatThrownBy(() -> client.readFile(TOKEN, "maria/vaga-viva-clinica", "README.md"))
+			.isInstanceOfSatisfying(GitHubApiException.class, e -> assertThat(e.status()).isEqualTo(422));
+	}
+
+	@Test
+	void readingAnObjectThatIsNotAFileFails() {
+		github.expect(requestTo(API + "/repos/maria/vaga-viva-clinica/contents/README.md"))
+			.andRespond(withSuccess("{\"type\":\"dir\"}", MediaType.APPLICATION_JSON));
+
+		assertThatThrownBy(() -> client.readFile(TOKEN, "maria/vaga-viva-clinica", "README.md"))
+			.isInstanceOfSatisfying(GitHubApiException.class, e -> assertThat(e.status()).isEqualTo(422));
+	}
+
+	@Test
+	void readingAFileWithoutContentFails() {
+		github.expect(requestTo(API + "/repos/maria/vaga-viva-clinica/contents/README.md"))
+			.andRespond(withSuccess("{\"type\":\"file\",\"sha\":\"abc\",\"content\":null}",
+					MediaType.APPLICATION_JSON));
+
+		assertThatThrownBy(() -> client.readFile(TOKEN, "maria/vaga-viva-clinica", "README.md"))
+			.isInstanceOfSatisfying(GitHubApiException.class, e -> assertThat(e.status()).isEqualTo(422));
 	}
 
 	@Test
