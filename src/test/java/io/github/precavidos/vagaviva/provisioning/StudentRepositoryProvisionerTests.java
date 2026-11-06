@@ -8,12 +8,14 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 
 import io.github.precavidos.vagaviva.github.GitHubApi;
 import io.github.precavidos.vagaviva.github.GitHubApiException;
+import io.github.precavidos.vagaviva.github.GitHubFile;
 import io.github.precavidos.vagaviva.github.GitHubIssue;
 import io.github.precavidos.vagaviva.github.GitHubRepository;
 import io.github.precavidos.vagaviva.github.GitHubUser;
@@ -26,6 +28,16 @@ import io.github.precavidos.vagaviva.vocabulary.SkillVocabulary;
 class StudentRepositoryProvisionerTests {
 
 	private static final SkillVocabulary VOCABULARY = SkillVocabulary.fromClasspath("vocabulary/java-spring.json");
+
+	static final String TEMPLATE_README = """
+			# Vaga Viva: modelo Java/Spring
+
+			Repositório-modelo do arquétipo `java-spring`.
+
+			## Tecnologias
+
+			Java 21 e Spring Boot 4.
+			""";
 
 	private static final ProjectPlan PLAN = new ProjectPlanner(
 			MissionCatalog.fromClasspath("missions/java-spring.json", VOCABULARY))
@@ -157,6 +169,13 @@ class StudentRepositoryProvisionerTests {
 
 		final Deque<Integer> failCreateFile = new ArrayDeque<>();
 
+		final List<File> updates = new ArrayList<>();
+
+		final Deque<Integer> failReadFile = new ArrayDeque<>();
+
+		/** The README of the generated repository; {@code null} means the file does not exist. */
+		String readme = TEMPLATE_README;
+
 		@Override
 		public GitHubRepository generateFromTemplate(String token, String owner, String name, String description) {
 			generated.add(owner + "/" + name);
@@ -170,6 +189,18 @@ class StudentRepositoryProvisionerTests {
 				String content) {
 			failIfQueued(failCreateFile);
 			files.add(new File(repositoryFullName, path, content));
+		}
+
+		@Override
+		public Optional<GitHubFile> readFile(String token, String repositoryFullName, String path) {
+			failIfQueued(failReadFile);
+			return Optional.ofNullable(readme).map(r -> new GitHubFile(r, "readme-sha"));
+		}
+
+		@Override
+		public void updateFile(String token, String repositoryFullName, String path, String commitMessage,
+				String content, String sha) {
+			updates.add(new File(repositoryFullName, path, content));
 		}
 
 		@Override

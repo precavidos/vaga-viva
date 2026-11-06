@@ -77,6 +77,50 @@ class GitHubClientTests {
 	}
 
 	@Test
+	void readsAFileDecodingBase64() {
+		String encoded = Base64.getEncoder().encodeToString("Olá\n".getBytes(StandardCharsets.UTF_8));
+		String wrapped = encoded.substring(0, 4) + "\\n" + encoded.substring(4);
+		github.expect(requestTo(API + "/repos/maria/vaga-viva-clinica/contents/README.md"))
+			.andExpect(method(HttpMethod.GET))
+			.andExpect(header("Authorization", "Bearer " + TOKEN))
+			.andRespond(withSuccess("""
+					{ "content": "%s\\n", "sha": "abc123", "encoding": "base64" }""".formatted(wrapped),
+					MediaType.APPLICATION_JSON));
+
+		GitHubFile file = client.readFile(TOKEN, "maria/vaga-viva-clinica", "README.md").orElseThrow();
+
+		assertThat(file.content()).isEqualTo("Olá\n");
+		assertThat(file.sha()).isEqualTo("abc123");
+		github.verify();
+	}
+
+	@Test
+	void readingAMissingFileGivesNothing() {
+		github.expect(requestTo(API + "/repos/maria/vaga-viva-clinica/contents/README.md"))
+			.andRespond(withStatus(HttpStatus.NOT_FOUND).contentType(MediaType.APPLICATION_JSON).body("""
+					{ "message": "Not Found" }"""));
+
+		assertThat(client.readFile(TOKEN, "maria/vaga-viva-clinica", "README.md")).isEmpty();
+	}
+
+	@Test
+	void updatesAFileWithItsSha() {
+		String fileContent = "# Vaga Viva\n";
+		github.expect(requestTo(API + "/repos/maria/vaga-viva-clinica/contents/README.md"))
+			.andExpect(method(HttpMethod.PUT))
+			.andExpect(header("Authorization", "Bearer " + TOKEN))
+			.andExpect(content().json("""
+					{ "message": "Update", "content": "%s", "sha": "abc123" }""".formatted(
+					Base64.getEncoder().encodeToString(fileContent.getBytes(StandardCharsets.UTF_8))),
+					JsonCompareMode.STRICT))
+			.andRespond(withSuccess("{}", MediaType.APPLICATION_JSON));
+
+		client.updateFile(TOKEN, "maria/vaga-viva-clinica", "README.md", "Update", fileContent, "abc123");
+
+		github.verify();
+	}
+
+	@Test
 	void createsAnIssue() {
 		github.expect(requestTo(API + "/repos/maria/vaga-viva-clinica/issues"))
 			.andExpect(method(HttpMethod.POST))
