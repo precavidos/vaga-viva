@@ -7,7 +7,9 @@ import java.time.Duration;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -24,6 +26,8 @@ import io.github.precavidos.vagaviva.plan.MissionCatalog;
 import io.github.precavidos.vagaviva.plan.ProjectPlan;
 import io.github.precavidos.vagaviva.plan.ProjectPlanner;
 import io.github.precavidos.vagaviva.vocabulary.SkillVocabulary;
+import io.github.precavidos.vagaviva.writing.MissionTextWriter;
+import io.github.precavidos.vagaviva.writing.WrittenTexts;
 
 class StudentRepositoryProvisionerTests {
 
@@ -47,8 +51,11 @@ class StudentRepositoryProvisionerTests {
 
 	private final List<Duration> pauses = new ArrayList<>();
 
-	private final StudentRepositoryProvisioner provisioner = new StudentRepositoryProvisioner(github, VOCABULARY,
-			pauses::add);
+	private final StudentRepositoryProvisioner provisioner = provisionerWith(plan -> WrittenTexts.none());
+
+	private StudentRepositoryProvisioner provisionerWith(MissionTextWriter writer) {
+		return new StudentRepositoryProvisioner(github, VOCABULARY, writer, pauses::add);
+	}
 
 	@Test
 	void createsTheRepositoryInTheStudentsAccount() {
@@ -63,7 +70,9 @@ class StudentRepositoryProvisionerTests {
 	void writesThePlanFileWithoutPersonalData() {
 		provisioner.provision("token", "maria", PLAN);
 
-		assertThat(github.files).singleElement().satisfies(file -> {
+		assertThat(github.files).filteredOn(file -> file.path().equals(".vaga-viva/plan.json"))
+			.singleElement()
+			.satisfies(file -> {
 			assertThat(file.path()).isEqualTo(".vaga-viva/plan.json");
 			assertThat(file.content()).isEqualToIgnoringWhitespace("""
 					{ "archetype": "java-spring", "domain": "clinic-scheduling",
@@ -148,6 +157,84 @@ class StudentRepositoryProvisionerTests {
 		assertThatThrownBy(() -> provisioner.provision("token", "maria", PLAN))
 			.isInstanceOfSatisfying(GitHubApiException.class, e -> assertThat(e.status()).isEqualTo(403));
 		assertThat(pauses).isEmpty();
+	}
+
+	@Test
+	void writtenTextsGoIntoIssuesAndReadme() {
+		var contexts = new LinkedHashMap<String, String>();
+		PLAN.missions().forEach(m -> contexts.put(m.mission().id(), "Contexto de " + m.mission().id() + "."));
+
+		provisionerWith(plan -> new WrittenTexts(Optional.of("Intro do LLM."), contexts, Optional.empty()))
+			.provision("token", "maria", PLAN);
+
+		assertThat(github.issues).hasSize(6);
+		for (int i = 0; i < 6; i++) {
+			String id = PLAN.missions().get(i).mission().id();
+			assertThat(github.issues.get(i).body())
+				.startsWith("### Por que esta missão importa para a vaga\n\nContexto de " + id + ".");
+		}
+		assertThat(github.updates).singleElement().satisfies(file -> {
+			assertThat(file.path()).isEqualTo("README.md");
+			assertThat(file.content()).contains("## Seu projeto")
+				.contains("Intro do LLM.")
+				.contains("[#1](https://github.com/maria/vaga-viva-clinic-scheduling/issues/1)")
+				.contains("## Tecnologias")
+				.contains("Java 21 e Spring Boot 4.");
+		});
+	}
+
+	@Test
+	void defaultTextsWhenTheWriterGivesNothing() {
+		provisioner.provision("token", "maria", PLAN);
+
+		assertThat(github.issues.getFirst().body()).startsWith("### Por que esta missão importa para a vaga")
+			.contains("Esta missão exercita");
+		assertThat(github.updates).singleElement()
+			.satisfies(file -> assertThat(file.content()).contains(DefaultStudentTexts.projectIntro(PLAN, VOCABULARY)));
+	}
+
+	@Test
+	void defaultTextOnlyForMissionsTheWriterMissed() {
+		provisionerWith(plan -> new WrittenTexts(Optional.empty(), Map.of("patients-api", "Texto do LLM."),
+				Optional.empty()))
+			.provision("token", "maria", PLAN);
+
+		assertThat(github.issues.getFirst().body()).contains("Texto do LLM.");
+		assertThat(github.issues.get(1).body()).doesNotContain("Texto do LLM.").contains("Esta missão exercita");
+	}
+
+	@Test
+	void provisioningSurvivesAWriterThatThrows() {
+		ProvisionedRepository repository = provisionerWith(plan -> {
+			throw new IllegalStateException("boom");
+		}).provision("token", "maria", PLAN);
+
+		assertThat(repository.missionIssues()).hasSize(6);
+		assertThat(github.issues.getFirst().body()).contains("Esta missão exercita");
+		assertThat(github.updates).hasSize(1);
+	}
+
+	@Test
+	void createsTheReadmeWhenTheTemplateHasNone() {
+		github.readme = null;
+
+		provisioner.provision("token", "maria", PLAN);
+
+		assertThat(github.updates).isEmpty();
+		assertThat(github.files).filteredOn(file -> file.path().equals("README.md"))
+			.singleElement()
+			.satisfies(file -> assertThat(file.content()).startsWith("# Vaga Viva: Agendamento de clínica")
+				.contains("## Seu projeto"));
+	}
+
+	@Test
+	void waitsWhenTheReadmeIsNotReadableYet() {
+		github.failReadFile.add(409);
+
+		provisioner.provision("token", "maria", PLAN);
+
+		assertThat(pauses).containsExactly(Duration.ofSeconds(1));
+		assertThat(github.updates).hasSize(1);
 	}
 
 	record File(String repository, String path, String content) {
