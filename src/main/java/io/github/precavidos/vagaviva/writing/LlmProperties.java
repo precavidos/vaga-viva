@@ -13,5 +13,13 @@ import org.springframework.boot.context.properties.bind.DefaultValue;
 public record LlmProperties(@DefaultValue("") String apiKey,
 		@DefaultValue("claude-haiku-5-5") String model,
 		@DefaultValue("30s") Duration timeout,
-		@DefaultValue("1") int maxRetries) {
+		@DefaultValue("0") int maxRetries) {
+
+	/** Never shows the API key. */
+	@Override
+	public String toString() {
+		return "LlmProperties[apiKey=" + (apiKey.isBlank() ? "<blank>" : "****") + ", model=" + model + ", timeout="
+				+ timeout + ", maxRetries=" + maxRetries + "]";
+	}
+
 }

@@ -23,7 +23,21 @@ class LlmConfigTests {
 	void usesClaudeWhenAKeyIsSet() {
 		contextRunner.withPropertyValues("vagaviva.llm.api-key=test-key")
 			.run(context -> assertThat(context.getBean(MissionTextWriter.class))
-				.isInstanceOf(ClaudeMissionTextWriter.class));
+				.isInstanceOf(ClaudeMissionTextWriter.class)
+				.isInstanceOf(AutoCloseable.class));
+	}
+
+	@Test
+	void doesNotRetryByDefault() {
+		contextRunner.withPropertyValues("vagaviva.llm.api-key=test-key")
+			.run(context -> assertThat(context.getBean(LlmProperties.class).maxRetries()).isZero());
+	}
+
+	@Test
+	void toStringHidesTheApiKey() {
+		var properties = new LlmProperties("sk-ant-secret", "claude-haiku-5-5", java.time.Duration.ofSeconds(30), 0);
+
+		assertThat(properties.toString()).doesNotContain("sk-ant-secret").contains("****");
 	}
 
 }
