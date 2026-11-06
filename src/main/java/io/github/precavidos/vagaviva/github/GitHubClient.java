@@ -84,8 +84,9 @@ public class GitHubClient implements GitHubApi {
 			}
 			throw e;
 		}
+		// Files over 1 MB come back with "content":"" and "encoding":"none"; treating them as empty would overwrite the README.
 		if (response == null || !"file".equals(response.path("type").asString(null))
-				|| !response.hasNonNull("content")) {
+				|| !response.hasNonNull("content") || !"base64".equals(response.path("encoding").asString(null))) {
 			throw new GitHubApiException(422, "Not a regular file");
 		}
 		// GitHub wraps the Base64 content at 60 columns, so the MIME decoder skips the line breaks.

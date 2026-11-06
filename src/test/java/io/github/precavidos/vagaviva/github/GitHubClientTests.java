@@ -132,6 +132,16 @@ class GitHubClientTests {
 	}
 
 	@Test
+	void readingAFileTooLargeForTheApiFails() {
+		github.expect(requestTo(API + "/repos/maria/vaga-viva-clinica/contents/README.md"))
+			.andRespond(withSuccess("{\"type\":\"file\",\"sha\":\"abc\",\"content\":\"\",\"encoding\":\"none\"}",
+					MediaType.APPLICATION_JSON));
+
+		assertThatThrownBy(() -> client.readFile(TOKEN, "maria/vaga-viva-clinica", "README.md"))
+			.isInstanceOfSatisfying(GitHubApiException.class, e -> assertThat(e.status()).isEqualTo(422));
+	}
+
+	@Test
 	void updatesAFileWithItsSha() {
 		String fileContent = "# Vaga Viva\n";
 		github.expect(requestTo(API + "/repos/maria/vaga-viva-clinica/contents/README.md"))
