@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import io.github.precavidos.vagaviva.plan.FictionalDomain;
 import io.github.precavidos.vagaviva.plan.PlannedMission;
@@ -16,6 +18,10 @@ import io.github.precavidos.vagaviva.plan.PlannedMission;
 final class StudentReadme {
 
 	private static final String HEADING = "## Seu projeto";
+
+	private static final Pattern OPENING_FENCE = Pattern.compile(" {0,3}(`{3,}|~{3,})(.*)");
+
+	private static final Pattern CLOSING_FENCE = Pattern.compile(" {0,3}(`{3,}|~{3,})[ \\t]*");
 
 	private StudentReadme() {
 	}
@@ -43,24 +49,60 @@ final class StudentReadme {
 
 	/**
 	 * Inserts the section (plus one blank line) before the first {@code ## }
-	 * heading outside a fenced code block. Without such a heading, appends the
+	 * heading outside a fenced code block (backtick or tilde fences, as in CommonMark). Without such a heading, appends the
 	 * section after one blank line. Every other line is kept as it was,
 	 * including its line terminator.
 	 */
 	static String withProjectSection(String readme, String section) {
 		List<String> lines = lines(readme);
-		boolean inCodeBlock = false;
+		String fence = null;
 		for (int i = 0; i < lines.size(); i++) {
 			String line = lines.get(i);
-			if (line.startsWith("```")) {
-				inCodeBlock = !inCodeBlock;
+			String content = stripTerminator(line);
+			if (fence == null) {
+				fence = openingFence(content);
+				if (fence == null && line.startsWith("## ")) {
+					return String.join("", lines.subList(0, i)) + section + "\n"
+							+ String.join("", lines.subList(i, lines.size()));
+				}
 			}
-			else if (!inCodeBlock && line.startsWith("## ")) {
-				return String.join("", lines.subList(0, i)) + section + "\n"
-						+ String.join("", lines.subList(i, lines.size()));
+			else if (closesFence(content, fence)) {
+				fence = null;
 			}
 		}
 		return append(lines, section);
+	}
+
+	/**
+	 * The fence that a line opens (3 or more backticks or tildes after at most
+	 * three spaces), or null if it opens none. A backtick fence's info string may
+	 * not contain backticks, as in CommonMark.
+	 */
+	private static String openingFence(String line) {
+		Matcher matcher = OPENING_FENCE.matcher(line);
+		if (!matcher.matches()) {
+			return null;
+		}
+		String fence = matcher.group(1);
+		return fence.charAt(0) == '`' && matcher.group(2).contains("`") ? null : fence;
+	}
+
+	/** A closing fence repeats the opening character at least as many times, with nothing else on the line. */
+	private static boolean closesFence(String line, String fence) {
+		Matcher matcher = CLOSING_FENCE.matcher(line);
+		if (!matcher.matches()) {
+			return false;
+		}
+		String candidate = matcher.group(1);
+		return candidate.charAt(0) == fence.charAt(0) && candidate.length() >= fence.length();
+	}
+
+	private static String stripTerminator(String line) {
+		int end = line.length();
+		while (end > 0 && (line.charAt(end - 1) == '\n' || line.charAt(end - 1) == '\r')) {
+			end--;
+		}
+		return line.substring(0, end);
 	}
 
 	/** Returns a README for a new project: the title for the domain, then the section. */

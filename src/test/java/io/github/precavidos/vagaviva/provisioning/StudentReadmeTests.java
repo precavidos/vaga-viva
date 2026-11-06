@@ -50,6 +50,34 @@ class StudentReadmeTests {
 	}
 
 	@Test
+	void ignoresHeadingsInsideTildeFences() {
+		String readme = "# Título\n\n~~~md\n## não é título\n~~~\n\n## Comandos\n\nRode o projeto.\n";
+
+		String result = StudentReadme.withProjectSection(readme, SECTION);
+
+		assertThat(result).isEqualTo("# Título\n\n~~~md\n## não é título\n~~~\n\n" + SECTION
+				+ "\n## Comandos\n\nRode o projeto.\n");
+	}
+
+	@Test
+	void ignoresHeadingsInsideIndentedFences() {
+		String readme = "# Título\n\n  ```md\n## não é título\n  ```\n\n## Comandos\n";
+
+		String result = StudentReadme.withProjectSection(readme, SECTION);
+
+		assertThat(result).isEqualTo("# Título\n\n  ```md\n## não é título\n  ```\n\n" + SECTION + "\n## Comandos\n");
+	}
+
+	@Test
+	void aBacktickLineDoesNotCloseATildeFence() {
+		String readme = "# Título\n\n~~~md\n```\n## não é título\n~~~\n\n## Comandos\n";
+
+		String result = StudentReadme.withProjectSection(readme, SECTION);
+
+		assertThat(result).isEqualTo("# Título\n\n~~~md\n```\n## não é título\n~~~\n\n" + SECTION + "\n## Comandos\n");
+	}
+
+	@Test
 	void ignoresHeadingsInsideCodeBlocks() {
 		String readme = """
 				# Título
