@@ -20,3 +20,26 @@ jobs:
           cache: maven
       - name: Build and test
         run: ./mvnw -B verify
+
+  # Deploys only after the tests pass on main. Render builds the image from the Dockerfile;
+  # its own auto-deploy stays off so a red build never reaches the demo (see docs/deploy.md).
+  deploy:
+    needs: build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    concurrency:
+      group: deploy
+      cancel-in-progress: false
+    environment:
+      name: production
+      url: ${{ vars.API_URL }}
+    steps:
+      - name: Trigger Render deploy
+        env:
+          RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+        run: |
+          if [ -z "$RENDER_DEPLOY_HOOK_URL" ]; then
+            echo "::warning::RENDER_DEPLOY_HOOK_URL is not set; skipping deploy."
+            exit 0
+          fi
+          curl --fail --silent --show-error -X POST "$RENDER_DEPLOY_HOOK_URL" > /dev/null
