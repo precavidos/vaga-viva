@@ -6,8 +6,18 @@ Os planos gratuitos bastam até a semana 4. No gratuito do Render a API dorme ap
 
 ## 1. Banco no Neon
 
-1. Crie um projeto em <https://neon.tech>, com PostgreSQL 17 e região perto da do Render (por exemplo, `AWS us-east-1` se o Render ficar em Virginia).
-2. Em *Connection details*, copie a string de conexão. Ela vem assim:
+1. Crie um projeto em <https://neon.tech> com estas opções:
+
+   | Campo | Valor |
+   | --- | --- |
+   | Project name | `vaga-viva` |
+   | Postgres version | `17` (a mesma do `compose.yaml` e dos testes) |
+   | Cloud provider / Region | `AWS` · `US East (N. Virginia)`, a mesma região do Render |
+   | Database name | `vagaviva` |
+   | Neon Auth | desligado |
+
+   O Render não tem região no Brasil; Virginia é a mais próxima entre as que ele oferece, e banco e API na mesma região evitam latência em cada consulta.
+2. Em *Connect*, escolha a branch `production` (ou `main`), o banco `vagaviva` e **desligue *Connection pooling***. A API já tem seu próprio pool (Hikari), e o Flyway não funciona bem atrás do pooler do Neon (o host com `-pooler` no nome). Copie a string de conexão direta. Ela vem assim:
 
    ```
    postgresql://USUARIO:SENHA@HOST/BANCO?sslmode=require
