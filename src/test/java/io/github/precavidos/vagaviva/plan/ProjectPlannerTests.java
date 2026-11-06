@@ -12,6 +12,7 @@ import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 
+import io.github.precavidos.vagaviva.archetype.ArchetypeCatalog;
 import io.github.precavidos.vagaviva.jobposting.ExtractedJobPosting;
 import io.github.precavidos.vagaviva.jobposting.SeniorityLevel;
 import io.github.precavidos.vagaviva.plan.PlannedMission.Reason;
@@ -20,6 +21,8 @@ import io.github.precavidos.vagaviva.vocabulary.SkillVocabulary;
 class ProjectPlannerTests {
 
 	private static final SkillVocabulary VOCABULARY = SkillVocabulary.fromClasspath("vocabulary/java-spring.json");
+
+	private static final ArchetypeCatalog ARCHETYPES = ArchetypeCatalog.fromClasspath("archetypes/catalog.json");
 
 	private static final ProjectPlanner PLANNER = new ProjectPlanner(
 			MissionCatalog.fromClasspath("missions/java-spring.json", VOCABULARY));
@@ -144,8 +147,9 @@ class ProjectPlannerTests {
 
 	@Test
 	void keepsThePostingsSkillsAndTechnologiesWithoutItsWords() {
-		var posting = new ExtractedJobPosting("java-spring", List.of(JUNIOR),
-				VOCABULARY.recognize("Dev Java Júnior com Spring Boot, PostgreSQL e Docker"));
+		var text = "Dev Java Júnior com Spring Boot, PostgreSQL e Docker";
+		var posting = new ExtractedJobPosting("java-spring", ARCHETYPES.match(text), List.of(JUNIOR),
+				VOCABULARY.recognize(text));
 
 		var plan = PLANNER.plan(posting);
 

@@ -11,8 +11,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.regex.Pattern;
 
 import tools.jackson.databind.json.JsonMapper;
 
@@ -34,7 +32,7 @@ public final class SkillVocabulary {
 
 	private final List<RejectedTerm> rejectedTerms;
 
-	private final Map<String, Pattern> patterns = new ConcurrentHashMap<>();
+	private final TermMatcher matcher = new TermMatcher();
 
 	private SkillVocabulary(VocabularyFile file) {
 		this.archetype = file.archetype();
@@ -132,12 +130,7 @@ public final class SkillVocabulary {
 	}
 
 	private List<String> match(List<String> terms, String normalizedText) {
-		return terms.stream().filter(term -> patternFor(term).matcher(normalizedText).find()).toList();
-	}
-
-	private Pattern patternFor(String term) {
-		return patterns.computeIfAbsent(term, t -> Pattern
-			.compile("(?<![\\p{L}\\p{N}])" + Pattern.quote(TextNormalizer.normalize(t)) + "(?![\\p{L}\\p{N}])"));
+		return matcher.match(terms, normalizedText);
 	}
 
 	private static Map<String, Skill> index(List<Skill> list, List<String> problems) {

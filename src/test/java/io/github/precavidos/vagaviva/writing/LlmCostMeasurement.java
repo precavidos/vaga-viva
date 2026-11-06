@@ -16,6 +16,7 @@ import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 
 import com.anthropic.client.okhttp.AnthropicOkHttpClient;
 
+import io.github.precavidos.vagaviva.archetype.ArchetypeCatalog;
 import io.github.precavidos.vagaviva.jobposting.ExtractedJobPosting;
 import io.github.precavidos.vagaviva.jobposting.JobPostingExtractor;
 import io.github.precavidos.vagaviva.plan.MissionCatalog;
@@ -47,7 +48,7 @@ class LlmCostMeasurement {
 	@Test
 	void measureCostOfThreePostings() {
 		SkillVocabulary vocabulary = SkillVocabulary.fromClasspath("vocabulary/java-spring.json");
-		var extractor = new JobPostingExtractor(vocabulary);
+		var extractor = new JobPostingExtractor(vocabulary, ArchetypeCatalog.fromClasspath("archetypes/catalog.json"));
 		var planner = new ProjectPlanner(MissionCatalog.fromClasspath("missions/java-spring.json", vocabulary));
 		var writer = new ClaudeMissionTextWriter(AnthropicOkHttpClient.fromEnv(), MODEL, vocabulary);
 

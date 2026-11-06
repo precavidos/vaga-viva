@@ -36,6 +36,8 @@ class JobPostingExtractionApiTests {
 		assertThat(response).hasStatusOk();
 		var json = assertThat(response).bodyJson();
 		json.extractingPath("$.archetype").isEqualTo("java-spring");
+		json.extractingPath("$.archetypeFit.status").isEqualTo("COVERED");
+		json.extractingPath("$.archetypeFit.uncovered").asArray().isEmpty();
 		json.extractingPath("$.seniorityLevels").asArray().containsExactly("JUNIOR");
 		json.extractingPath("$.technologies[*].id").asArray().containsExactly("java", "spring-boot", "postgresql");
 		json.extractingPath("$.technologies[1].matchedTerms").asArray().containsExactly("Spring Boot");

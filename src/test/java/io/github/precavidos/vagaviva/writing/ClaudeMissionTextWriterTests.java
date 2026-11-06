@@ -21,6 +21,7 @@ import com.anthropic.client.AnthropicClient;
 import com.anthropic.client.okhttp.AnthropicOkHttpClient;
 import com.sun.net.httpserver.HttpServer;
 
+import io.github.precavidos.vagaviva.archetype.ArchetypeCatalog;
 import io.github.precavidos.vagaviva.jobposting.ExtractedJobPosting;
 import io.github.precavidos.vagaviva.plan.MissionCatalog;
 import io.github.precavidos.vagaviva.plan.PlannedMission;
@@ -33,6 +34,8 @@ import tools.jackson.databind.json.JsonMapper;
 class ClaudeMissionTextWriterTests {
 
 	private static final SkillVocabulary VOCABULARY = SkillVocabulary.fromClasspath("vocabulary/java-spring.json");
+
+	private static final ArchetypeCatalog ARCHETYPES = ArchetypeCatalog.fromClasspath("archetypes/catalog.json");
 
 	private static final ProjectPlanner PLANNER = new ProjectPlanner(
 			MissionCatalog.fromClasspath("missions/java-spring.json", VOCABULARY));
@@ -94,8 +97,9 @@ class ClaudeMissionTextWriterTests {
 
 	@Test
 	void sendsOnlyThePlanWithThinkingOffAndAStructuredFormat() throws Exception {
-		var posting = new ExtractedJobPosting("java-spring", List.of(JUNIOR), VOCABULARY
-			.recognize("Vaga júnior Java e Spring Boot. Falar com recrutadora@exemplo.com, Fulana de Tal"));
+		var text = "Vaga júnior Java e Spring Boot. Falar com recrutadora@exemplo.com, Fulana de Tal";
+		var posting = new ExtractedJobPosting("java-spring", ARCHETYPES.match(text), List.of(JUNIOR),
+				VOCABULARY.recognize(text));
 		ProjectPlan plan = PLANNER.plan(posting);
 		responseBody = messageWith(answer("Intro.", Map.of()));
 
@@ -216,8 +220,9 @@ class ClaudeMissionTextWriterTests {
 	}
 
 	private static ProjectPlan plan() {
-		var posting = new ExtractedJobPosting("java-spring", List.of(JUNIOR),
-				VOCABULARY.recognize("Vaga júnior Java e Spring Boot com SQL"));
+		var text = "Vaga júnior Java e Spring Boot com SQL";
+		var posting = new ExtractedJobPosting("java-spring", ARCHETYPES.match(text), List.of(JUNIOR),
+				VOCABULARY.recognize(text));
 		return PLANNER.plan(posting);
 	}
 

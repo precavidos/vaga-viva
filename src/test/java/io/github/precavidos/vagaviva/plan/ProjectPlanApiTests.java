@@ -50,6 +50,26 @@ class ProjectPlanApiTests {
 		json.extractingPath("$.missions[0].reason").isEqualTo("CORE");
 		json.extractingPath("$.missions[4].reason").isEqualTo("SKILL_MATCH");
 		json.extractingPath("$.missions[4].matchedSkills").asArray().containsExactly("sql", "postgresql");
+		json.extractingPath("$.archetypeFit.status").isEqualTo("COVERED");
+		json.extractingPath("$.archetypeFit.covered").asArray().containsExactly("Java", "Spring Boot");
+	}
+
+	@Test
+	void warnsWhenThePostingIsForAStackWithoutArchetype() {
+		var response = mvc.post()
+			.uri("/api/project-plans")
+			.contentType(MediaType.APPLICATION_JSON)
+			.content("""
+					{ "text": "Desenvolvedor Python Júnior com Django e PostgreSQL" }""");
+
+		assertThat(response).hasStatusOk();
+		var json = assertThat(response).bodyJson();
+		json.extractingPath("$.archetype").isEqualTo("java-spring");
+		json.extractingPath("$.archetypeFit.archetype").isEqualTo("java-spring");
+		json.extractingPath("$.archetypeFit.status").isEqualTo("NOT_COVERED");
+		json.extractingPath("$.archetypeFit.covered").asArray().isEmpty();
+		json.extractingPath("$.archetypeFit.uncovered").asArray().containsExactly("Python", "Django");
+		json.extractingPath("$.missions").asArray().isNotEmpty();
 	}
 
 	@Test
