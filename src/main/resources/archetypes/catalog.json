@@ -1,0 +1,41 @@
+{
+  "technologies": [
+    { "id": "java", "name": "Java", "terms": ["Java"] },
+    { "id": "kotlin", "name": "Kotlin", "terms": ["Kotlin"] },
+    { "id": "scala", "name": "Scala", "terms": ["Scala"] },
+    { "id": "python", "name": "Python", "terms": ["Python"] },
+    { "id": "javascript", "name": "JavaScript", "terms": ["JavaScript", "ECMAScript"] },
+    { "id": "typescript", "name": "TypeScript", "terms": ["TypeScript"] },
+    { "id": "csharp", "name": "C#", "terms": ["C#", "C Sharp", ".NET", "dotnet"] },
+    { "id": "go", "name": "Go", "terms": ["Golang"] },
+    { "id": "php", "name": "PHP", "terms": ["PHP"] },
+    { "id": "ruby", "name": "Ruby", "terms": ["Ruby"] },
+    { "id": "rust", "name": "Rust", "terms": ["Rust"] },
+    { "id": "cpp", "name": "C++", "terms": ["C++"] },
+    { "id": "dart", "name": "Dart", "terms": ["Dart"] },
+    { "id": "swift", "name": "Swift", "terms": ["Swift"] },
+
+    { "id": "spring-boot", "name": "Spring Boot", "language": "java",
+      "terms": ["Spring Boot", "Spring Framework", "Spring MVC", "Spring Data", "Spring Security"] },
+    { "id": "quarkus", "name": "Quarkus", "language": "java", "terms": ["Quarkus"] },
+    { "id": "micronaut", "name": "Micronaut", "language": "java", "terms": ["Micronaut"] },
+    { "id": "jakarta-ee", "name": "Jakarta EE", "language": "java", "terms": ["Jakarta EE", "Java EE"] },
+    { "id": "django", "name": "Django", "language": "python", "terms": ["Django"] },
+    { "id": "fastapi", "name": "FastAPI", "language": "python", "terms": ["FastAPI"] },
+    { "id": "flask", "name": "Flask", "language": "python", "terms": ["Flask"] },
+    { "id": "nodejs", "name": "Node.js", "language": "javascript", "terms": ["Node.js", "NodeJS", "Node JS"] },
+    { "id": "express", "name": "Express", "language": "javascript", "terms": ["Express.js", "ExpressJS"] },
+    { "id": "react", "name": "React", "language": "javascript", "terms": ["React", "React.js", "ReactJS", "React Native"] },
+    { "id": "vue", "name": "Vue.js", "language": "javascript", "terms": ["Vue.js", "VueJS"] },
+    { "id": "nextjs", "name": "Next.js", "language": "javascript", "terms": ["Next.js", "NextJS"] },
+    { "id": "nestjs", "name": "NestJS", "language": "typescript", "terms": ["NestJS", "Nest.js"] },
+    { "id": "angular", "name": "Angular", "language": "typescript", "terms": ["Angular"] },
+    { "id": "aspnet", "name": "ASP.NET", "language": "csharp", "terms": ["ASP.NET"] },
+    { "id": "laravel", "name": "Laravel", "language": "php", "terms": ["Laravel"] },
+    { "id": "rails", "name": "Ruby on Rails", "language": "ruby", "terms": ["Ruby on Rails", "Rails"] },
+    { "id": "flutter", "name": "Flutter", "language": "dart", "terms": ["Flutter"] }
+  ],
+  "archetypes": [
+    { "id": "java-spring", "language": "java", "frameworks": ["spring-boot"] }
+  ]
+}

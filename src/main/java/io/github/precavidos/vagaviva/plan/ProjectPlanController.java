@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.github.precavidos.vagaviva.archetype.ArchetypeFit;
+import io.github.precavidos.vagaviva.jobposting.ExtractedJobPosting;
 import io.github.precavidos.vagaviva.jobposting.JobPostingExtractor;
 import io.github.precavidos.vagaviva.jobposting.ReceivesJobPostingText;
 import io.github.precavidos.vagaviva.jobposting.SeniorityLevel;
@@ -32,18 +34,19 @@ class ProjectPlanController {
 
 	@PostMapping
 	PlanResponse plan(@Valid @RequestBody PlanRequest request) {
-		return PlanResponse.from(planner.plan(extractor.extract(request.text())));
+		ExtractedJobPosting posting = extractor.extract(request.text());
+		return PlanResponse.from(planner.plan(posting), posting.archetypeFit());
 	}
 
 	record PlanRequest(@NotBlank @Size(max = JobPostingExtractor.MAX_LENGTH) String text) {
 	}
 
-	record PlanResponse(String archetype, FictionalDomain domain, SeniorityLevel seniorityLevel, int difficultyCap,
+	record PlanResponse(String archetype, ArchetypeFit archetypeFit, FictionalDomain domain, SeniorityLevel seniorityLevel, int difficultyCap,
 			List<MissionDto> missions) {
 
-		static PlanResponse from(ProjectPlan plan) {
+		static PlanResponse from(ProjectPlan plan, ArchetypeFit archetypeFit) {
 			var missions = plan.missions();
-			return new PlanResponse(plan.archetype(), plan.domain(), plan.seniorityLevel(), plan.difficultyCap(),
+			return new PlanResponse(plan.archetype(), archetypeFit, plan.domain(), plan.seniorityLevel(), plan.difficultyCap(),
 					IntStream.range(0, missions.size()).mapToObj(i -> MissionDto.from(i + 1, missions.get(i))).toList());
 		}
 

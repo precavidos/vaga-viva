@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.github.precavidos.vagaviva.archetype.ArchetypeFit;
 import io.github.precavidos.vagaviva.vocabulary.Skill;
 
 @RestController
@@ -32,12 +33,12 @@ class JobPostingController {
 	record ExtractionRequest(@NotBlank @Size(max = JobPostingExtractor.MAX_LENGTH) String text) {
 	}
 
-	record ExtractionResponse(String archetype, List<SeniorityLevel> seniorityLevels,
+	record ExtractionResponse(String archetype, ArchetypeFit archetypeFit, List<SeniorityLevel> seniorityLevels,
 			List<TechnologyDto> technologies, List<SkillDto> skills) {
 
 		static ExtractionResponse from(ExtractedJobPosting posting) {
 			var recognition = posting.recognition();
-			return new ExtractionResponse(posting.archetype(), posting.seniorityLevels(),
+			return new ExtractionResponse(posting.archetype(), posting.archetypeFit(), posting.seniorityLevels(),
 					recognition.technologies()
 						.stream()
 						.map(t -> new TechnologyDto(t.technology().id(), t.technology().name(), t.matchedTerms()))
