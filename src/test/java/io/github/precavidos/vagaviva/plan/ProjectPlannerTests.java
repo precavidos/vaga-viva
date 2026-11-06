@@ -160,6 +160,13 @@ class ProjectPlannerTests {
 			.containsExactly("estágio", "júnior", "pleno", "sênior");
 	}
 
+	@Test
+	void unorderedSkillsGiveADeterministicOrder() {
+		var plan = PLANNER.plan(List.of(JUNIOR), Set.of("sql", "java", "spring"));
+
+		assertThat(plan.postingSkills()).isEqualTo(List.of("java", "spring", "sql"));
+	}
+
 	private static List<String> ids(ProjectPlan plan) {
 		return plan.missions().stream().map(m -> m.mission().id()).toList();
 	}

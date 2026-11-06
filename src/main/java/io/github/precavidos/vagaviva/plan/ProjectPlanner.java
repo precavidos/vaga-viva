@@ -40,12 +40,21 @@ public class ProjectPlanner {
 		return plan(posting.seniorityLevels(), skills, technologies);
 	}
 
+	/**
+	 * Plans from skills given in no particular order: they are sorted
+	 * alphabetically, so the same skills always give the same plan.
+	 */
 	public ProjectPlan plan(List<SeniorityLevel> postingLevels, Collection<String> postingSkills) {
-		return plan(postingLevels, postingSkills, List.of());
+		return plan(postingLevels, postingSkills.stream().sorted().toList(), List.of());
 	}
 
-	public ProjectPlan plan(List<SeniorityLevel> postingLevels, Collection<String> postingSkills,
-			Collection<String> postingTechnologies) {
+	/**
+	 * Plans from the skills and technologies of a posting, keeping the order
+	 * given. Callers pass them in vocabulary order, as
+	 * {@link #plan(ExtractedJobPosting)} does.
+	 */
+	public ProjectPlan plan(List<SeniorityLevel> postingLevels, List<String> postingSkills,
+			List<String> postingTechnologies) {
 		SeniorityLevel level = postingLevels.stream().min(Comparator.naturalOrder()).orElse(SeniorityLevel.JUNIOR);
 		int cap = difficultyCap(level);
 		Set<String> skills = Set.copyOf(postingSkills);
