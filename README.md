@@ -27,6 +27,8 @@ docker compose up -d   # PostgreSQL local
 ./mvnw verify          # testes (sobem um PostgreSQL via Testcontainers)
 ```
 
+A cada push no `main` que passa nos testes, a API é publicada no Render; veja [docs/deploy.md](docs/deploy.md).
+
 ## Princípios
 
 - As habilidades da vaga são mapeadas para um vocabulário fechado (ESCO mais uma lista curta própria), não extraídas em texto livre.
