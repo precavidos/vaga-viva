@@ -56,8 +56,8 @@ Os textos padrão (fallback) ficam em `provisioning`, ao lado do `MissionIssueTe
 
 - **Modelo:** `vagaviva.llm.model`, com padrão `claude-haiku-5-5`.
 - **Thinking:** desligado (`ThinkingConfigDisabled`, aceito no Haiku 5.5 com esforço `high` ou menor). O esforço fica explícito em `low`.
-- **Limites:** `max_tokens` de 4.000. Timeout de `vagaviva.llm.timeout` por tentativa, padrão 30 s, com no máximo 1 nova tentativa do SDK (`vagaviva.llm.max-retries`, padrão 1). No pior caso, cerca de 60 s, uma vez por aluno.
-- **Limites dos textos:** `projectIntro` com até 1.500 caracteres e cada `context` com até 800. Texto vazio, mais longo que isso, com bloco de código (```` ``` ````) ou com uma linha começando por `#` é descartado, e entra o padrão daquela parte.
+- **Limites:** `max_tokens` de 4.000. Timeout de `vagaviva.llm.timeout` por tentativa, padrão 30 s, sem nova tentativa do SDK (`vagaviva.llm.max-retries`, padrão 0). No pior caso, cerca de 30 s, uma vez por aluno; uma falha só significa textos padrão.
+- **Limites dos textos:** `projectIntro` com até 1.500 caracteres e cada `context` com até 800. Texto vazio, mais longo que isso, com bloco de código (```` ``` ````) com uma linha começando por `#`, com uma menção `@usuario` ou com uma referência `#<número>` é descartado, e entra o padrão daquela parte.
 - **Saída:** estruturada via `output_config.format`, com JSON Schema:
   `{ "projectIntro": string, "missions": [{ "id": string, "context": string }] }`.
   O plano de implementação confere primeiro se o Haiku 5.5 aceita `output_config.format`. Se não aceitar, o schema vai no prompt e a resposta é validada com Jackson. O contrato do `MissionTextWriter` não muda em nenhum dos casos.
@@ -107,11 +107,11 @@ void updateFile(String token, String repositoryFullName, String path, String com
                 String content, String sha);                                              // PUT contents com sha
 ```
 
-`GitHubFile(String content, String sha)` traz o conteúdo já decodificado de Base64 como UTF-8. `readFile` devolve vazio quando o GitHub responde 404.
+`GitHubFile(String content, String sha)` traz o conteúdo já decodificado de Base64 como UTF-8. `readFile` devolve vazio quando o GitHub responde 404 e rejeita respostas que não são de um arquivo comum (diretório ou arquivo sem conteúdo) com `GitHubApiException` 422.
 
 Uma função pura, `StudentReadme.withProjectSection(String readme, String section)`, decide onde a seção entra:
 
-- antes da primeira linha que começa com `## `, ignorando linhas dentro de blocos de código cercados por ```` ``` ````;
+- antes da primeira linha que começa com `## `, ignorando linhas dentro de blocos de código cercados (``` ou ~~~, com até 3 espaços de recuo, como no CommonMark);
 - no fim do arquivo, se não houver nenhum `## `;
 - se o README não existir, o arquivo é criado (`createFile`) só com o título `# Vaga Viva: <domínio>` e a seção.
 
@@ -128,7 +128,7 @@ A seção:
 ...
 ```
 
-A tabela vem do plano e das issues criadas, nunca do LLM. A leitura e a gravação passam pelo `whenReady`, que já existe para tratar o 404/409 logo depois de criar o repositório a partir do modelo. Mensagem do commit: `Add your project section to the README`.
+A tabela vem do plano e das issues criadas, nunca do LLM. A leitura e a gravação passam pelo `whenReady`, que já existe para tratar o 404/409 logo depois de criar o repositório a partir do modelo. Mensagem do commit: `Add your project section to the README`. Uma falha neste passo é registrada no log (só o status ou o tipo da exceção) e **não** faz o provisionamento falhar, porque as issues já carregam o contexto.
 
 ## Configuração
 
@@ -140,7 +140,7 @@ vagaviva:
     api-key: ${ANTHROPIC_API_KEY:}
     model: claude-haiku-5-5
     timeout: 30s
-    max-retries: 1
+    max-retries: 0
 ```
 
 - `LlmProperties` (`@ConfigurationProperties("vagaviva.llm")`) e uma `@Configuration` que cria o `ClaudeMissionTextWriter` quando a chave não está vazia, e o `DefaultMissionTextWriter` caso contrário.
