@@ -8,8 +8,13 @@ import io.github.precavidos.vagaviva.plan.ProjectPlan;
  * never throw: when they cannot write a text, they leave it out and the default
  * text is used instead.
  */
-public interface MissionTextWriter {
+public interface MissionTextWriter extends AutoCloseable {
 
 	WrittenTexts write(ProjectPlan plan);
+
+	/** Releases any resources the writer holds; most writers hold none. */
+	@Override
+	default void close() {
+	}
 
 }

@@ -24,7 +24,7 @@ final class MissionTextPrompt {
 			- projectIntro: um ou dois parágrafos curtos, sem títulos nem listas, dizendo para que vaga o projeto foi montado (nível e competências) e por que construir este projeto prepara o aluno para ela.
 			- missions: para cada missão recebida, repita exatamente o mesmo id e escreva em context de duas a quatro frases ligando a missão às competências da vaga que ela exercita.
 
-			Nunca explique como resolver a missão, não escreva código, não use títulos Markdown e não invente requisitos, empresas, pessoas ou tecnologias que não estejam na entrada.""";
+			Nunca explique como resolver a missão, não escreva código, não use títulos Markdown e não invente requisitos, empresas, pessoas ou tecnologias que não estejam na entrada. Não use @ para mencionar ninguém nem # seguido de número.""";
 
 	private static final String NONE = "(nenhuma)";
 

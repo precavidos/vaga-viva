@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,6 +41,12 @@ public final class ClaudeMissionTextWriter implements MissionTextWriter {
 
 	private static final int MAX_CONTEXT_LENGTH = 800;
 
+	/** A GitHub mention such as {@code @user}; an e-mail address is not one. */
+	private static final Pattern MENTION = Pattern.compile("(?<![\\w.])@[A-Za-z0-9]");
+
+	/** An issue reference such as {@code #2}; "C#" is not one. */
+	private static final Pattern ISSUE_REFERENCE = Pattern.compile("(?<![\\w&])#\\d");
+
 	private final AnthropicClient client;
 
 	private final String model;
@@ -50,6 +57,11 @@ public final class ClaudeMissionTextWriter implements MissionTextWriter {
 		this.client = client;
 		this.model = model;
 		this.vocabulary = vocabulary;
+	}
+
+	@Override
+	public void close() {
+		client.close();
 	}
 
 	@Override
@@ -133,7 +145,8 @@ public final class ClaudeMissionTextWriter implements MissionTextWriter {
 
 	private static boolean isUsable(String text, int maxLength) {
 		return !text.isEmpty() && text.length() <= maxLength && !text.contains("```")
-				&& text.lines().noneMatch(line -> line.stripLeading().startsWith("#"));
+				&& text.lines().noneMatch(line -> line.stripLeading().startsWith("#"))
+				&& !MENTION.matcher(text).find() && !ISSUE_REFERENCE.matcher(text).find();
 	}
 
 	private record Answer(String projectIntro, List<Item> missions) {

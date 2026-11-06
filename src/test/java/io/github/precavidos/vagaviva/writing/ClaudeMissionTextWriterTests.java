@@ -153,6 +153,32 @@ class ClaudeMissionTextWriterTests {
 	}
 
 	@Test
+	void dropsTextsWithMentionsOrIssueReferences() {
+		ProjectPlan plan = plan();
+		List<PlannedMission> missions = plan.missions();
+		String mention = missions.get(0).mission().id();
+		String reference = missions.get(1).mission().id();
+		String csharp = missions.get(2).mission().id();
+		responseBody = messageWith(rawAnswer("Time @spring-projects e #2.", List.of(
+				item(mention, "Como @spring-projects recomenda."), item(reference, "Veja #2 para mais."),
+				item(csharp, "C# e Java."))));
+
+		WrittenTexts texts = writer.write(plan);
+
+		assertThat(texts.projectIntro()).isEmpty();
+		assertThat(texts.missionContexts()).containsOnly(Map.entry(csharp, "C# e Java."));
+	}
+
+	@Test
+	void closingTheWriterClosesTheClient() {
+		AnthropicClient client = org.mockito.Mockito.mock(AnthropicClient.class);
+
+		new ClaudeMissionTextWriter(client, "claude-haiku-5-5", VOCABULARY).close();
+
+		org.mockito.Mockito.verify(client).close();
+	}
+
+	@Test
 	void givesNothingOnServerError() {
 		status = 500;
 		responseBody = "{\"type\":\"error\",\"error\":{\"type\":\"api_error\",\"message\":\"boom\"}}";
