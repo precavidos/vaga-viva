@@ -17,7 +17,7 @@ public class JobPostingExtractor {
 
 	private final SkillVocabulary vocabulary;
 
-	JobPostingExtractor(SkillVocabulary vocabulary) {
+	public JobPostingExtractor(SkillVocabulary vocabulary) {
 		this.vocabulary = vocabulary;
 	}
 
