@@ -21,7 +21,7 @@ final class MissionIssueText {
 	static String body(Mission mission, String context, SkillVocabulary vocabulary) {
 		String skills = mission.skills()
 			.stream()
-			.map(id -> vocabulary.skill(id).map(s -> s.label()).orElse(id))
+			.map(vocabulary::skillLabel)
 			.collect(Collectors.joining(", "));
 		return """
 				### Por que esta missão importa para a vaga

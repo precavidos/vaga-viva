@@ -5,8 +5,6 @@ import java.util.List;
 
 import io.github.precavidos.vagaviva.plan.PlannedMission;
 import io.github.precavidos.vagaviva.plan.ProjectPlan;
-import io.github.precavidos.vagaviva.vocabulary.NamedTechnology;
-import io.github.precavidos.vagaviva.vocabulary.Skill;
 import io.github.precavidos.vagaviva.vocabulary.SkillVocabulary;
 
 /**
@@ -37,10 +35,10 @@ final class MissionTextPrompt {
 		lines.add("Domínio fictício: " + plan.domain().name() + ". " + plan.domain().description());
 		lines.add("Nível da vaga: " + plan.seniorityLevel().label());
 		lines.add("Competências pedidas na vaga: " + joined(plan.postingSkills().stream()
-			.map(id -> skillLabel(id, vocabulary))
+			.map(id -> vocabulary.skillLabel(id))
 			.toList()));
 		lines.add("Tecnologias citadas na vaga: " + joined(plan.postingTechnologies().stream()
-			.map(id -> technologyName(id, vocabulary))
+			.map(id -> vocabulary.technologyName(id))
 			.toList()));
 		lines.add("");
 		lines.add("Missões, na ordem do plano:");
@@ -55,20 +53,11 @@ final class MissionTextPrompt {
 		var mission = planned.mission();
 		return List.of(order + ". id: " + mission.id(), "   título: " + mission.title(),
 				"   resumo: " + mission.summary(), "   competências da vaga que exercita: "
-						+ joined(planned.matchedSkills().stream().map(id -> skillLabel(id, vocabulary)).toList()));
+						+ joined(planned.matchedSkills().stream().map(id -> vocabulary.skillLabel(id)).toList()));
 	}
 
 	private static String joined(List<String> items) {
 		return items.isEmpty() ? NONE : String.join("; ", items);
-	}
-
-	private static String skillLabel(String id, SkillVocabulary vocabulary) {
-		return vocabulary.skill(id).map(Skill::label).orElse(id);
-	}
-
-	private static String technologyName(String id, SkillVocabulary vocabulary) {
-		return vocabulary.technologies().stream().filter(t -> t.id().equals(id)).findFirst().map(NamedTechnology::name)
-			.orElse(id);
 	}
 
 }

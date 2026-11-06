@@ -4,6 +4,7 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 import org.slf4j.Logger;
@@ -75,8 +76,8 @@ public class StudentRepositoryProvisioner {
 		for (int i = 0; i < missions.size(); i++) {
 			var planned = missions.get(i);
 			var mission = planned.mission();
-			String context = texts.missionContexts()
-				.getOrDefault(mission.id(), DefaultStudentTexts.missionContext(planned, vocabulary));
+			String context = Optional.ofNullable(texts.missionContexts().get(mission.id()))
+				.orElseGet(() -> DefaultStudentTexts.missionContext(planned, vocabulary));
 			GitHubIssue issue = github.createIssue(token, repository.fullName(), MissionIssueText.title(i + 1, mission),
 					MissionIssueText.body(mission, context, vocabulary));
 			issues.add(new MissionIssue(mission.id(), issue.number(), issue.htmlUrl()));

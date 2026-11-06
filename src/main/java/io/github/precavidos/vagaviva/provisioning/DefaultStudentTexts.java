@@ -6,7 +6,6 @@ import java.util.stream.Collectors;
 
 import io.github.precavidos.vagaviva.plan.PlannedMission;
 import io.github.precavidos.vagaviva.plan.ProjectPlan;
-import io.github.precavidos.vagaviva.vocabulary.Skill;
 import io.github.precavidos.vagaviva.vocabulary.SkillVocabulary;
 
 /**
@@ -23,7 +22,7 @@ final class DefaultStudentTexts {
 		String opening = plan.postingSkills().isEmpty()
 				? "Este projeto foi montado para uma vaga de nível " + level + "."
 				: "Este projeto foi montado para uma vaga de nível " + level + " que pede "
-						+ joinPt(plan.postingSkills().stream().map(id -> skillLabel(id, vocabulary)).toList()) + ".";
+						+ joinPt(plan.postingSkills().stream().map(id -> vocabulary.skillLabel(id)).toList()) + ".";
 		String domain = plan.domain().description();
 		return opening + " Ele se passa num domínio fictício, **" + plan.domain().name() + "**: "
 				+ domain.substring(0, 1).toLowerCase(Locale.ROOT) + domain.substring(1)
@@ -35,7 +34,7 @@ final class DefaultStudentTexts {
 			return "Esta missão faz parte da base de todo projeto do Vaga Viva.";
 		}
 		return "Esta missão exercita "
-				+ joinPt(mission.matchedSkills().stream().map(id -> skillLabel(id, vocabulary)).toList())
+				+ joinPt(mission.matchedSkills().stream().map(id -> vocabulary.skillLabel(id)).toList())
 				+ ", pedidas na vaga.";
 	}
 
@@ -46,10 +45,6 @@ final class DefaultStudentTexts {
 		}
 		String head = items.subList(0, items.size() - 1).stream().collect(Collectors.joining(", "));
 		return head + " e " + items.getLast();
-	}
-
-	private static String skillLabel(String id, SkillVocabulary vocabulary) {
-		return vocabulary.skill(id).map(Skill::label).orElse(id);
 	}
 
 }
