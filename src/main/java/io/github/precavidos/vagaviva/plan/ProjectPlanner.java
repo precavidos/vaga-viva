@@ -36,10 +36,16 @@ public class ProjectPlanner {
 
 	public ProjectPlan plan(ExtractedJobPosting posting) {
 		var skills = posting.recognition().skills().stream().map(s -> s.skill().id()).toList();
-		return plan(posting.seniorityLevels(), skills);
+		var technologies = posting.recognition().technologies().stream().map(t -> t.technology().id()).toList();
+		return plan(posting.seniorityLevels(), skills, technologies);
 	}
 
 	public ProjectPlan plan(List<SeniorityLevel> postingLevels, Collection<String> postingSkills) {
+		return plan(postingLevels, postingSkills, List.of());
+	}
+
+	public ProjectPlan plan(List<SeniorityLevel> postingLevels, Collection<String> postingSkills,
+			Collection<String> postingTechnologies) {
 		SeniorityLevel level = postingLevels.stream().min(Comparator.naturalOrder()).orElse(SeniorityLevel.JUNIOR);
 		int cap = difficultyCap(level);
 		Set<String> skills = Set.copyOf(postingSkills);
@@ -72,7 +78,8 @@ public class ProjectPlanner {
 		chosen.sort(Comparator.comparingInt((PlannedMission m) -> m.mission().difficulty())
 			.thenComparing(m -> !m.mission().core())
 			.thenComparing(m -> catalogIndex(m.mission())));
-		return new ProjectPlan(catalog.archetype(), catalog.domain(), level, cap, chosen);
+		return new ProjectPlan(catalog.archetype(), catalog.domain(), level, cap, chosen, List.copyOf(postingSkills),
+				List.copyOf(postingTechnologies));
 	}
 
 	private static int difficultyCap(SeniorityLevel level) {

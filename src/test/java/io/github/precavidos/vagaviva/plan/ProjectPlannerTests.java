@@ -6,11 +6,14 @@ import static io.github.precavidos.vagaviva.jobposting.SeniorityLevel.MID;
 import static io.github.precavidos.vagaviva.jobposting.SeniorityLevel.SENIOR;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 
+import io.github.precavidos.vagaviva.jobposting.ExtractedJobPosting;
+import io.github.precavidos.vagaviva.jobposting.SeniorityLevel;
 import io.github.precavidos.vagaviva.plan.PlannedMission.Reason;
 import io.github.precavidos.vagaviva.vocabulary.SkillVocabulary;
 
@@ -137,6 +140,24 @@ class ProjectPlannerTests {
 
 		assertThat(ids(plan)).containsExactly("patients-api", "persistence", "pagination", "scheduling-rules",
 				"availability-query", "containerization");
+	}
+
+	@Test
+	void keepsThePostingsSkillsAndTechnologiesWithoutItsWords() {
+		var posting = new ExtractedJobPosting("java-spring", List.of(JUNIOR),
+				VOCABULARY.recognize("Dev Java Júnior com Spring Boot, PostgreSQL e Docker"));
+
+		var plan = PLANNER.plan(posting);
+
+		assertThat(plan.postingSkills()).containsExactlyElementsOf(
+				posting.recognition().skills().stream().map(s -> s.skill().id()).toList());
+		assertThat(plan.postingTechnologies()).contains("java", "spring-boot", "postgresql", "docker");
+	}
+
+	@Test
+	void levelsHavePortugueseLabels() {
+		assertThat(Arrays.stream(SeniorityLevel.values()).map(SeniorityLevel::label))
+			.containsExactly("estágio", "júnior", "pleno", "sênior");
 	}
 
 	private static List<String> ids(ProjectPlan plan) {
