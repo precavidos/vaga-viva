@@ -30,15 +30,20 @@ class JobPostingUrlController {
 
 	private final JobPostingExtractor extractor;
 
-	JobPostingUrlController(JobPostingFetcher fetcher, JobPostingPageReader reader, JobPostingExtractor extractor) {
+	private final PageReadLimiter limiter;
+
+	JobPostingUrlController(JobPostingFetcher fetcher, JobPostingPageReader reader, JobPostingExtractor extractor,
+			PageReadLimiter limiter) {
 		this.fetcher = fetcher;
 		this.reader = reader;
 		this.extractor = extractor;
+		this.limiter = limiter;
 	}
 
 	@PostMapping("/extraction/from-url")
 	ExtractionResponse extractFromUrl(@Valid @RequestBody UrlExtractionRequest request) {
-		return ExtractionResponse.from(extractor.extract(reader.read(fetcher.fetch(request.url()))));
+		return ExtractionResponse
+			.from(limiter.call(() -> extractor.extract(reader.read(fetcher.fetch(request.url())))));
 	}
 
 	record UrlExtractionRequest(@NotBlank @Size(max = MAX_URL_LENGTH) String url) {

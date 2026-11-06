@@ -8,6 +8,10 @@ import java.nio.charset.Charset;
 import java.time.Duration;
 import java.util.Locale;
 import java.util.Set;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.config.ConnectionConfig;
@@ -29,7 +33,9 @@ import org.springframework.stereotype.Component;
  * users, so the fetcher guards against SSRF: only {@code http} and
  * {@code https}, only public addresses (checked by {@link PolicyDnsResolver} on
  * the addresses actually connected to), redirects followed by hand and checked
- * again, and limits on time and size. The page lives only in memory, and
+ * again, and limits on size and on total time: {@link #TIMEOUT} covers the
+ * whole download, redirects included, so a server that drips bytes cannot hold
+ * a thread. The page lives only in memory, and
  * nothing here logs the URL or the page (ADR 0003).
  */
 @Component
@@ -45,18 +51,38 @@ class JobPostingFetcher implements AutoCloseable {
 
 	private static final Set<Integer> REDIRECT_STATUSES = Set.of(301, 302, 303, 307, 308);
 
+	/** Ports a public career page may use; any other would let users probe services on third-party hosts. */
+	private static final Set<Integer> DEFAULT_PORTS = Set.of(-1, 80, 443);
+
 	private static final Set<String> HTML_TYPES = Set.of("text/html", "application/xhtml+xml");
 
 	private final CloseableHttpClient client;
 
 	private final int maxBytes;
 
+	private final Duration timeout;
+
+	private final boolean defaultPortsOnly;
+
+	/** Cancels requests that outlive the overall deadline. */
+	private final ScheduledExecutorService deadlines = Executors.newSingleThreadScheduledExecutor(runnable -> {
+		Thread thread = new Thread(runnable, "job-posting-fetch-deadline");
+		thread.setDaemon(true);
+		return thread;
+	});
+
 	JobPostingFetcher() {
-		this(AddressPolicy.PUBLIC_ONLY, TIMEOUT, MAX_BYTES);
+		this(AddressPolicy.PUBLIC_ONLY, true, TIMEOUT, MAX_BYTES);
 	}
 
-	JobPostingFetcher(AddressPolicy policy, Duration timeout, int maxBytes) {
+	/**
+	 * @param defaultPortsOnly whether only ports 80 and 443 are allowed; tests
+	 * turn it off to reach a local server on a random port
+	 */
+	JobPostingFetcher(AddressPolicy policy, boolean defaultPortsOnly, Duration timeout, int maxBytes) {
+		this.defaultPortsOnly = defaultPortsOnly;
 		this.maxBytes = maxBytes;
+		this.timeout = timeout;
 		Timeout limit = Timeout.of(timeout);
 		var connections = PoolingHttpClientConnectionManagerBuilder.create()
 			.setDnsResolver(new PolicyDnsResolver(policy))
@@ -84,9 +110,10 @@ class JobPostingFetcher implements AutoCloseable {
 	 * @throws UnreadablePageException if the response is not HTML
 	 */
 	FetchedPage fetch(String url) {
-		URI current = checked(parse(url));
+		URI current = checked(parse(url.strip()));
+		long deadline = System.nanoTime() + timeout.toNanos();
 		for (int redirects = 0;; redirects++) {
-			Response response = get(current);
+			Response response = get(current, deadline);
 			if (response.page() != null) {
 				return response.page();
 			}
@@ -115,22 +142,48 @@ class JobPostingFetcher implements AutoCloseable {
 		}
 	}
 
-	private static URI checked(URI uri) {
+	private URI checked(URI uri) {
 		String scheme = uri.getScheme() == null ? "" : uri.getScheme().toLowerCase(Locale.ROOT);
 		if (!(scheme.equals("http") || scheme.equals("https")) || uri.getHost() == null || uri.getHost().isEmpty()) {
+			throw new UnsafeUrlException();
+		}
+		if (uri.getPort() != -1 && (uri.getPort() < 1 || uri.getPort() > 65_535)) {
+			throw new UnsafeUrlException();
+		}
+		if (defaultPortsOnly && !DEFAULT_PORTS.contains(uri.getPort())) {
 			throw new UnsafeUrlException();
 		}
 		return uri;
 	}
 
-	private Response get(URI uri) {
-		var request = new HttpGet(uri);
+	private Response get(URI uri, long deadline) {
+		long remaining = deadline - System.nanoTime();
+		if (remaining <= 0) {
+			throw new PageFetchException();
+		}
+		HttpGet request;
+		try {
+			request = new HttpGet(uri);
+		}
+		catch (RuntimeException ex) {
+			throw new PageFetchException();
+		}
 		request.setHeader("Accept", "text/html,application/xhtml+xml;q=0.9,*/*;q=0.1");
+		ScheduledFuture<?> cancellation = deadlines.schedule(request::cancel, remaining, TimeUnit.NANOSECONDS);
+		try {
+			return execute(request);
+		}
+		finally {
+			cancellation.cancel(false);
+		}
+	}
+
+	private Response execute(HttpGet request) {
 		ClassicHttpResponse response;
 		try {
 			response = client.executeOpen(null, request, null);
 		}
-		catch (IOException ex) {
+		catch (IOException | RuntimeException ex) {
 			throw isBlocked(ex) ? new UnsafeUrlException() : new PageFetchException();
 		}
 		try {
@@ -217,6 +270,7 @@ class JobPostingFetcher implements AutoCloseable {
 
 	@Override
 	public void close() {
+		deadlines.shutdownNow();
 		client.close(CloseMode.IMMEDIATE);
 	}
 

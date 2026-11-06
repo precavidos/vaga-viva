@@ -56,7 +56,7 @@ class JobPostingFetcherTests {
 		});
 		server.start();
 		production = new JobPostingFetcher();
-		local = new JobPostingFetcher(LOOPBACK_ALLOWED, Duration.ofMillis(500), 1_000);
+		local = new JobPostingFetcher(LOOPBACK_ALLOWED, false, Duration.ofMillis(500), 1_000);
 	}
 
 	@AfterEach
@@ -197,6 +197,50 @@ class JobPostingFetcherTests {
 		long start = System.nanoTime();
 		assertThatThrownBy(() -> local.fetch(url("/lento"))).isInstanceOf(PageFetchException.class);
 		assertThat(Duration.ofNanos(System.nanoTime() - start)).isLessThan(Duration.ofSeconds(2));
+	}
+
+	@Test
+	void abortsAServerThatDripsBytesPastTheOverallDeadline() {
+		routes.put("/gotejando", exchange -> {
+			exchange.getResponseHeaders().set("Content-Type", "text/html");
+			exchange.sendResponseHeaders(200, 0);
+			try (var out = exchange.getResponseBody()) {
+				for (int i = 0; i < 50; i++) {
+					out.write('a');
+					out.flush();
+					Thread.sleep(100);
+				}
+			}
+			catch (InterruptedException | IOException ex) {
+				// the client hung up, as expected
+			}
+		});
+
+		long start = System.nanoTime();
+		assertThatThrownBy(() -> local.fetch(url("/gotejando"))).isInstanceOf(PageFetchException.class);
+		assertThat(Duration.ofNanos(System.nanoTime() - start)).isLessThan(Duration.ofMillis(1_500));
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = { "http://example.com:8080/vaga", "https://example.com:8443/vaga", "http://example.com:25/",
+			"http://example.com:6379/" })
+	void rejectsNonDefaultPortsInProduction(String url) {
+		assertThatThrownBy(() -> production.fetch(url)).isInstanceOf(UnsafeUrlException.class);
+	}
+
+	@Test
+	void rejectsOutOfRangePorts() {
+		routes.put("/start", redirect("http://127.0.0.1:99999/"));
+
+		assertThatThrownBy(() -> local.fetch("http://127.0.0.1:99999/")).isInstanceOf(UnsafeUrlException.class);
+		assertThatThrownBy(() -> local.fetch(url("/start"))).isInstanceOf(UnsafeUrlException.class);
+	}
+
+	@Test
+	void ignoresWhitespaceAroundTheUrl() {
+		routes.put("/vaga", html("<p>Vaga</p>"));
+
+		assertThat(local.fetch("  " + url("/vaga") + "\n").html()).isEqualTo(bytes("<p>Vaga</p>"));
 	}
 
 	@Test

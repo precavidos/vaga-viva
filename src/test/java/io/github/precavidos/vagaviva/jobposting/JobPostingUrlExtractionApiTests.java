@@ -1,6 +1,7 @@
 package io.github.precavidos.vagaviva.jobposting;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.willReturn;
@@ -25,6 +26,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.json.JsonCompareMode;
 import org.springframework.test.web.servlet.assertj.MockMvcTester;
 import org.springframework.test.web.servlet.assertj.MvcTestResult;
@@ -48,6 +50,10 @@ class JobPostingUrlExtractionApiTests {
 
 	private static final String UNREADABLE_MESSAGE = "Não encontramos o texto da vaga nessa página; ela pode depender de JavaScript. Cole o texto da vaga.";
 
+	private static final String UNEXPECTED_MESSAGE = "Erro inesperado ao ler a página da vaga. Tente de novo ou cole o texto da vaga.";
+
+	private static final String BUSY_MESSAGE = "Muitas páginas sendo lidas agora. Tente de novo em instantes ou cole o texto da vaga.";
+
 	private static final JsonMapper JSON = JsonMapper.builder().build();
 
 	@Autowired
@@ -58,6 +64,9 @@ class JobPostingUrlExtractionApiTests {
 
 	@MockitoBean
 	JobPostingFetcher fetcher;
+
+	@MockitoSpyBean
+	PageReadLimiter limiter;
 
 	@Test
 	void returnsTheSameExtractionAsPastingTheText() throws Exception {
@@ -131,6 +140,27 @@ class JobPostingUrlExtractionApiTests {
 
 		assertThat(response).hasStatus(HttpStatus.UNPROCESSABLE_CONTENT);
 		assertThat(response).bodyJson().extractingPath("$.detail").isEqualTo(UNREADABLE_MESSAGE);
+	}
+
+	@Test
+	void reportsBusyAsServiceUnavailable() {
+		willThrow(new TooManyPageReadsException()).given(limiter).call(any());
+
+		MvcTestResult response = postUrl(URL);
+
+		assertThat(response).hasStatus(HttpStatus.SERVICE_UNAVAILABLE);
+		assertThat(response).bodyJson().extractingPath("$.detail").isEqualTo(BUSY_MESSAGE);
+	}
+
+	@Test
+	void unexpectedErrorsGetAFixedAnswerAndLogNoDetails(CapturedOutput log) {
+		willThrow(new IllegalStateException("detalhe-sigiloso " + URL)).given(fetcher).fetch(URL);
+
+		MvcTestResult response = postUrl(URL);
+
+		assertThat(response).hasStatus(HttpStatus.INTERNAL_SERVER_ERROR);
+		assertThat(response).bodyJson().extractingPath("$.detail").isEqualTo(UNEXPECTED_MESSAGE);
+		assertThat(log.getAll()).doesNotContain("detalhe-sigiloso").doesNotContain("vaga-sigilosa-123");
 	}
 
 	@Test
