@@ -2,6 +2,7 @@ package io.github.precavidos.vagaviva.jobposting;
 
 import org.springframework.stereotype.Service;
 
+import io.github.precavidos.vagaviva.archetype.ArchetypeCatalog;
 import io.github.precavidos.vagaviva.vocabulary.SkillVocabulary;
 
 /**
@@ -17,12 +18,15 @@ public class JobPostingExtractor {
 
 	private final SkillVocabulary vocabulary;
 
-	JobPostingExtractor(SkillVocabulary vocabulary) {
+	private final ArchetypeCatalog archetypes;
+
+	JobPostingExtractor(SkillVocabulary vocabulary, ArchetypeCatalog archetypes) {
 		this.vocabulary = vocabulary;
+		this.archetypes = archetypes;
 	}
 
 	public ExtractedJobPosting extract(String text) {
-		return new ExtractedJobPosting(vocabulary.archetype(), SeniorityDetector.detect(text),
+		return new ExtractedJobPosting(vocabulary.archetype(), archetypes.match(text), SeniorityDetector.detect(text),
 				vocabulary.recognize(text));
 	}
 

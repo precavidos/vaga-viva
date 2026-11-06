@@ -58,6 +58,11 @@ Tipo de projeto com tecnologia fixa (por exemplo, Java + Spring Boot) que define
 _Evitar_: template, trilha, stack
 _No código_: `Archetype`
 
+**Compatibilidade com o arquétipo**:
+O quanto o arquétipo escolhido pratica as linguagens e frameworks que a vaga cita: tudo, em parte, nada ou vaga sem linguagem (ADR 0006).
+_Evitar_: match, aderência
+_No código_: `ArchetypeFit`
+
 **Nível**:
 Senioridade pedida pela vaga (por exemplo, estágio ou júnior), que ajusta a dificuldade do plano.
 _Evitar_: senioridade, grau
