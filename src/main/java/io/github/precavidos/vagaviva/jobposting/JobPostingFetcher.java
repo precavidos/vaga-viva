@@ -8,9 +8,8 @@ import java.nio.charset.Charset;
 import java.time.Duration;
 import java.util.Locale;
 import java.util.Set;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.hc.client5.http.classic.methods.HttpGet;
@@ -65,11 +64,7 @@ class JobPostingFetcher implements AutoCloseable {
 	private final boolean defaultPortsOnly;
 
 	/** Cancels requests that outlive the overall deadline. */
-	private final ScheduledExecutorService deadlines = Executors.newSingleThreadScheduledExecutor(runnable -> {
-		Thread thread = new Thread(runnable, "job-posting-fetch-deadline");
-		thread.setDaemon(true);
-		return thread;
-	});
+	private final ScheduledThreadPoolExecutor deadlines;
 
 	JobPostingFetcher() {
 		this(AddressPolicy.PUBLIC_ONLY, true, TIMEOUT, MAX_BYTES);
@@ -83,6 +78,13 @@ class JobPostingFetcher implements AutoCloseable {
 		this.defaultPortsOnly = defaultPortsOnly;
 		this.maxBytes = maxBytes;
 		this.timeout = timeout;
+		this.deadlines = new ScheduledThreadPoolExecutor(1, runnable -> {
+			Thread thread = new Thread(runnable, "job-posting-fetch-deadline");
+			thread.setDaemon(true);
+			return thread;
+		});
+		// A fetch that ends in time cancels its deadline; drop it now instead of 8 s later.
+		this.deadlines.setRemoveOnCancelPolicy(true);
 		Timeout limit = Timeout.of(timeout);
 		var connections = PoolingHttpClientConnectionManagerBuilder.create()
 			.setDnsResolver(new PolicyDnsResolver(policy))
@@ -93,7 +95,6 @@ class JobPostingFetcher implements AutoCloseable {
 			.setDefaultRequestConfig(RequestConfig.custom()
 				.setConnectionRequestTimeout(limit)
 				.setResponseTimeout(limit)
-				.setRedirectsEnabled(false)
 				.build())
 			.disableRedirectHandling()
 			.disableAutomaticRetries()

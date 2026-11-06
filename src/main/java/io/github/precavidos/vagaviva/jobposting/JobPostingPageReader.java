@@ -26,7 +26,19 @@ class JobPostingPageReader {
 
 	private static final JsonMapper JSON = JsonMapper.builder().build();
 
-	private static final String NOT_CONTENT = "script, style, nav, header, footer, aside, form, noscript, template";
+	/** Never part of a posting. */
+	private static final String NOT_CONTENT = "script, style, noscript, template, nav, aside";
+
+	/** Page chrome when outside the content; inside an article a header holds the posting's title. */
+	private static final String PAGE_CHROME = "header, footer";
+
+	private static final String CONTENT = "main, article";
+
+	/**
+	 * Matches {@code application/ld+json} with or without parameters such as
+	 * {@code ; charset=utf-8}.
+	 */
+	private static final String JSON_LD = "script[type~=(?i)^\\s*application/ld\\+json\\s*(;.*)?$]";
 
 	/**
 	 * The posting's text, at most {@link JobPostingExtractor#MAX_LENGTH} characters.
@@ -34,9 +46,14 @@ class JobPostingPageReader {
 	 */
 	String read(FetchedPage page) {
 		Document document = parse(page);
-		String text = jobPostingFromJsonLd(document);
+		String jsonLd = jobPostingFromJsonLd(document);
+		String text = jsonLd;
 		if (text == null || text.length() < MIN_TEXT_LENGTH) {
 			text = mainText(document);
+			// A posting found in JSON-LD beats a page with no text of its own (a JavaScript shell).
+			if (jsonLd != null && text.length() < MIN_TEXT_LENGTH) {
+				return truncate(jsonLd);
+			}
 		}
 		text = truncate(text);
 		if (text.length() < MIN_TEXT_LENGTH) {
@@ -55,7 +72,7 @@ class JobPostingPageReader {
 	}
 
 	private static String jobPostingFromJsonLd(Document document) {
-		for (Element script : document.select("script[type=application/ld+json]")) {
+		for (Element script : document.select(JSON_LD)) {
 			JsonNode posting;
 			try {
 				posting = findJobPosting(JSON.readTree(script.data()));
@@ -66,6 +83,9 @@ class JobPostingPageReader {
 			if (posting != null) {
 				String title = htmlToText(posting.path("title").asString(""));
 				String description = htmlToText(posting.path("description").asString(""));
+				if (description.isEmpty()) {
+					return null;
+				}
 				return title.isEmpty() ? description : title + "\n\n" + description;
 			}
 		}
@@ -115,6 +135,17 @@ class JobPostingPageReader {
 
 	private static String mainText(Document document) {
 		document.select(NOT_CONTENT).remove();
+		for (Element chrome : document.select(PAGE_CHROME)) {
+			if (chrome.closest(CONTENT) == null) {
+				chrome.remove();
+			}
+		}
+		// Search and newsletter forms are short; some sites (ASP.NET) wrap the whole page in a form.
+		for (Element form : document.select("form")) {
+			if (form.text().length() < MIN_TEXT_LENGTH) {
+				form.remove();
+			}
+		}
 		for (String candidate : new String[] { "main", "article", "body" }) {
 			Element element = document.selectFirst(candidate);
 			if (element != null && !element.text().isBlank()) {

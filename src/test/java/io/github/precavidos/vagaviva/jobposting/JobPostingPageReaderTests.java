@@ -53,6 +53,40 @@ class JobPostingPageReaderTests {
 	}
 
 	@Test
+	void keepsAPageWrappedInAForm() {
+		String text = reader.read(html("<body><form id=\"aspnetForm\"><div>" + REQUIREMENTS + "</div>"
+				+ "</form><form><label>Receba novas vagas</label><input type=\"email\"></form></body>"));
+
+		assertThat(text).isEqualTo(REQUIREMENTS);
+	}
+
+	@Test
+	void keepsTheTitleInAnArticleHeader() {
+		String text = reader.read(html("<body><header>Portal de Carreiras</header><article><header><h1>"
+				+ "Desenvolvedor Java Júnior</h1></header><p>" + REQUIREMENTS + "</p></article></body>"));
+
+		assertThat(text).isEqualTo("Desenvolvedor Java Júnior " + REQUIREMENTS);
+	}
+
+	@Test
+	void usesAShortJsonLdPostingWhenThePageHasNoText() {
+		String text = reader.read(html(jsonLd("""
+				{ "@type": "JobPosting", "title": "Dev Java Júnior", "description": "Spring Boot e PostgreSQL." }""")
+				+ "<body><div id=\"root\"></div></body>"));
+
+		assertThat(text).isEqualTo("Dev Java Júnior\n\nSpring Boot e PostgreSQL.");
+	}
+
+	@Test
+	void readsJsonLdWhoseTypeHasParameters() {
+		String text = reader.read(html("<script type=\"application/ld+json; charset=utf-8\">" + """
+				{ "@type": "JobPosting", "title": "Dev Júnior", "description": "%s" }""".formatted(REQUIREMENTS)
+				+ "</script>"));
+
+		assertThat(text).isEqualTo("Dev Júnior\n\n" + REQUIREMENTS);
+	}
+
+	@Test
 	void spaShellIsUnreadable() {
 		assertThatThrownBy(() -> reader.read(page("spa-shell.html"))).isInstanceOf(UnreadablePageException.class);
 	}
