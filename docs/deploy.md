@@ -6,30 +6,28 @@ Os planos gratuitos bastam até a semana 4. No gratuito do Render a API dorme ap
 
 ## 1. Banco no Neon
 
-1. Crie um projeto em <https://neon.tech> com estas opções:
+O repositório já está ligado ao projeto Neon (`neon.ts` e o arquivo `.neon`, que fica fora do Git), na branch `production`, em `AWS us-east-1`. O Render não tem região no Brasil; crie o serviço em Virginia, a mesma região do banco, para cada consulta não atravessar o continente.
 
-   | Campo | Valor |
-   | --- | --- |
-   | Project name | `vaga-viva` |
-   | Postgres version | `17` (a mesma do `compose.yaml` e dos testes) |
-   | Cloud provider / Region | `AWS` · `US East (N. Virginia)`, a mesma região do Render |
-   | Database name | `vagaviva` |
-   | Neon Auth | desligado |
+Para trazer as variáveis do Neon para a sua máquina (vão para o `.env`):
 
-   O Render não tem região no Brasil; Virginia é a mais próxima entre as que ele oferece, e banco e API na mesma região evitam latência em cada consulta.
-2. Em *Connect*, escolha a branch `production` (ou `main`), o banco `vagaviva` e **desligue *Connection pooling***. A API já tem seu próprio pool (Hikari), e o Flyway não funciona bem atrás do pooler do Neon (o host com `-pooler` no nome). Copie a string de conexão direta. Ela vem assim:
+```bash
+neon env pull
+```
 
-   ```
-   postgresql://USUARIO:SENHA@HOST/BANCO?sslmode=require
-   ```
+Ele grava duas strings de conexão no formato do Neon (`postgresql://usuario:senha@host/banco?...`), e a API aceita as duas como vêm:
 
-3. O Spring espera o formato JDBC, com usuário e senha separados. Monte as três variáveis assim:
+| Variável | Conexão | Quem usa |
+| --- | --- | --- |
+| `DATABASE_URL` | com pooler (host com `-pooler`) | a aplicação |
+| `DATABASE_URL_UNPOOLED` | direta | o Flyway, porque migrações não funcionam bem atrás do pooler |
 
-   | Variável | Valor |
-   | --- | --- |
-   | `DATABASE_URL` | `jdbc:postgresql://HOST/BANCO?sslmode=require` |
-   | `DATABASE_USERNAME` | `USUARIO` |
-   | `DATABASE_PASSWORD` | `SENHA` |
+A conversão para o formato JDBC fica em `PostgresUrlEnvironmentPostProcessor`. Ela descarta a opção `channel_binding` (com ela o driver JDBC tem a conexão recusada pelo Neon); a conexão continua com TLS por causa do `sslmode=require`. O formato JDBC antigo (`jdbc:postgresql://...` com `DATABASE_USERNAME` e `DATABASE_PASSWORD`) continua funcionando, e é o que o banco local do `compose.yaml` usa.
+
+O Spring não lê o `.env` sozinho. Para rodar a API na sua máquina contra o Neon:
+
+```bash
+set -a; . ./.env; set +a; ./mvnw spring-boot:run
+```
 
 As tabelas são criadas pelo Flyway na primeira subida da API.
 
@@ -46,7 +44,7 @@ Em <https://dashboard.render.com>, *New → Web Service*, conecte o repositório
 | Health Check Path | `/actuator/health/readiness` |
 | Auto-Deploy | **Off** (quem dispara o deploy é o CI, depois dos testes) |
 
-Em *Environment*, cadastre as três variáveis do banco (passo 1). O Render define `PORT` sozinho, e a API já lê essa variável.
+Em *Environment*, cadastre `DATABASE_URL` e `DATABASE_URL_UNPOOLED` com os mesmos valores do seu `.env` (passo 1), sem mudar nada. O Render define `PORT` sozinho, e a API já lê essa variável.
 
 ## 3. Ligar o CI ao Render
 
