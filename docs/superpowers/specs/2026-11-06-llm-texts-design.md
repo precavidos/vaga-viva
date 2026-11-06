@@ -56,7 +56,8 @@ Os textos padrão (fallback) ficam em `provisioning`, ao lado do `MissionIssueTe
 
 - **Modelo:** `vagaviva.llm.model`, com padrão `claude-haiku-5-5`.
 - **Thinking:** desligado (`ThinkingConfigDisabled`, aceito no Haiku 5.5 com esforço `high` ou menor). O esforço fica explícito em `low`.
-- **Limites:** `max_tokens` de 4.000. Timeout total de `vagaviva.llm.timeout`, padrão 20 s, com no máximo 1 nova tentativa do SDK.
+- **Limites:** `max_tokens` de 4.000. Timeout de `vagaviva.llm.timeout` por tentativa, padrão 30 s, com no máximo 1 nova tentativa do SDK (`vagaviva.llm.max-retries`, padrão 1). No pior caso, cerca de 60 s, uma vez por aluno.
+- **Limites dos textos:** `projectIntro` com até 1.500 caracteres e cada `context` com até 800. Texto vazio, mais longo que isso, com bloco de código (```` ``` ````) ou com uma linha começando por `#` é descartado, e entra o padrão daquela parte.
 - **Saída:** estruturada via `output_config.format`, com JSON Schema:
   `{ "projectIntro": string, "missions": [{ "id": string, "context": string }] }`.
   O plano de implementação confere primeiro se o Haiku 5.5 aceita `output_config.format`. Se não aceitar, o schema vai no prompt e a resposta é validada com Jackson. O contrato do `MissionTextWriter` não muda em nenhum dos casos.
@@ -83,7 +84,7 @@ Nova ordem:
 
 Textos padrão:
 
-- **Contexto da missão (padrão):** `Esta missão exercita <rótulos das competências da vaga que ela exercita>, pedidas na vaga.` Se `matchedSkills` da missão estiver vazio: `Esta missão faz parte da base de todo projeto <arquétipo>.` Para o arquétipo `java-spring`, o texto mostrado é "Java/Spring".
+- **Contexto da missão (padrão):** `Esta missão exercita <rótulos das competências da vaga que ela exercita>, pedidas na vaga.` Se `matchedSkills` da missão estiver vazio: `Esta missão faz parte da base de todo projeto do Vaga Viva.`
 - **Introdução do projeto (padrão):** um parágrafo montado a partir do nível, do domínio fictício e das competências da vaga, sem LLM.
 
 O corpo da issue fica assim:
@@ -110,7 +111,7 @@ void updateFile(String token, String repositoryFullName, String path, String com
 
 Uma função pura, `StudentReadme.withProjectSection(String readme, String section)`, decide onde a seção entra:
 
-- antes da primeira linha que começa com `## `;
+- antes da primeira linha que começa com `## `, ignorando linhas dentro de blocos de código cercados por ```` ``` ````;
 - no fim do arquivo, se não houver nenhum `## `;
 - se o README não existir, o arquivo é criado (`createFile`) só com o título `# Vaga Viva: <domínio>` e a seção.
 
@@ -123,7 +124,7 @@ A seção:
 
 | Ordem | Missão | Issue |
 | --- | --- | --- |
-| 1 | <título> | #<número> |
+| 1 | <título> | [#<número>](<url da issue>) |
 ...
 ```
 
@@ -138,7 +139,8 @@ vagaviva:
   llm:
     api-key: ${ANTHROPIC_API_KEY:}
     model: claude-haiku-5-5
-    timeout: 20s
+    timeout: 30s
+    max-retries: 1
 ```
 
 - `LlmProperties` (`@ConfigurationProperties("vagaviva.llm")`) e uma `@Configuration` que cria o `ClaudeMissionTextWriter` quando a chave não está vazia, e o `DefaultMissionTextWriter` caso contrário.
