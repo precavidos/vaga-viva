@@ -10,9 +10,11 @@ Em <https://github.com/organizations/precavidos/settings/apps/new> (ou em *Setti
 | --- | --- |
 | GitHub App name | `Vaga Viva` (ou outro nome livre no GitHub) |
 | Homepage URL | `https://github.com/precavidos/vaga-viva` |
-| Callback URL | `http://localhost:8080/login/oauth2/code/github` (acrescente a URL da demo quando houver deploy) |
+| Callback URL | `http://localhost:8080/login/oauth2/code/github` e `https://vaga-viva.onrender.com/login/oauth2/code/github` |
 | Expire user authorization tokens | marcado |
-| Request user authorization (OAuth) during installation | marcado |
+| Request user authorization (OAuth) during installation | **desmarcado** (o login é feito antes, pelo Vaga Viva; com esta opção, o GitHub volta sem o `state` que o login exige) |
+| Setup URL (Post installation) | `https://vaga-viva.onrender.com/?instalado=1` |
+| Redirect on update | marcado |
 | Webhook → Active | desmarcado por enquanto (o revisor de PR, na semana 2, vai usar) |
 | Where can this GitHub App be installed? | **Any account** (os alunos instalam na própria conta) |
 
@@ -55,9 +57,14 @@ O repositório-modelo (por padrão `precavidos/vaga-viva-template-java-spring`, 
 
 ## 5. Como o aluno usa
 
-1. O aluno clica em "Entrar com GitHub" na demo.
-2. O GitHub pede para instalar o app na conta dele (escolher **All repositories**, para o app enxergar o repositório que vai ser criado) e autorizar.
-3. O Vaga Viva cria o repositório na conta do aluno, grava o plano e abre as issues das missões.
+1. Na página do Vaga Viva, o aluno cola a vaga, vê o plano e clica em "Criar meu repositório no GitHub".
+2. Se ainda não entrou, vai para o login do GitHub e volta para a página (`/?entrou=1`).
+3. Se o app ainda não está instalado na conta dele, a página o leva para a instalação (escolher **All repositories**, para o app enxergar o repositório que vai ser criado). A Setup URL o traz de volta (`/?instalado=1`).
+4. O Vaga Viva cria o repositório na conta do aluno, grava o plano e abre as issues das missões.
+
+Enquanto o aluno entra e instala, o texto da vaga fica só no navegador dele (`sessionStorage`) e é apagado quando o repositório é criado. O token do GitHub fica na sessão do servidor, em memória, e não é gravado nem registrado no log (ADR 0003).
+
+As variáveis do Render são `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET` e, se o app não se chamar `vaga-viva` no GitHub, `GITHUB_APP_SLUG`.
 
 ## O que ainda falta confirmar com o app real
 

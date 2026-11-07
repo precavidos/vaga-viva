@@ -13,4 +13,10 @@ public interface GitHubApi {
 
 	GitHubUser currentUser(String token);
 
+	/**
+	 * Whether the Vaga Viva app is installed on {@code login}'s own account, so
+	 * the token can create repositories there.
+	 */
+	boolean isAppInstalledOn(String token, String login);
+
 }

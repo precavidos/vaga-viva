@@ -184,6 +184,11 @@ class StudentRepositoryProvisionerTests {
 			return new GitHubUser("maria");
 		}
 
+		@Override
+		public boolean isAppInstalledOn(String token, String login) {
+			return true;
+		}
+
 		private static void failIfQueued(Deque<Integer> failures) {
 			Integer status = failures.poll();
 			if (status != null) {
