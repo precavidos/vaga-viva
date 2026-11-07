@@ -140,6 +140,17 @@ class StudentRepositoryProvisionerTests {
 	}
 
 	@Test
+	void waitsForTheTemplateCopyBeforeWritingThePlan() {
+		github.emptyRepositoryChecks = 2;
+
+		provisioner.provision("token", "maria", PLAN);
+
+		assertThat(github.calls).startsWith("generate", "latestCommit", "latestCommit", "latestCommit", "createFile");
+		assertThat(pauses).containsExactly(Duration.ofSeconds(1), Duration.ofSeconds(2));
+		assertThat(github.files).hasSize(1);
+	}
+
+	@Test
 	void givesUpWhenTheRepositoryNeverBecomesReady() {
 		for (int i = 0; i < 5; i++) {
 			github.failCreateFile.add(404);
@@ -276,8 +287,14 @@ class StudentRepositoryProvisionerTests {
 		/** The README of the generated repository; {@code null} means the file does not exist. */
 		String readme = TEMPLATE_README;
 
+		final List<String> calls = new ArrayList<>();
+
+		/** How many times the new repository still looks empty, as while GitHub copies the template. */
+		int emptyRepositoryChecks;
+
 		@Override
 		public GitHubRepository generateFromTemplate(String token, String owner, String name, String description) {
+			calls.add("generate");
 			generated.add(owner + "/" + name);
 			failIfQueued(failGenerate);
 			return new GitHubRepository(name, owner + "/" + name, "https://github.com/" + owner + "/" + name,
@@ -287,6 +304,7 @@ class StudentRepositoryProvisionerTests {
 		@Override
 		public void createFile(String token, String repositoryFullName, String path, String commitMessage,
 				String content) {
+			calls.add("createFile");
 			failIfQueued(failCreateFile);
 			files.add(new File(repositoryFullName, path, content));
 		}
@@ -305,6 +323,16 @@ class StudentRepositoryProvisionerTests {
 		}
 
 		@Override
+		public String latestCommitSha(String token, String repositoryFullName) {
+			calls.add("latestCommit");
+			if (emptyRepositoryChecks > 0) {
+				emptyRepositoryChecks--;
+				throw new GitHubApiException(409, "Git Repository is empty.");
+			}
+			return "template-commit";
+		}
+
+		@Override
 		public GitHubIssue createIssue(String token, String repositoryFullName, String title, String body) {
 			issues.add(new Issue(repositoryFullName, title, body));
 			int number = issues.size();
@@ -314,6 +342,11 @@ class StudentRepositoryProvisionerTests {
 		@Override
 		public GitHubUser currentUser(String token) {
 			return new GitHubUser("maria");
+		}
+
+		@Override
+		public boolean isAppInstalledOn(String token, String login) {
+			return true;
 		}
 
 		private static void failIfQueued(Deque<Integer> failures) {

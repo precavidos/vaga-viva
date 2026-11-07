@@ -184,6 +184,49 @@ class GitHubClientTests {
 	}
 
 	@Test
+	void readsTheLatestCommitOfTheDefaultBranch() {
+		github.expect(requestTo(API + "/repos/maria/vaga-viva-clinica/commits?per_page=1"))
+			.andExpect(method(HttpMethod.GET))
+			.andRespond(withSuccess("""
+					[ { "sha": "abc123", "commit": { "message": "Initial commit" } } ]""", MediaType.APPLICATION_JSON));
+
+		assertThat(client.latestCommitSha(TOKEN, "maria/vaga-viva-clinica")).isEqualTo("abc123");
+	}
+
+	@Test
+	void anEmptyRepositoryHasNoLatestCommit() {
+		github.expect(requestTo(API + "/repos/maria/vaga-viva-clinica/commits?per_page=1"))
+			.andRespond(withStatus(HttpStatus.CONFLICT).contentType(MediaType.APPLICATION_JSON).body("""
+					{ "message": "Git Repository is empty." }"""));
+
+		assertThatThrownBy(() -> client.latestCommitSha(TOKEN, "maria/vaga-viva-clinica"))
+			.isInstanceOfSatisfying(GitHubApiException.class, e -> assertThat(e.status()).isEqualTo(409));
+	}
+
+	@Test
+	void findsTheAppInstalledOnTheUsersOwnAccount() {
+		github.expect(requestTo(API + "/user/installations?per_page=100"))
+			.andExpect(method(HttpMethod.GET))
+			.andExpect(header("Authorization", "Bearer " + TOKEN))
+			.andRespond(withSuccess("""
+					{ "total_count": 2, "installations": [
+					  { "id": 1, "account": { "login": "precavidos" } },
+					  { "id": 2, "account": { "login": "Maria" } } ] }""", MediaType.APPLICATION_JSON));
+
+		assertThat(client.isAppInstalledOn(TOKEN, "maria")).isTrue();
+	}
+
+	@Test
+	void appInstalledOnlyOnOtherAccountsDoesNotCount() {
+		github.expect(requestTo(API + "/user/installations?per_page=100"))
+			.andRespond(withSuccess("""
+					{ "total_count": 1, "installations": [ { "id": 1, "account": { "login": "precavidos" } } ] }""",
+					MediaType.APPLICATION_JSON));
+
+		assertThat(client.isAppInstalledOn(TOKEN, "maria")).isFalse();
+	}
+
+	@Test
 	void errorsCarryTheStatusAndGitHubsMessageButNotTheToken() {
 		github.expect(requestTo(API + "/repos/maria/vaga-viva-clinica/issues"))
 			.andRespond(withStatus(HttpStatus.FORBIDDEN).contentType(MediaType.APPLICATION_JSON).body("""
