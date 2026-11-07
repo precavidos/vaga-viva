@@ -3,6 +3,7 @@ package io.github.precavidos.vagaviva.writing;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -20,6 +21,7 @@ import com.anthropic.models.messages.OutputConfig;
 import com.anthropic.models.messages.StopReason;
 import com.anthropic.models.messages.ThinkingConfigDisabled;
 
+import io.github.precavidos.vagaviva.archetype.ArchetypeFit;
 import io.github.precavidos.vagaviva.plan.ProjectPlan;
 import io.github.precavidos.vagaviva.vocabulary.SkillVocabulary;
 import tools.jackson.databind.json.JsonMapper;
@@ -82,7 +84,7 @@ public final class ClaudeMissionTextWriter implements MissionTextWriter {
 				.orElseThrow(() -> new IllegalStateException("no text block"));
 			Answer answer = JSON.readValue(json, Answer.class);
 			var usage = new TokenUsage(message.usage().inputTokens(), message.usage().outputTokens());
-			WrittenTexts texts = new WrittenTexts(intro(answer), contexts(plan, answer), Optional.of(usage));
+			WrittenTexts texts = new WrittenTexts(intro(plan, answer), contexts(plan, answer), Optional.of(usage));
 			LOGGER.info("LLM texts written: model={}, inputTokens={}, outputTokens={}, millis={}", model,
 					usage.inputTokens(), usage.outputTokens(), (System.nanoTime() - start) / 1_000_000);
 			return texts;
@@ -119,8 +121,24 @@ public final class ClaudeMissionTextWriter implements MissionTextWriter {
 		return JsonOutputFormat.Schema.builder().putAllAdditionalProperties(values).build();
 	}
 
-	private static Optional<String> intro(Answer answer) {
-		return Optional.ofNullable(answer.projectIntro()).map(String::strip).filter(t -> isUsable(t, MAX_INTRO_LENGTH));
+	/**
+	 * When the project does not practice part of the posting's stack, the
+	 * intro is usable only if it names every such technology; otherwise the
+	 * default intro, which always carries the warning, is used.
+	 */
+	private static Optional<String> intro(ProjectPlan plan, Answer answer) {
+		return Optional.ofNullable(answer.projectIntro())
+			.map(String::strip)
+			.filter(t -> isUsable(t, MAX_INTRO_LENGTH))
+			.filter(t -> mentionsWhatIsNotPracticed(plan.archetypeFit(), t));
+	}
+
+	private static boolean mentionsWhatIsNotPracticed(ArchetypeFit fit, String intro) {
+		if (fit.status() != ArchetypeFit.Status.PARTIAL && fit.status() != ArchetypeFit.Status.NOT_COVERED) {
+			return true;
+		}
+		String lower = intro.toLowerCase(Locale.ROOT);
+		return fit.uncovered().stream().allMatch(name -> lower.contains(name.toLowerCase(Locale.ROOT)));
 	}
 
 	private static Map<String, String> contexts(ProjectPlan plan, Answer answer) {

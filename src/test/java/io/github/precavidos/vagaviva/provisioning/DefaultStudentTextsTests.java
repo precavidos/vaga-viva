@@ -8,6 +8,7 @@ import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 
+import io.github.precavidos.vagaviva.archetype.ArchetypeFit;
 import io.github.precavidos.vagaviva.plan.MissionCatalog;
 import io.github.precavidos.vagaviva.plan.PlannedMission;
 import io.github.precavidos.vagaviva.plan.ProjectPlan;
@@ -64,6 +65,23 @@ class DefaultStudentTextsTests {
 
 		assertThat(DefaultStudentTexts.projectIntro(plan, VOCABULARY)).startsWith("Este projeto foi montado para uma vaga de nível júnior. Ele se passa num domínio fictício, **Agendamento de clínica**: sistema de uma clínica")
 			.endsWith("Cada missão abaixo tem uma issue com o que fazer e testes que só passam quando ela estiver pronta.");
+	}
+
+	@Test
+	void projectIntroWarnsWhenTheStackIsPartlyCovered() {
+		var fit = new ArchetypeFit("java-spring", ArchetypeFit.Status.PARTIAL, List.of("Java"), List.of("Quarkus"));
+		ProjectPlan plan = PLANNER.plan(List.of(JUNIOR), List.of("java"), List.of("java"), fit);
+
+		assertThat(DefaultStudentTexts.projectIntro(plan, VOCABULARY)).isEqualTo("Este projeto foi montado para uma vaga de nível júnior que pede Programação em Java. A vaga também pede Quarkus, que este projeto não pratica; o que ele treina em Java continua valendo para ela. Ele se passa num domínio fictício, **Agendamento de clínica**: sistema de uma clínica para cadastrar pacientes e agendar consultas com profissionais de saúde. Cada missão abaixo tem uma issue com o que fazer e testes que só passam quando ela estiver pronta.");
+	}
+
+	@Test
+	void projectIntroWarnsWhenTheStackIsNotCovered() {
+		var fit = new ArchetypeFit("java-spring", ArchetypeFit.Status.NOT_COVERED, List.of(),
+				List.of("Python", "Django"));
+		ProjectPlan plan = PLANNER.plan(List.of(JUNIOR), List.of(), List.of(), fit);
+
+		assertThat(DefaultStudentTexts.projectIntro(plan, VOCABULARY)).isEqualTo("Este projeto foi montado para uma vaga de nível júnior. A vaga pede Python e Django, que este projeto não pratica; as competências que ele treina continuam valendo para a vaga, mas em outra stack. Ele se passa num domínio fictício, **Agendamento de clínica**: sistema de uma clínica para cadastrar pacientes e agendar consultas com profissionais de saúde. Cada missão abaixo tem uma issue com o que fazer e testes que só passam quando ela estiver pronta.");
 	}
 
 }

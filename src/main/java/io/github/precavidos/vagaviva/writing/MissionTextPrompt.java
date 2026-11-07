@@ -22,6 +22,8 @@ final class MissionTextPrompt {
 			- projectIntro: um ou dois parágrafos curtos, sem títulos nem listas, dizendo para que vaga o projeto foi montado (nível e competências) e por que construir este projeto prepara o aluno para ela.
 			- missions: para cada missão recebida, repita exatamente o mesmo id e escreva em context de duas a quatro frases ligando a missão às competências da vaga que ela exercita.
 
+			Se a compatibilidade com a vaga for PARTIAL ou NOT_COVERED, o projectIntro diz numa frase quais tecnologias da vaga este projeto não pratica (as de "Não pratica") e que o que ele treina continua valendo para a vaga, sem prometer a stack que fica de fora. Se for COVERED ou NOT_STATED, não fale de compatibilidade.
+
 			Nunca explique como resolver a missão, não escreva código, não use títulos Markdown e não invente requisitos, empresas, pessoas ou tecnologias que não estejam na entrada. Não use @ para mencionar ninguém nem # seguido de número.""";
 
 	private static final String NONE = "(nenhuma)";
@@ -40,6 +42,9 @@ final class MissionTextPrompt {
 		lines.add("Tecnologias citadas na vaga: " + joined(plan.postingTechnologies().stream()
 			.map(id -> vocabulary.technologyName(id))
 			.toList()));
+		var fit = plan.archetypeFit();
+		lines.add("Compatibilidade com a vaga: " + fit.status() + ". O projeto pratica: " + joined(fit.covered())
+				+ ". Não pratica: " + joined(fit.uncovered()) + ".");
 		lines.add("");
 		lines.add("Missões, na ordem do plano:");
 		var missions = plan.missions();

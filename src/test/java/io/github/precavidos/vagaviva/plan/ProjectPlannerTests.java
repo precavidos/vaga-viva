@@ -13,6 +13,7 @@ import java.util.Set;
 import org.junit.jupiter.api.Test;
 
 import io.github.precavidos.vagaviva.archetype.ArchetypeCatalog;
+import io.github.precavidos.vagaviva.archetype.ArchetypeFit;
 import io.github.precavidos.vagaviva.jobposting.ExtractedJobPosting;
 import io.github.precavidos.vagaviva.jobposting.SeniorityLevel;
 import io.github.precavidos.vagaviva.plan.PlannedMission.Reason;
@@ -156,6 +157,17 @@ class ProjectPlannerTests {
 		assertThat(plan.postingSkills()).containsExactlyElementsOf(
 				posting.recognition().skills().stream().map(s -> s.skill().id()).toList());
 		assertThat(plan.postingTechnologies()).contains("java", "spring-boot", "postgresql", "docker");
+	}
+
+	@Test
+	void keepsThePostingsArchetypeFit() {
+		var text = "Dev Python Júnior com Django";
+		var posting = new ExtractedJobPosting("java-spring", ARCHETYPES.match(text), List.of(JUNIOR),
+				VOCABULARY.recognize(text));
+
+		assertThat(PLANNER.plan(posting).archetypeFit()).isEqualTo(posting.archetypeFit());
+		assertThat(PLANNER.plan(List.of(JUNIOR), Set.of("sql")).archetypeFit())
+			.isEqualTo(new ArchetypeFit("java-spring", ArchetypeFit.Status.NOT_STATED, List.of(), List.of()));
 	}
 
 	@Test

@@ -22,6 +22,7 @@ import com.anthropic.client.okhttp.AnthropicOkHttpClient;
 import com.sun.net.httpserver.HttpServer;
 
 import io.github.precavidos.vagaviva.archetype.ArchetypeCatalog;
+import io.github.precavidos.vagaviva.archetype.ArchetypeFit;
 import io.github.precavidos.vagaviva.jobposting.ExtractedJobPosting;
 import io.github.precavidos.vagaviva.plan.MissionCatalog;
 import io.github.precavidos.vagaviva.plan.PlannedMission;
@@ -217,6 +218,33 @@ class ClaudeMissionTextWriterTests {
 		responseBody = messageWith(answer("Intro.", Map.of()));
 
 		assertThat(writer.write(plan())).isEqualTo(WrittenTexts.none());
+	}
+
+	@Test
+	void dropsAnIntroThatDoesNotMentionWhatIsNotPracticed() {
+		ProjectPlan plan = partialPlan();
+		var contexts = new LinkedHashMap<String, String>();
+		plan.missions().forEach(m -> contexts.put(m.mission().id(), "Contexto de " + m.mission().id()));
+		responseBody = messageWith(answer("Este projeto prepara você para a vaga.", contexts));
+
+		WrittenTexts texts = writer.write(plan);
+
+		assertThat(texts.projectIntro()).isEmpty();
+		assertThat(texts.missionContexts()).isEqualTo(Map.copyOf(contexts));
+	}
+
+	@Test
+	void keepsAnIntroThatMentionsWhatIsNotPracticed() {
+		responseBody = messageWith(answer("A vaga pede QUARKUS, que o projeto não pratica.", Map.of()));
+
+		WrittenTexts texts = writer.write(partialPlan());
+
+		assertThat(texts.projectIntro()).contains("A vaga pede QUARKUS, que o projeto não pratica.");
+	}
+
+	private static ProjectPlan partialPlan() {
+		var fit = new ArchetypeFit("java-spring", ArchetypeFit.Status.PARTIAL, List.of("Java"), List.of("Quarkus"));
+		return PLANNER.plan(List.of(JUNIOR), List.of("java"), List.of("java"), fit);
 	}
 
 	private static ProjectPlan plan() {

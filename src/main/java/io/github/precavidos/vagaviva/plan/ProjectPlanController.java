@@ -35,7 +35,7 @@ class ProjectPlanController {
 	@PostMapping
 	PlanResponse plan(@Valid @RequestBody PlanRequest request) {
 		ExtractedJobPosting posting = extractor.extract(request.text());
-		return PlanResponse.from(planner.plan(posting), posting.archetypeFit());
+		return PlanResponse.from(planner.plan(posting));
 	}
 
 	record PlanRequest(@NotBlank @Size(max = JobPostingExtractor.MAX_LENGTH) String text) {
@@ -44,9 +44,9 @@ class ProjectPlanController {
 	record PlanResponse(String archetype, ArchetypeFit archetypeFit, FictionalDomain domain, SeniorityLevel seniorityLevel, int difficultyCap,
 			List<MissionDto> missions) {
 
-		static PlanResponse from(ProjectPlan plan, ArchetypeFit archetypeFit) {
+		static PlanResponse from(ProjectPlan plan) {
 			var missions = plan.missions();
-			return new PlanResponse(plan.archetype(), archetypeFit, plan.domain(), plan.seniorityLevel(), plan.difficultyCap(),
+			return new PlanResponse(plan.archetype(), plan.archetypeFit(), plan.domain(), plan.seniorityLevel(), plan.difficultyCap(),
 					IntStream.range(0, missions.size()).mapToObj(i -> MissionDto.from(i + 1, missions.get(i))).toList());
 		}
 

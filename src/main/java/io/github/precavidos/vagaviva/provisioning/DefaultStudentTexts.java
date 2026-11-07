@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
 
+import io.github.precavidos.vagaviva.archetype.ArchetypeFit;
 import io.github.precavidos.vagaviva.plan.PlannedMission;
 import io.github.precavidos.vagaviva.plan.ProjectPlan;
 import io.github.precavidos.vagaviva.vocabulary.SkillVocabulary;
@@ -24,9 +25,19 @@ final class DefaultStudentTexts {
 				: "Este projeto foi montado para uma vaga de nível " + level + " que pede "
 						+ joinPt(plan.postingSkills().stream().map(id -> vocabulary.skillLabel(id)).toList()) + ".";
 		String domain = plan.domain().description();
-		return opening + " Ele se passa num domínio fictício, **" + plan.domain().name() + "**: "
+		return opening + fitWarning(plan.archetypeFit()) + " Ele se passa num domínio fictício, **" + plan.domain().name() + "**: "
 				+ domain.substring(0, 1).toLowerCase(Locale.ROOT) + domain.substring(1)
 				+ " Cada missão abaixo tem uma issue com o que fazer e testes que só passam quando ela estiver pronta.";
+	}
+
+	private static String fitWarning(ArchetypeFit fit) {
+		return switch (fit.status()) {
+			case PARTIAL -> " A vaga também pede " + joinPt(fit.uncovered()) + ", que este projeto não pratica; o que ele treina em "
+					+ joinPt(fit.covered()) + " continua valendo para ela.";
+			case NOT_COVERED -> " A vaga pede " + joinPt(fit.uncovered())
+					+ ", que este projeto não pratica; as competências que ele treina continuam valendo para a vaga, mas em outra stack.";
+			case COVERED, NOT_STATED -> "";
+		};
 	}
 
 	static String missionContext(PlannedMission mission, SkillVocabulary vocabulary) {

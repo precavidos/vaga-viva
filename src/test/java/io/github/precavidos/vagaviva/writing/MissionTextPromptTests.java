@@ -8,6 +8,7 @@ import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 
+import io.github.precavidos.vagaviva.archetype.ArchetypeFit;
 import io.github.precavidos.vagaviva.plan.MissionCatalog;
 import io.github.precavidos.vagaviva.plan.ProjectPlan;
 import io.github.precavidos.vagaviva.plan.ProjectPlanner;
@@ -20,9 +21,13 @@ class MissionTextPromptTests {
 	private static final ProjectPlanner PLANNER = new ProjectPlanner(
 			MissionCatalog.fromClasspath("missions/java-spring.json", VOCABULARY));
 
+	private static final ArchetypeFit NOT_STATED = new ArchetypeFit("java-spring", ArchetypeFit.Status.NOT_STATED,
+			List.of(), List.of());
+
 	@Test
 	void listsThePlanInOrderWithLabels() {
-		ProjectPlan plan = PLANNER.plan(List.of(JUNIOR), List.of("spring", "sql"), List.of("spring-boot", "postgresql"));
+		ProjectPlan plan = PLANNER.plan(List.of(JUNIOR), List.of("spring", "sql"), List.of("spring-boot", "postgresql"),
+				NOT_STATED);
 
 		String user = MissionTextPrompt.user(plan, VOCABULARY);
 
@@ -35,7 +40,8 @@ class MissionTextPromptTests {
 
 	@Test
 	void formatsTheWholeUserMessage() {
-		ProjectPlan plan = PLANNER.plan(List.of(JUNIOR), List.of("spring", "sql"), List.of("spring-boot", "postgresql"));
+		ProjectPlan plan = PLANNER.plan(List.of(JUNIOR), List.of("spring", "sql"), List.of("spring-boot", "postgresql"),
+				NOT_STATED);
 
 		assertThat(MissionTextPrompt.user(plan, VOCABULARY)).startsWith("""
 				Arquétipo: java-spring
@@ -43,6 +49,7 @@ class MissionTextPromptTests {
 				Nível da vaga: júnior
 				Competências pedidas na vaga: Spring Framework; SQL
 				Tecnologias citadas na vaga: Spring Boot; PostgreSQL
+				Compatibilidade com a vaga: NOT_STATED. O projeto pratica: (nenhuma). Não pratica: (nenhuma).
 
 				Missões, na ordem do plano:
 				1. id: patients-api
@@ -51,6 +58,16 @@ class MissionTextPromptTests {
 				   competências da vaga que exercita: Spring Framework
 				2. id: persistence
 				""");
+	}
+
+	@Test
+	void includesTheArchetypeFit() {
+		var fit = new ArchetypeFit("java-spring", ArchetypeFit.Status.NOT_COVERED, List.of(),
+				List.of("Python", "Django"));
+		ProjectPlan plan = PLANNER.plan(List.of(JUNIOR), List.of(), List.of(), fit);
+
+		assertThat(MissionTextPrompt.user(plan, VOCABULARY)).contains(
+				"Compatibilidade com a vaga: NOT_COVERED. O projeto pratica: (nenhuma). Não pratica: Python; Django.");
 	}
 
 	@Test
@@ -70,7 +87,8 @@ class MissionTextPromptTests {
 	@Test
 	void systemPromptForbidsChangingThePlan() {
 		assertThat(MissionTextPrompt.SYSTEM).contains("você não muda, não reordena e não sugere missões")
-			.contains("repita exatamente o mesmo id");
+			.contains("repita exatamente o mesmo id")
+			.contains("Se a compatibilidade com a vaga for PARTIAL ou NOT_COVERED, o projectIntro diz numa frase quais tecnologias da vaga este projeto não pratica (as de \"Não pratica\") e que o que ele treina continua valendo para a vaga, sem prometer a stack que fica de fora. Se for COVERED ou NOT_STATED, não fale de compatibilidade.");
 	}
 
 }
