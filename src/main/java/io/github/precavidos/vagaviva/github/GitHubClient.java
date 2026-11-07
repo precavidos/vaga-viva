@@ -53,6 +53,19 @@ public class GitHubClient implements GitHubApi {
 			.body(GitHubRepository.class);
 	}
 
+	@Override
+	public String latestCommitSha(String token, String repositoryFullName) {
+		JsonNode commits = http.get()
+			.uri("/repos/" + repositoryFullName + "/commits?per_page=1")
+			.headers(h -> h.setBearerAuth(token))
+			.retrieve()
+			.body(JsonNode.class);
+		if (commits == null || !commits.isArray() || commits.isEmpty()) {
+			throw new GitHubApiException(409, "Git Repository is empty.");
+		}
+		return commits.get(0).path("sha").asString();
+	}
+
 	/** Creates a file on the repository's default branch. */
 	@Override
 	public void createFile(String token, String repositoryFullName, String path, String commitMessage, String content) {

@@ -53,6 +53,10 @@ public class StudentRepositoryProvisioner {
 
 	public ProvisionedRepository provision(String token, String studentLogin, ProjectPlan plan) {
 		GitHubRepository repository = generate(token, studentLogin, plan);
+		// GitHub copies the template asynchronously and puts its commit on top of
+		// whatever the branch holds, with the template's files only: a plan written
+		// before the copy lands would be wiped out. So wait for the copy first.
+		whenReady(() -> github.latestCommitSha(token, repository.fullName()));
 		whenReady(() -> {
 			github.createFile(token, repository.fullName(), PLAN_FILE, "Add Vaga Viva project plan", planFile(plan));
 			return null;
