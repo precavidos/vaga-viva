@@ -18,12 +18,16 @@ final class MissionIssueText {
 		return "Missão " + order + ": " + mission.title();
 	}
 
-	static String body(Mission mission, SkillVocabulary vocabulary) {
+	static String body(Mission mission, String context, SkillVocabulary vocabulary) {
 		String skills = mission.skills()
 			.stream()
-			.map(id -> vocabulary.skill(id).map(s -> s.label()).orElse(id))
+			.map(vocabulary::skillLabel)
 			.collect(Collectors.joining(", "));
 		return """
+				### Por que esta missão importa para a vaga
+
+				%s
+
 				%s
 
 				**Competências exercitadas:** %s
@@ -37,7 +41,7 @@ final class MissionIssueText {
 				```
 
 				Quando terminar, abra um pull request com a sua solução.
-				""".formatted(mission.summary(), skills, mission.id());
+				""".formatted(context, mission.summary(), skills, mission.id());
 	}
 
 }

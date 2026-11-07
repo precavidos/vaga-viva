@@ -28,6 +28,8 @@ public final class SkillVocabulary {
 
 	private final List<NamedTechnology> technologies;
 
+	private final Map<String, NamedTechnology> technologyById;
+
 	private final List<RejectedTerm> rejectedTerms;
 
 	private final TermMatcher matcher = new TermMatcher();
@@ -35,6 +37,9 @@ public final class SkillVocabulary {
 	private SkillVocabulary(VocabularyFile file) {
 		this.archetype = file.archetype();
 		this.technologies = file.technologies() == null ? List.of() : List.copyOf(file.technologies());
+		var byId = new HashMap<String, NamedTechnology>();
+		this.technologies.forEach(t -> byId.putIfAbsent(t.id(), t));
+		this.technologyById = byId;
 		this.rejectedTerms = file.rejectedTerms() == null ? List.of() : List.copyOf(file.rejectedTerms());
 		var problems = new ArrayList<String>();
 		this.skills = index(file.skills(), problems);
@@ -71,6 +76,18 @@ public final class SkillVocabulary {
 
 	public Optional<Skill> skill(String id) {
 		return Optional.ofNullable(skills.get(id));
+	}
+
+	/** The skill's label, or the id itself when the vocabulary does not know it. */
+	public String skillLabel(String id) {
+		Skill skill = skills.get(id);
+		return skill == null ? id : skill.label();
+	}
+
+	/** The technology's name, or the id itself when the vocabulary does not know it. */
+	public String technologyName(String id) {
+		NamedTechnology technology = technologyById.get(id);
+		return technology == null ? id : technology.name();
 	}
 
 	public List<NamedTechnology> technologies() {

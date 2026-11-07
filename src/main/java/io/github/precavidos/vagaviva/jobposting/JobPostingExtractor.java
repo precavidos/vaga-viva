@@ -20,7 +20,7 @@ public class JobPostingExtractor {
 
 	private final ArchetypeCatalog archetypes;
 
-	JobPostingExtractor(SkillVocabulary vocabulary, ArchetypeCatalog archetypes) {
+	public JobPostingExtractor(SkillVocabulary vocabulary, ArchetypeCatalog archetypes) {
 		this.vocabulary = vocabulary;
 		this.archetypes = archetypes;
 	}

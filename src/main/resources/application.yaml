@@ -24,3 +24,10 @@ management:
     health:
       probes:
         enabled: true
+
+vagaviva:
+  llm:
+    api-key: ${ANTHROPIC_API_KEY:}
+    model: claude-haiku-5-5
+    timeout: 30s
+    max-retries: 0

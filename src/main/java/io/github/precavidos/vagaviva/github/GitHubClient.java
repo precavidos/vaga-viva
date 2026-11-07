@@ -3,6 +3,7 @@ package io.github.precavidos.vagaviva.github;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Map;
+import java.util.Optional;
 
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
@@ -62,6 +63,48 @@ public class GitHubClient implements GitHubApi {
 			.headers(h -> h.setBearerAuth(token))
 			.contentType(MediaType.APPLICATION_JSON)
 			.body(Map.of("message", commitMessage, "content", encoded))
+			.retrieve()
+			.toBodilessEntity();
+	}
+
+	/** Reads a file from the repository's default branch, or nothing if it does not exist. Fails with 422 if the path is not a regular file. */
+	@Override
+	public Optional<GitHubFile> readFile(String token, String repositoryFullName, String path) {
+		JsonNode response;
+		try {
+			response = http.get()
+				.uri("/repos/" + repositoryFullName + "/contents/" + path)
+				.headers(h -> h.setBearerAuth(token))
+				.retrieve()
+				.body(JsonNode.class);
+		}
+		catch (GitHubApiException e) {
+			if (e.status() == 404) {
+				return Optional.empty();
+			}
+			throw e;
+		}
+		// Files over 1 MB come back with "content":"" and "encoding":"none"; treating them as empty would overwrite the README.
+		if (response == null || !"file".equals(response.path("type").asString(null))
+				|| !response.hasNonNull("content") || !"base64".equals(response.path("encoding").asString(null))) {
+			throw new GitHubApiException(422, "Not a regular file");
+		}
+		// GitHub wraps the Base64 content at 60 columns, so the MIME decoder skips the line breaks.
+		String content = new String(Base64.getMimeDecoder().decode(response.get("content").asString()),
+				StandardCharsets.UTF_8);
+		return Optional.of(new GitHubFile(content, response.path("sha").asString(null)));
+	}
+
+	/** Replaces a file on the default branch; {@code sha} is the blob sha from {@link #readFile}. */
+	@Override
+	public void updateFile(String token, String repositoryFullName, String path, String commitMessage, String content,
+			String sha) {
+		String encoded = Base64.getEncoder().encodeToString(content.getBytes(StandardCharsets.UTF_8));
+		http.put()
+			.uri("/repos/" + repositoryFullName + "/contents/" + path)
+			.headers(h -> h.setBearerAuth(token))
+			.contentType(MediaType.APPLICATION_JSON)
+			.body(Map.of("message", commitMessage, "content", encoded, "sha", sha))
 			.retrieve()
 			.toBodilessEntity();
 	}

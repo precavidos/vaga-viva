@@ -30,6 +30,16 @@ class SkillVocabularyTests {
 	}
 
 	@Test
+	void labelsAndNamesFallBackToTheId() {
+		var vocabulary = SkillVocabulary.fromClasspath("vocabulary/java-spring.json");
+
+		assertThat(vocabulary.skillLabel("java")).isEqualTo(vocabulary.skill("java").orElseThrow().label());
+		assertThat(vocabulary.skillLabel("nao-existe")).isEqualTo("nao-existe");
+		assertThat(vocabulary.technologyName("spring-boot")).isNotEqualTo("spring-boot").isNotBlank();
+		assertThat(vocabulary.technologyName("nao-existe")).isEqualTo("nao-existe");
+	}
+
+	@Test
 	void minimalValidVocabulary() {
 		var vocabulary = read("""
 				{ "archetype": "test",
