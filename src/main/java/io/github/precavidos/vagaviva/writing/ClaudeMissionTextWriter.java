@@ -3,7 +3,6 @@ package io.github.precavidos.vagaviva.writing;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -137,8 +136,15 @@ public final class ClaudeMissionTextWriter implements MissionTextWriter {
 		if (fit.status() != ArchetypeFit.Status.PARTIAL && fit.status() != ArchetypeFit.Status.NOT_COVERED) {
 			return true;
 		}
-		String lower = intro.toLowerCase(Locale.ROOT);
-		return fit.uncovered().stream().allMatch(name -> lower.contains(name.toLowerCase(Locale.ROOT)));
+		return fit.uncovered().stream().allMatch(name -> namedIn(name, intro));
+	}
+
+	/** Whether the name appears as a whole word: not glued to a letter or digit on either side. */
+	private static boolean namedIn(String name, String intro) {
+		return Pattern.compile("(?<![\\p{L}\\p{N}])" + Pattern.quote(name) + "(?![\\p{L}\\p{N}])",
+				Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE)
+			.matcher(intro)
+			.find();
 	}
 
 	private static Map<String, String> contexts(ProjectPlan plan, Answer answer) {

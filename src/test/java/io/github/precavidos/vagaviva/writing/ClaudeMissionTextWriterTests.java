@@ -242,9 +242,43 @@ class ClaudeMissionTextWriterTests {
 		assertThat(texts.projectIntro()).contains("A vaga pede QUARKUS, que o projeto não pratica.");
 	}
 
-	private static ProjectPlan partialPlan() {
-		var fit = new ArchetypeFit("java-spring", ArchetypeFit.Status.PARTIAL, List.of("Java"), List.of("Quarkus"));
+	@Test
+	void aNameInsideAnotherWordDoesNotCount() {
+		var fit = new ArchetypeFit("java-spring", ArchetypeFit.Status.PARTIAL, List.of("Java"), List.of("Go"));
+		responseBody = messageWith(answer("Você vai praticar algo novo com Django.", Map.of()));
+
+		WrittenTexts texts = writer.write(planWith(fit));
+
+		assertThat(texts.projectIntro()).isEmpty();
+	}
+
+	@Test
+	void aPrefixOfALongerNameDoesNotCount() {
+		var fit = new ArchetypeFit("java-spring", ArchetypeFit.Status.NOT_COVERED, List.of(), List.of("Java"));
+		responseBody = messageWith(answer("Você vai praticar JavaScript no projeto.", Map.of()));
+
+		WrittenTexts texts = writer.write(planWith(fit));
+
+		assertThat(texts.projectIntro()).isEmpty();
+	}
+
+	@Test
+	void namesWithPunctuationStillMatch() {
+		var fit = new ArchetypeFit("java-spring", ArchetypeFit.Status.PARTIAL, List.of("Java"),
+				List.of("Node.js", "C#"));
+		responseBody = messageWith(answer("Este projeto não pratica Node.js nem C#, mas ensina o básico.", Map.of()));
+
+		WrittenTexts texts = writer.write(planWith(fit));
+
+		assertThat(texts.projectIntro()).contains("Este projeto não pratica Node.js nem C#, mas ensina o básico.");
+	}
+
+	private static ProjectPlan planWith(ArchetypeFit fit) {
 		return PLANNER.plan(List.of(JUNIOR), List.of("java"), List.of("java"), fit);
+	}
+
+	private static ProjectPlan partialPlan() {
+		return planWith(new ArchetypeFit("java-spring", ArchetypeFit.Status.PARTIAL, List.of("Java"), List.of("Quarkus")));
 	}
 
 	private static ProjectPlan plan() {
