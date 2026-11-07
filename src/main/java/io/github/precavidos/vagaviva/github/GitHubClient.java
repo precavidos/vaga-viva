@@ -82,6 +82,29 @@ public class GitHubClient implements GitHubApi {
 		return http.get().uri("/user").headers(h -> h.setBearerAuth(token)).retrieve().body(GitHubUser.class);
 	}
 
+	/**
+	 * Looks through the installations the user's token can see. With a user
+	 * token, GitHub lists only installations of this app, so it is enough to
+	 * find one on the user's own account.
+	 */
+	@Override
+	public boolean isAppInstalledOn(String token, String login) {
+		JsonNode response = http.get()
+			.uri("/user/installations?per_page=100")
+			.headers(h -> h.setBearerAuth(token))
+			.retrieve()
+			.body(JsonNode.class);
+		if (response == null) {
+			return false;
+		}
+		for (JsonNode installation : response.path("installations")) {
+			if (login.equalsIgnoreCase(installation.path("account").path("login").asString(""))) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	private static GitHubApiException toException(ClientHttpResponse response) throws java.io.IOException {
 		int status = response.getStatusCode().value();
 		String message = null;

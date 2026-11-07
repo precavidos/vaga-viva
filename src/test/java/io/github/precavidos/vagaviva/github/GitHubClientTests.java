@@ -102,6 +102,29 @@ class GitHubClientTests {
 	}
 
 	@Test
+	void findsTheAppInstalledOnTheUsersOwnAccount() {
+		github.expect(requestTo(API + "/user/installations?per_page=100"))
+			.andExpect(method(HttpMethod.GET))
+			.andExpect(header("Authorization", "Bearer " + TOKEN))
+			.andRespond(withSuccess("""
+					{ "total_count": 2, "installations": [
+					  { "id": 1, "account": { "login": "precavidos" } },
+					  { "id": 2, "account": { "login": "Maria" } } ] }""", MediaType.APPLICATION_JSON));
+
+		assertThat(client.isAppInstalledOn(TOKEN, "maria")).isTrue();
+	}
+
+	@Test
+	void appInstalledOnlyOnOtherAccountsDoesNotCount() {
+		github.expect(requestTo(API + "/user/installations?per_page=100"))
+			.andRespond(withSuccess("""
+					{ "total_count": 1, "installations": [ { "id": 1, "account": { "login": "precavidos" } } ] }""",
+					MediaType.APPLICATION_JSON));
+
+		assertThat(client.isAppInstalledOn(TOKEN, "maria")).isFalse();
+	}
+
+	@Test
 	void errorsCarryTheStatusAndGitHubsMessageButNotTheToken() {
 		github.expect(requestTo(API + "/repos/maria/vaga-viva-clinica/issues"))
 			.andRespond(withStatus(HttpStatus.FORBIDDEN).contentType(MediaType.APPLICATION_JSON).body("""

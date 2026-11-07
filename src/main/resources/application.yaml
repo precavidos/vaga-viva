@@ -11,9 +11,23 @@ spring:
       ddl-auto: validate
   flyway:
     locations: classpath:db/migration
+  security:
+    oauth2:
+      client:
+        registration:
+          github:
+            # Client ID and secret of the Vaga Viva GitHub App (docs/github-app.md).
+            client-id: ${GITHUB_CLIENT_ID:not-configured}
+            client-secret: ${GITHUB_CLIENT_SECRET:not-configured}
 
 server:
   port: ${PORT:8080}
+  # Render terminates TLS: trust its X-Forwarded-* headers so redirects and the OAuth callback use https.
+  forward-headers-strategy: framework
+  servlet:
+    session:
+      cookie:
+        same-site: lax
 
 management:
   endpoints:
@@ -24,3 +38,7 @@ management:
     health:
       probes:
         enabled: true
+
+vagaviva:
+  github:
+    app-slug: ${GITHUB_APP_SLUG:vaga-viva}

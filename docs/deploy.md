@@ -74,4 +74,4 @@ docker run --rm --network vaga-viva_default -p 8080:8080 -e DATABASE_URL=jdbc:po
 
 ## Depois
 
-Quando o login com GitHub entrar no código, cadastre também `GITHUB_CLIENT_ID` e `GITHUB_CLIENT_SECRET` no Render e acrescente `https://<sua-url>/login/oauth2/code/github` como Callback URL do GitHub App (`docs/github-app.md`).
+Para o login com GitHub, cadastre também `GITHUB_CLIENT_ID` e `GITHUB_CLIENT_SECRET` no Render (e `GITHUB_APP_SLUG`, se o app não se chamar `vaga-viva`). A Callback URL e a Setup URL do GitHub App estão em `docs/github-app.md`. A API já confia nos cabeçalhos `X-Forwarded-*` do Render, então os redirecionamentos do login saem com `https`.
