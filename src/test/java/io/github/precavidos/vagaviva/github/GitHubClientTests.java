@@ -102,6 +102,26 @@ class GitHubClientTests {
 	}
 
 	@Test
+	void readsTheLatestCommitOfTheDefaultBranch() {
+		github.expect(requestTo(API + "/repos/maria/vaga-viva-clinica/commits?per_page=1"))
+			.andExpect(method(HttpMethod.GET))
+			.andRespond(withSuccess("""
+					[ { "sha": "abc123", "commit": { "message": "Initial commit" } } ]""", MediaType.APPLICATION_JSON));
+
+		assertThat(client.latestCommitSha(TOKEN, "maria/vaga-viva-clinica")).isEqualTo("abc123");
+	}
+
+	@Test
+	void anEmptyRepositoryHasNoLatestCommit() {
+		github.expect(requestTo(API + "/repos/maria/vaga-viva-clinica/commits?per_page=1"))
+			.andRespond(withStatus(HttpStatus.CONFLICT).contentType(MediaType.APPLICATION_JSON).body("""
+					{ "message": "Git Repository is empty." }"""));
+
+		assertThatThrownBy(() -> client.latestCommitSha(TOKEN, "maria/vaga-viva-clinica"))
+			.isInstanceOfSatisfying(GitHubApiException.class, e -> assertThat(e.status()).isEqualTo(409));
+	}
+
+	@Test
 	void findsTheAppInstalledOnTheUsersOwnAccount() {
 		github.expect(requestTo(API + "/user/installations?per_page=100"))
 			.andExpect(method(HttpMethod.GET))
