@@ -6,17 +6,24 @@ import static io.github.precavidos.vagaviva.jobposting.SeniorityLevel.MID;
 import static io.github.precavidos.vagaviva.jobposting.SeniorityLevel.SENIOR;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 
+import io.github.precavidos.vagaviva.archetype.ArchetypeCatalog;
+import io.github.precavidos.vagaviva.archetype.ArchetypeFit;
+import io.github.precavidos.vagaviva.jobposting.ExtractedJobPosting;
+import io.github.precavidos.vagaviva.jobposting.SeniorityLevel;
 import io.github.precavidos.vagaviva.plan.PlannedMission.Reason;
 import io.github.precavidos.vagaviva.vocabulary.SkillVocabulary;
 
 class ProjectPlannerTests {
 
 	private static final SkillVocabulary VOCABULARY = SkillVocabulary.fromClasspath("vocabulary/java-spring.json");
+
+	private static final ArchetypeCatalog ARCHETYPES = ArchetypeCatalog.fromClasspath("archetypes/catalog.json");
 
 	private static final ProjectPlanner PLANNER = new ProjectPlanner(
 			MissionCatalog.fromClasspath("missions/java-spring.json", VOCABULARY));
@@ -137,6 +144,43 @@ class ProjectPlannerTests {
 
 		assertThat(ids(plan)).containsExactly("patients-api", "persistence", "pagination", "scheduling-rules",
 				"availability-query", "containerization");
+	}
+
+	@Test
+	void keepsThePostingsSkillsAndTechnologiesWithoutItsWords() {
+		var text = "Dev Java Júnior com Spring Boot, PostgreSQL e Docker";
+		var posting = new ExtractedJobPosting("java-spring", ARCHETYPES.match(text), List.of(JUNIOR),
+				VOCABULARY.recognize(text));
+
+		var plan = PLANNER.plan(posting);
+
+		assertThat(plan.postingSkills()).containsExactlyElementsOf(
+				posting.recognition().skills().stream().map(s -> s.skill().id()).toList());
+		assertThat(plan.postingTechnologies()).contains("java", "spring-boot", "postgresql", "docker");
+	}
+
+	@Test
+	void keepsThePostingsArchetypeFit() {
+		var text = "Dev Python Júnior com Django";
+		var posting = new ExtractedJobPosting("java-spring", ARCHETYPES.match(text), List.of(JUNIOR),
+				VOCABULARY.recognize(text));
+
+		assertThat(PLANNER.plan(posting).archetypeFit()).isEqualTo(posting.archetypeFit());
+		assertThat(PLANNER.plan(List.of(JUNIOR), Set.of("sql")).archetypeFit())
+			.isEqualTo(new ArchetypeFit("java-spring", ArchetypeFit.Status.NOT_STATED, List.of(), List.of()));
+	}
+
+	@Test
+	void levelsHavePortugueseLabels() {
+		assertThat(Arrays.stream(SeniorityLevel.values()).map(SeniorityLevel::label))
+			.containsExactly("estágio", "júnior", "pleno", "sênior");
+	}
+
+	@Test
+	void unorderedSkillsGiveADeterministicOrder() {
+		var plan = PLANNER.plan(List.of(JUNIOR), Set.of("sql", "java", "spring"));
+
+		assertThat(plan.postingSkills()).isEqualTo(List.of("java", "spring", "sql"));
 	}
 
 	private static List<String> ids(ProjectPlan plan) {

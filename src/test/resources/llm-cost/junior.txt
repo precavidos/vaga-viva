@@ -1,0 +1,34 @@
+Desenvolvedor Júnior Backend (Java e Spring Boot)
+
+Uma empresa de meios de pagamento de médio porte, com sede em Curitiba e clientes em todo o país, busca um desenvolvedor júnior para o time de serviços internos. Trabalhamos com entregas curtas, revisão de código em todas as mudanças e foco em qualidade.
+
+Sobre a vaga
+
+Você vai participar do desenvolvimento de APIs que outros times consomem diariamente. O trabalho inclui criar endpoints, modelar dados, escrever testes e colocar tudo em produção com apoio do pipeline do time.
+
+Responsabilidades
+
+- Desenvolver funcionalidades em Java com Spring Boot, seguindo os padrões do time;
+- Criar e manter APIs REST, com validação de entrada e tratamento de erros;
+- Persistir dados em PostgreSQL, escrevendo consultas e ajustando índices quando necessário;
+- Escrever testes com JUnit para cobrir regras de negócio e fluxos principais;
+- Empacotar aplicações com Docker para executar o ambiente local da equipe;
+- Participar de revisões de código e de reuniões curtas de planejamento.
+
+Requisitos
+
+- Experiência prática com Java e Spring Boot, em projetos próprios ou acadêmicos;
+- Conhecimento de API REST e dos métodos HTTP mais usados;
+- Noções de banco relacional e de SQL;
+- Familiaridade com Docker para subir serviços localmente;
+- Experiência escrevendo testes com JUnit;
+- Boa comunicação escrita, já que boa parte da colaboração acontece em revisões e documentação.
+
+Desejáveis
+
+- Conhecimento de Git e do fluxo de pull requests;
+- Interesse em segurança de aplicações web.
+
+Oferecemos
+
+Modelo híbrido com dois dias presenciais por semana, plano de saúde, vale-refeição, auxílio para estudos e um programa de mentoria com trilha de carreira. O salário é compatível com a faixa júnior do mercado e é revisado a cada seis meses.

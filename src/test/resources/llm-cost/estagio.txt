@@ -1,0 +1,32 @@
+Estágio em Desenvolvimento de Software (Java)
+
+Uma empresa de logística de médio porte, com centros de distribuição em várias cidades do Brasil, procura um estagiário para o time de tecnologia. O time mantém o sistema que organiza as rotas de entrega e o controle dos armazéns. Somos uma equipe pequena, com rituais simples e muita troca no dia a dia.
+
+Sobre a vaga
+
+Vaga de estágio em desenvolvimento de software, com foco em Java. Você vai acompanhar o trabalho do time no backend, aprender com revisões de código e, aos poucos, assumir pequenas funcionalidades do início ao fim.
+
+O que você vai fazer
+
+- Implementar mudanças pequenas em regras de negócio, sempre com acompanhamento de quem já trabalha no time;
+- Escrever testes automatizados, incluindo testes unitários, para garantir que o código continue funcionando;
+- Consultar e ajustar dados com SQL, principalmente em relatórios de operação;
+- Versionar o seu trabalho com Git, abrindo pull requests e respondendo a comentários de revisão;
+- Investigar erros reportados pela operação e propor correções.
+
+O que buscamos
+
+- Estar cursando Ciência da Computação, Engenharia de Software, Sistemas de Informação ou área afim;
+- Conhecimento básico de Java e de orientação a objetos;
+- Noções de SQL para consultas simples com SELECT, JOIN e GROUP BY;
+- Familiaridade com Git para trabalhar em equipe;
+- Vontade de aprender e de receber feedback.
+
+Diferenciais
+
+- Já ter feito algum projeto pessoal com testes em JUnit;
+- Conhecer o GitHub e fluxos de revisão de código.
+
+Oferecemos
+
+Bolsa-auxílio compatível com o mercado, vale-transporte, horário flexível para conciliar com a faculdade e um plano de acompanhamento com metas mensais. Ao final do estágio, avaliamos a efetivação conforme as vagas abertas.

@@ -42,3 +42,8 @@ management:
 vagaviva:
   github:
     app-slug: ${GITHUB_APP_SLUG:vaga-viva}
+  llm:
+    api-key: ${ANTHROPIC_API_KEY:}
+    model: claude-haiku-5-5
+    timeout: 30s
+    max-retries: 0

@@ -46,6 +46,8 @@ Em <https://dashboard.render.com>, *New → Web Service*, conecte o repositório
 
 Em *Environment*, cadastre `DATABASE_URL` e `DATABASE_URL_UNPOOLED` com os mesmos valores do seu `.env` (passo 1), sem mudar nada. O Render define `PORT` sozinho, e a API já lê essa variável.
 
+Cadastre também `ANTHROPIC_API_KEY` com a chave da conta do time na Anthropic. Sem ela, a API funciona e os alunos recebem os textos padrão.
+
 ## 3. Ligar o CI ao Render
 
 1. No serviço do Render, em *Settings → Deploy Hook*, copie a URL do hook.

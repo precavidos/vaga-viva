@@ -6,6 +6,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
+import io.github.precavidos.vagaviva.archetype.ArchetypeFit;
 import io.github.precavidos.vagaviva.jobposting.ExtractedJobPosting;
 import io.github.precavidos.vagaviva.jobposting.SeniorityLevel;
 import io.github.precavidos.vagaviva.plan.PlannedMission.Reason;
@@ -36,10 +37,28 @@ public class ProjectPlanner {
 
 	public ProjectPlan plan(ExtractedJobPosting posting) {
 		var skills = posting.recognition().skills().stream().map(s -> s.skill().id()).toList();
-		return plan(posting.seniorityLevels(), skills);
+		var technologies = posting.recognition().technologies().stream().map(t -> t.technology().id()).toList();
+		return plan(posting.seniorityLevels(), skills, technologies, posting.archetypeFit());
 	}
 
+	/**
+	 * Plans from skills given in no particular order: they are sorted
+	 * alphabetically, so the same skills always give the same plan. No posting
+	 * stack is known, so the fit is {@code NOT_STATED}.
+	 */
 	public ProjectPlan plan(List<SeniorityLevel> postingLevels, Collection<String> postingSkills) {
+		return plan(postingLevels, postingSkills.stream().sorted().toList(), List.of(),
+				new ArchetypeFit(catalog.archetype(), ArchetypeFit.Status.NOT_STATED, List.of(), List.of()));
+	}
+
+	/**
+	 * Plans from the skills and technologies of a posting, keeping the order
+	 * given. Callers pass them in vocabulary order, as
+	 * {@link #plan(ExtractedJobPosting)} does. {@code fit} is carried into the
+	 * plan unchanged.
+	 */
+	public ProjectPlan plan(List<SeniorityLevel> postingLevels, List<String> postingSkills,
+			List<String> postingTechnologies, ArchetypeFit fit) {
 		SeniorityLevel level = postingLevels.stream().min(Comparator.naturalOrder()).orElse(SeniorityLevel.JUNIOR);
 		int cap = difficultyCap(level);
 		Set<String> skills = Set.copyOf(postingSkills);
@@ -72,7 +91,8 @@ public class ProjectPlanner {
 		chosen.sort(Comparator.comparingInt((PlannedMission m) -> m.mission().difficulty())
 			.thenComparing(m -> !m.mission().core())
 			.thenComparing(m -> catalogIndex(m.mission())));
-		return new ProjectPlan(catalog.archetype(), catalog.domain(), level, cap, chosen);
+		return new ProjectPlan(catalog.archetype(), fit, catalog.domain(), level, cap, chosen, List.copyOf(postingSkills),
+				List.copyOf(postingTechnologies));
 	}
 
 	private static int difficultyCap(SeniorityLevel level) {

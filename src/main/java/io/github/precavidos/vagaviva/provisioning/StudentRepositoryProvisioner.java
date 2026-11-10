@@ -4,8 +4,11 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Supplier;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -16,6 +19,8 @@ import io.github.precavidos.vagaviva.github.GitHubRepository;
 import io.github.precavidos.vagaviva.plan.PlannedMission;
 import io.github.precavidos.vagaviva.plan.ProjectPlan;
 import io.github.precavidos.vagaviva.vocabulary.SkillVocabulary;
+import io.github.precavidos.vagaviva.writing.MissionTextWriter;
+import io.github.precavidos.vagaviva.writing.WrittenTexts;
 import tools.jackson.databind.json.JsonMapper;
 
 /**
@@ -25,6 +30,10 @@ import tools.jackson.databind.json.JsonMapper;
  */
 @Service
 public class StudentRepositoryProvisioner {
+
+	private static final Logger log = LoggerFactory.getLogger(StudentRepositoryProvisioner.class);
+
+	private static final String README_FILE = "README.md";
 
 	static final String PLAN_FILE = ".vaga-viva/plan.json";
 
@@ -38,20 +47,25 @@ public class StudentRepositoryProvisioner {
 
 	private final SkillVocabulary vocabulary;
 
+	private final MissionTextWriter writer;
+
 	private final Pause pause;
 
 	@Autowired
-	StudentRepositoryProvisioner(GitHubApi github, SkillVocabulary vocabulary) {
-		this(github, vocabulary, Pause.SLEEP);
+	StudentRepositoryProvisioner(GitHubApi github, SkillVocabulary vocabulary, MissionTextWriter writer) {
+		this(github, vocabulary, writer, Pause.SLEEP);
 	}
 
-	StudentRepositoryProvisioner(GitHubApi github, SkillVocabulary vocabulary, Pause pause) {
+	StudentRepositoryProvisioner(GitHubApi github, SkillVocabulary vocabulary, MissionTextWriter writer,
+			Pause pause) {
 		this.github = github;
 		this.vocabulary = vocabulary;
+		this.writer = writer;
 		this.pause = pause;
 	}
 
 	public ProvisionedRepository provision(String token, String studentLogin, ProjectPlan plan) {
+		WrittenTexts texts = writeTexts(plan);
 		GitHubRepository repository = generate(token, studentLogin, plan);
 		// GitHub copies the template asynchronously and puts its commit on top of
 		// whatever the branch holds, with the template's files only: a plan written
@@ -64,12 +78,53 @@ public class StudentRepositoryProvisioner {
 		var issues = new ArrayList<MissionIssue>();
 		List<PlannedMission> missions = plan.missions();
 		for (int i = 0; i < missions.size(); i++) {
-			var mission = missions.get(i).mission();
+			var planned = missions.get(i);
+			var mission = planned.mission();
+			String context = Optional.ofNullable(texts.missionContexts().get(mission.id()))
+				.orElseGet(() -> DefaultStudentTexts.missionContext(planned, vocabulary));
 			GitHubIssue issue = github.createIssue(token, repository.fullName(), MissionIssueText.title(i + 1, mission),
-					MissionIssueText.body(mission, vocabulary));
+					MissionIssueText.body(mission, context, vocabulary));
 			issues.add(new MissionIssue(mission.id(), issue.number(), issue.htmlUrl()));
 		}
+		String intro = texts.projectIntro().orElseGet(() -> DefaultStudentTexts.projectIntro(plan, vocabulary));
+		String section = StudentReadme.projectSection(intro, missions, issues);
+		try {
+			whenReady(() -> {
+				addProjectSection(token, repository.fullName(), plan, section);
+				return null;
+			});
+		}
+		catch (RuntimeException e) {
+			// The section is cosmetic: every issue already carries its context.
+			log.warn("Could not add the project section to the README ({}); provisioning continues",
+					e instanceof GitHubApiException g ? "status " + g.status() : e.getClass().getSimpleName());
+		}
 		return new ProvisionedRepository(repository.fullName(), repository.htmlUrl(), issues);
+	}
+
+	/** The LLM never makes provisioning fail: any problem means default texts (ADR 0002). */
+	private WrittenTexts writeTexts(ProjectPlan plan) {
+		try {
+			WrittenTexts texts = writer.write(plan);
+			return texts != null ? texts : WrittenTexts.none();
+		}
+		catch (RuntimeException e) {
+			log.warn("Could not write the student texts ({}); using the default texts", e.getClass().getSimpleName());
+			return WrittenTexts.none();
+		}
+	}
+
+	private void addProjectSection(String token, String repositoryFullName, ProjectPlan plan, String section) {
+		String message = "Add your project section to the README";
+		var readme = github.readFile(token, repositoryFullName, README_FILE);
+		if (readme.isPresent()) {
+			github.updateFile(token, repositoryFullName, README_FILE, message,
+					StudentReadme.withProjectSection(readme.get().content(), section), readme.get().sha());
+		}
+		else {
+			github.createFile(token, repositoryFullName, README_FILE, message,
+					StudentReadme.newReadme(plan.domain(), section));
+		}
 	}
 
 	private GitHubRepository generate(String token, String owner, ProjectPlan plan) {

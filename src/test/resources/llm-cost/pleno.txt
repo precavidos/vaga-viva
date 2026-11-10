@@ -1,0 +1,35 @@
+Desenvolvedor Pleno Backend (Java, Spring e Hibernate)
+
+Uma empresa de software para o varejo, com produtos usados por pequenos e médios lojistas, procura um desenvolvedor pleno para o time de plataforma. Somos cerca de quarenta pessoas em tecnologia, com cultura de autonomia, documentação clara e decisões tomadas com dados.
+
+Sobre a vaga
+
+Você vai assumir módulos inteiros do backend, desde o desenho da solução até a operação em produção. Espera-se que você conduza discussões técnicas, proponha melhorias e apoie o crescimento de quem está entrando no time.
+
+Responsabilidades
+
+- Projetar e implementar funcionalidades em Java com Spring Boot, incluindo serviços, repositórios e integrações;
+- Modelar o acesso a dados com Hibernate e JPA, cuidando de desempenho e de consistência;
+- Manter e evoluir a esteira de integração contínua, reduzindo o tempo entre o merge e a entrega;
+- Aplicar padrões de projeto onde eles simplificam o código, e não por modismo;
+- Revisar código de colegas e registrar decisões técnicas relevantes;
+- Tratar a segurança desde o desenho, guiando-se pelo OWASP Top 10.
+
+Requisitos
+
+- Experiência comprovada de pelo menos dois anos com Java e Spring Boot em produção;
+- Vivência com Hibernate ou outra implementação de JPA;
+- Prática em integração contínua, com ferramentas como GitHub Actions ou Jenkins;
+- Conhecimento sólido de padrões de projeto e de orientação a objetos;
+- Entendimento de ameaças comuns em aplicações web e de como mitigá-las;
+- Capacidade de escrever testes automatizados e de defender a estratégia de testes do módulo.
+
+Desejáveis
+
+- Experiência com mensageria ou processamento assíncrono;
+- Conhecimento de contêineres com Docker;
+- Participação em comunidades técnicas ou em eventos da área.
+
+Oferecemos
+
+Trabalho remoto em todo o Brasil, orçamento anual para cursos e certificações, plano de saúde e odontológico, participação nos resultados e uma política de férias flexível. Processo seletivo com três etapas, todas com retorno em até uma semana.
