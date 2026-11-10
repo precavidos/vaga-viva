@@ -60,7 +60,7 @@ class ReviewContextBuilder {
 		String diff = cap(github.pullRequestDiff(token, repositoryFullName, pullRequestNumber));
 		var tests = failedTests.failedTests(token, repositoryFullName, headSha, plan.get());
 		return Optional.of(new ReviewContext(token, repositoryFullName, pullRequestNumber, headSha, plan.get(), diff,
-				tests, reviewerComments(token, repositoryFullName, pullRequestNumber)));
+				tests.isPresent(), tests.orElse(List.of()), reviewerComments(token, repositoryFullName, pullRequestNumber)));
 	}
 
 	private Optional<StudentPlan> readPlan(String token, String repositoryFullName) {

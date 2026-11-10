@@ -49,8 +49,8 @@ class WebhookRoutingTests {
 
 	@BeforeEach
 	void setUp() {
-		FailedTestsSource failedTests = (token, repository, sha, plan) -> List
-			.of(new FailedTest("patients-api", "createsAPatient", "esperava status 201"));
+		FailedTestsSource failedTests = (token, repository, sha, plan) -> Optional
+			.of(List.of(new FailedTest("patients-api", "createsAPatient", "esperava status 201")));
 		var app = new GitHubAppProperties("1", "key", "secret", "vaga-viva");
 		var builder = new ReviewContextBuilder(github, List.of(CATALOG), failedTests, app);
 		var tokens = new InstallationTokens(github, () -> "jwt", java.time.Clock.systemUTC()) {
@@ -86,6 +86,7 @@ class WebhookRoutingTests {
 			assertThat(context.plan().missions()).extracting(Mission::id)
 				.containsExactly("patients-api", "persistence", "bug-hunt");
 			assertThat(context.diff()).isEqualTo("diff --git a/x b/x");
+			assertThat(context.testReportRead()).isTrue();
 			assertThat(context.failedTests()).extracting(FailedTest::missionId).containsExactly("patients-api");
 			assertThat(context.reviewerComments()).extracting(ReviewContext.PreviousComment::body)
 				.containsExactly("Pergunta 1");

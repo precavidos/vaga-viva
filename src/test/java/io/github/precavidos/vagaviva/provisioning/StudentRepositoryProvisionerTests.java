@@ -17,6 +17,8 @@ import org.junit.jupiter.api.Test;
 
 import io.github.precavidos.vagaviva.github.GitHubApi;
 import io.github.precavidos.vagaviva.github.GitHubApiException;
+import io.github.precavidos.vagaviva.github.GitHubArtifact;
+import io.github.precavidos.vagaviva.github.GitHubWorkflowRun;
 import io.github.precavidos.vagaviva.github.GitHubComment;
 import io.github.precavidos.vagaviva.github.GitHubPullRequest;
 import io.github.precavidos.vagaviva.github.InstallationToken;
@@ -369,6 +371,21 @@ class StudentRepositoryProvisionerTests {
 
 		@Override
 		public List<GitHubComment> issueComments(String token, String repositoryFullName, int number) {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public List<GitHubWorkflowRun> workflowRuns(String token, String repositoryFullName, String headSha) {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public List<GitHubArtifact> runArtifacts(String token, String repositoryFullName, long runId) {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public byte[] downloadArtifact(String token, String repositoryFullName, long artifactId) {
 			throw new UnsupportedOperationException();
 		}
 
