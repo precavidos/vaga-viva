@@ -274,6 +274,34 @@ public class GitHubClient implements GitHubApi {
 		return response.getBody() == null ? new byte[0] : response.getBody();
 	}
 
+	@Override
+	public GitHubComment createIssueComment(String token, String repositoryFullName, int number, String body) {
+		JsonNode comment = http.post()
+			.uri("/repos/" + repositoryFullName + "/issues/" + number + "/comments")
+			.headers(h -> h.setBearerAuth(token))
+			.contentType(MediaType.APPLICATION_JSON)
+			.body(Map.of("body", body))
+			.retrieve()
+			.body(JsonNode.class);
+		if (comment == null) {
+			throw new GitHubApiException(502, "Empty comment response");
+		}
+		JsonNode user = comment.path("user");
+		return new GitHubComment(comment.path("id").asLong(), user.path("login").asString(""),
+				"Bot".equals(user.path("type").asString("")), comment.path("body").asString(""));
+	}
+
+	@Override
+	public void updateIssueComment(String token, String repositoryFullName, long commentId, String body) {
+		http.patch()
+			.uri("/repos/" + repositoryFullName + "/issues/comments/" + commentId)
+			.headers(h -> h.setBearerAuth(token))
+			.contentType(MediaType.APPLICATION_JSON)
+			.body(Map.of("body", body))
+			.retrieve()
+			.toBodilessEntity();
+	}
+
 	private static GitHubApiException toException(ClientHttpResponse response) throws java.io.IOException {
 		int status = response.getStatusCode().value();
 		String message = null;

@@ -261,6 +261,25 @@ class GitHubClientTests {
 	}
 
 	@Test
+	void postsAndEditsComments() {
+		github.expect(requestTo(API + "/repos/maria/vaga-viva-clinica/issues/3/comments"))
+			.andExpect(method(HttpMethod.POST))
+			.andExpect(content().json("{\"body\": \"Pergunta\"}"))
+			.andRespond(withSuccess("""
+					{ "id": 9, "body": "Pergunta", "user": { "login": "vaga-viva[bot]", "type": "Bot" } }""",
+					MediaType.APPLICATION_JSON));
+		github.expect(requestTo(API + "/repos/maria/vaga-viva-clinica/issues/comments/9"))
+			.andExpect(method(HttpMethod.PATCH))
+			.andExpect(content().json("{\"body\": \"Pergunta nova\"}"))
+			.andRespond(withSuccess());
+
+		assertThat(client.createIssueComment(TOKEN, "maria/vaga-viva-clinica", 3, "Pergunta"))
+			.isEqualTo(new GitHubComment(9, "vaga-viva[bot]", true, "Pergunta"));
+		client.updateIssueComment(TOKEN, "maria/vaga-viva-clinica", 9, "Pergunta nova");
+		github.verify();
+	}
+
+	@Test
 	void readsTheCommentsAndTellsBotsApart() {
 		github.expect(requestTo(API + "/repos/maria/vaga-viva-clinica/issues/3/comments?per_page=100"))
 			.andRespond(withSuccess("""

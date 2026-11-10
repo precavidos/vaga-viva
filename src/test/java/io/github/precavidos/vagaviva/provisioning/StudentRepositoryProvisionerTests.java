@@ -389,6 +389,16 @@ class StudentRepositoryProvisionerTests {
 			throw new UnsupportedOperationException();
 		}
 
+		@Override
+		public GitHubComment createIssueComment(String token, String repositoryFullName, int number, String body) {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public void updateIssueComment(String token, String repositoryFullName, long commentId, String body) {
+			throw new UnsupportedOperationException();
+		}
+
 		private static void failIfQueued(Deque<Integer> failures) {
 			Integer status = failures.poll();
 			if (status != null) {

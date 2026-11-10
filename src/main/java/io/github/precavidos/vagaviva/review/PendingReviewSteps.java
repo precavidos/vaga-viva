@@ -7,19 +7,13 @@ import org.springframework.context.annotation.Configuration;
 
 
 /**
- * Stand-ins until the reviewer (#24) and the hints (#27) land: each of
- * those replaces its bean here. They only log what
+ * Stand-in until the hints (#27) land and replace this bean. They only log what
  * arrived, never the diff or the token.
  */
 @Configuration(proxyBeanMethods = false)
 class PendingReviewSteps {
 
 	private static final Logger log = LoggerFactory.getLogger(PendingReviewSteps.class);
-
-	@Bean
-	PullRequestReviewer pullRequestReviewer() {
-		return (context) -> log.info("Review requested: {}", context);
-	}
 
 	@Bean
 	HintResponder hintResponder() {

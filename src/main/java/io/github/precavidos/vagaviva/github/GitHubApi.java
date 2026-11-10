@@ -58,4 +58,10 @@ public interface GitHubApi {
 	/** The artifact's zip. GitHub redirects to a storage URL, which is fetched without the token. */
 	byte[] downloadArtifact(String token, String repositoryFullName, long artifactId);
 
+	/** Posts a comment on an issue or pull request. */
+	GitHubComment createIssueComment(String token, String repositoryFullName, int number, String body);
+
+	/** Replaces the text of an existing comment. */
+	void updateIssueComment(String token, String repositoryFullName, long commentId, String body);
+
 }
