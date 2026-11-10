@@ -2,6 +2,8 @@ package io.github.precavidos.vagaviva.github;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -159,6 +161,59 @@ public class GitHubClient implements GitHubApi {
 			}
 		}
 		return false;
+	}
+
+	@Override
+	public InstallationToken createInstallationToken(String appJwt, long installationId) {
+		return http.post()
+			.uri("/app/installations/" + installationId + "/access_tokens")
+			.headers(h -> h.setBearerAuth(appJwt))
+			.retrieve()
+			.body(InstallationToken.class);
+	}
+
+	@Override
+	public GitHubPullRequest pullRequest(String token, String repositoryFullName, int number) {
+		JsonNode response = http.get()
+			.uri("/repos/" + repositoryFullName + "/pulls/" + number)
+			.headers(h -> h.setBearerAuth(token))
+			.retrieve()
+			.body(JsonNode.class);
+		if (response == null) {
+			throw new GitHubApiException(502, "Empty pull request response");
+		}
+		return new GitHubPullRequest(response.path("number").asInt(number), response.path("head").path("sha").asString());
+	}
+
+	@Override
+	public String pullRequestDiff(String token, String repositoryFullName, int number) {
+		String diff = http.get()
+			.uri("/repos/" + repositoryFullName + "/pulls/" + number)
+			.headers(h -> {
+				h.setBearerAuth(token);
+				h.set(HttpHeaders.ACCEPT, "application/vnd.github.diff");
+			})
+			.retrieve()
+			.body(String.class);
+		return diff == null ? "" : diff;
+	}
+
+	@Override
+	public List<GitHubComment> issueComments(String token, String repositoryFullName, int number) {
+		JsonNode response = http.get()
+			.uri("/repos/" + repositoryFullName + "/issues/" + number + "/comments?per_page=100")
+			.headers(h -> h.setBearerAuth(token))
+			.retrieve()
+			.body(JsonNode.class);
+		var comments = new ArrayList<GitHubComment>();
+		if (response != null) {
+			for (JsonNode comment : response) {
+				JsonNode user = comment.path("user");
+				comments.add(new GitHubComment(comment.path("id").asLong(), user.path("login").asString(""),
+						"Bot".equals(user.path("type").asString("")), comment.path("body").asString("")));
+			}
+		}
+		return comments;
 	}
 
 	private static GitHubApiException toException(ClientHttpResponse response) throws java.io.IOException {

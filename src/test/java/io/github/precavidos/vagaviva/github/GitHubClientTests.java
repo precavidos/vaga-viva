@@ -204,6 +204,46 @@ class GitHubClientTests {
 	}
 
 	@Test
+	void exchangesTheAppJwtForAnInstallationToken() {
+		github.expect(requestTo(API + "/app/installations/99/access_tokens"))
+			.andExpect(method(HttpMethod.POST))
+			.andExpect(header("Authorization", "Bearer app.jwt"))
+			.andRespond(withSuccess("""
+					{ "token": "ghs_installation", "expires_at": "2026-11-10T13:00:00Z" }""", MediaType.APPLICATION_JSON));
+
+		InstallationToken token = client.createInstallationToken("app.jwt", 99);
+
+		assertThat(token.token()).isEqualTo("ghs_installation");
+		assertThat(token.expiresAt()).isEqualTo(java.time.Instant.parse("2026-11-10T13:00:00Z"));
+	}
+
+	@Test
+	void readsAPullRequestAndItsDiff() {
+		github.expect(requestTo(API + "/repos/maria/vaga-viva-clinica/pulls/3"))
+			.andExpect(header("Accept", "application/vnd.github+json"))
+			.andRespond(withSuccess("""
+					{ "number": 3, "head": { "sha": "abc123" } }""", MediaType.APPLICATION_JSON));
+		github.expect(requestTo(API + "/repos/maria/vaga-viva-clinica/pulls/3"))
+			.andExpect(header("Accept", "application/vnd.github.diff"))
+			.andRespond(withSuccess("diff --git a/x b/x", MediaType.parseMediaType("application/vnd.github.diff")));
+
+		assertThat(client.pullRequest(TOKEN, "maria/vaga-viva-clinica", 3)).isEqualTo(new GitHubPullRequest(3, "abc123"));
+		assertThat(client.pullRequestDiff(TOKEN, "maria/vaga-viva-clinica", 3)).isEqualTo("diff --git a/x b/x");
+	}
+
+	@Test
+	void readsTheCommentsAndTellsBotsApart() {
+		github.expect(requestTo(API + "/repos/maria/vaga-viva-clinica/issues/3/comments?per_page=100"))
+			.andRespond(withSuccess("""
+					[ { "id": 1, "body": "/dica", "user": { "login": "maria", "type": "User" } },
+					  { "id": 2, "body": "Pergunta", "user": { "login": "vaga-viva[bot]", "type": "Bot" } } ]""",
+					MediaType.APPLICATION_JSON));
+
+		assertThat(client.issueComments(TOKEN, "maria/vaga-viva-clinica", 3)).containsExactly(
+				new GitHubComment(1, "maria", false, "/dica"), new GitHubComment(2, "vaga-viva[bot]", true, "Pergunta"));
+	}
+
+	@Test
 	void findsTheAppInstalledOnTheUsersOwnAccount() {
 		github.expect(requestTo(API + "/user/installations?per_page=100"))
 			.andExpect(method(HttpMethod.GET))

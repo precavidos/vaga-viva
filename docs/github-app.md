@@ -15,7 +15,9 @@ Em <https://github.com/organizations/precavidos/settings/apps/new> (ou em *Setti
 | Request user authorization (OAuth) during installation | **desmarcado** (o login é feito antes, pelo Vaga Viva; com esta opção, o GitHub volta sem o `state` que o login exige) |
 | Setup URL (Post installation) | `https://vaga-viva.onrender.com/?instalado=1` |
 | Redirect on update | marcado |
-| Webhook → Active | desmarcado por enquanto (o revisor de PR, na semana 2, vai usar) |
+| Webhook → Active | **marcado** |
+| Webhook URL | `https://vaga-viva.onrender.com/api/github/webhook` |
+| Webhook secret | um texto aleatório longo, o mesmo de `GITHUB_WEBHOOK_SECRET` no Render (gere com `openssl rand -hex 32`) |
 | Where can this GitHub App be installed? | **Any account** (os alunos instalam na própria conta) |
 
 ## 2. Permissões
@@ -28,6 +30,10 @@ Em *Repository permissions*:
 | Contents | Read and write | ler o modelo e gravar `.vaga-viva/plan.json` |
 | Issues | Read and write | abrir uma issue por missão |
 | Metadata | Read-only | obrigatória em todo app |
+| Pull requests | Read and write | o revisor lê o diff e comenta no PR do aluno |
+| Actions | Read-only | o revisor baixa o relatório de testes do workflow `Vaga Viva` |
+
+Em *Subscribe to events*, marque **Pull request**, **Workflow run** e **Issue comment**. Mudar permissões pede que cada conta que já instalou o app aceite as novas na página da instalação; o GitHub avisa o dono da conta.
 
 A documentação do GitHub também lista uma permissão "Repository creation" (write) para criar repositório a partir de modelo. Se ela aparecer no formulário, marque *Read and write*. Se não aparecer, siga sem ela e anote; o teste com o app de verdade vai dizer se falta algo.
 
@@ -49,7 +55,13 @@ export GITHUB_CLIENT_SECRET=...
 
 Há um modelo em `.env.example`; o `.env` está no `.gitignore`.
 
-A chave privada do app (*private key*) ainda não é necessária; ela entra junto com os webhooks do revisor. Quando for gerada, guarde o arquivo `.pem` como veio do GitHub (arquivos `*.pem` também estão no `.gitignore`), em vez de colar o conteúdo de várias linhas no `.env`.
+Para o revisor, o app precisa também da **chave privada** e do **App ID**:
+
+1. Em *General → Private keys*, clique em **Generate a private key**. O GitHub baixa um arquivo `.pem`; guarde-o fora do repositório (arquivos `*.pem` estão no `.gitignore`).
+2. Anote o **App ID**, no topo da mesma página.
+3. No Render, cadastre `GITHUB_APP_ID`, `GITHUB_APP_PRIVATE_KEY` (o conteúdo do `.pem`, colado como está; quebras de linha escritas como `\n` também funcionam) e `GITHUB_WEBHOOK_SECRET`.
+
+Sem essas três variáveis, a API sobe normalmente e o webhook responde 503. Com elas, cada entrega precisa da assinatura `X-Hub-Signature-256` certa, ou é recusada com 401.
 
 ## 4. Repositório-modelo
 

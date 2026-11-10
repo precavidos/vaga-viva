@@ -33,7 +33,9 @@ class SecurityConfig {
 			.logout((logout) -> logout.logoutSuccessUrl("/"))
 			// The session-backed calls need CSRF protection; the open ones use no session.
 			.csrf((csrf) -> csrf.spa()
-				.ignoringRequestMatchers(api.matcher("/api/job-postings/**"), api.matcher("/api/project-plans")))
+				.ignoringRequestMatchers(api.matcher("/api/job-postings/**"), api.matcher("/api/project-plans"),
+						// GitHub signs its webhooks instead (X-Hub-Signature-256).
+						api.matcher("/api/github/webhook")))
 			.exceptionHandling((exceptions) -> exceptions.defaultAuthenticationEntryPointFor(
 					new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED), api.matcher("/api/**")))
 			.build();
