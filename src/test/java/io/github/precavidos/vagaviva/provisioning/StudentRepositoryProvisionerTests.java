@@ -17,6 +17,9 @@ import org.junit.jupiter.api.Test;
 
 import io.github.precavidos.vagaviva.github.GitHubApi;
 import io.github.precavidos.vagaviva.github.GitHubApiException;
+import io.github.precavidos.vagaviva.github.GitHubComment;
+import io.github.precavidos.vagaviva.github.GitHubPullRequest;
+import io.github.precavidos.vagaviva.github.InstallationToken;
 import io.github.precavidos.vagaviva.github.GitHubFile;
 import io.github.precavidos.vagaviva.github.GitHubIssue;
 import io.github.precavidos.vagaviva.github.GitHubRepository;
@@ -347,6 +350,26 @@ class StudentRepositoryProvisionerTests {
 		@Override
 		public boolean isAppInstalledOn(String token, String login) {
 			return true;
+		}
+
+		@Override
+		public InstallationToken createInstallationToken(String appJwt, long installationId) {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public GitHubPullRequest pullRequest(String token, String repositoryFullName, int number) {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public String pullRequestDiff(String token, String repositoryFullName, int number) {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public List<GitHubComment> issueComments(String token, String repositoryFullName, int number) {
+			throw new UnsupportedOperationException();
 		}
 
 		private static void failIfQueued(Deque<Integer> failures) {
