@@ -11,6 +11,10 @@ spring:
       ddl-auto: validate
   flyway:
     locations: classpath:db/migration
+  http:
+    clients:
+      # GitHub redirects artifact downloads to a storage host: following by hand keeps the token away from it.
+      redirects: dont-follow
   security:
     oauth2:
       client:

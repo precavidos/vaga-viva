@@ -11,11 +11,15 @@ import io.github.precavidos.vagaviva.plan.Mission;
  * @param token an installation token that acts as the app on the repository
  * @param plan the student's plan, from {@code .vaga-viva/plan.json}
  * @param diff the pull request's diff, capped at {@link ReviewContextBuilder#MAX_DIFF_LENGTH} characters
- * @param failedTests the plan's failed tests on the pull request's head commit
+ * @param testReportRead whether the workflow's test report was found and read; when
+ * {@code false}, {@code failedTests} is empty because nothing is known yet, not because
+ * every test passed
+ * @param failedTests the plan's failed tests on the pull request's head commit, in plan order
  * @param reviewerComments the app's own earlier comments on the pull request, oldest first
  */
 public record ReviewContext(String token, String repositoryFullName, int pullRequestNumber, String headSha,
-		StudentPlan plan, String diff, List<FailedTest> failedTests, List<PreviousComment> reviewerComments) {
+		StudentPlan plan, String diff, boolean testReportRead, List<FailedTest> failedTests,
+		List<PreviousComment> reviewerComments) {
 
 	public ReviewContext {
 		failedTests = List.copyOf(failedTests);
@@ -25,8 +29,8 @@ public record ReviewContext(String token, String repositoryFullName, int pullReq
 	/** Never shows the token or the diff. */
 	@Override
 	public String toString() {
-		return "ReviewContext[" + repositoryFullName + "#" + pullRequestNumber + " @ " + headSha + ", failedTests="
-				+ failedTests.size() + "]";
+		return "ReviewContext[" + repositoryFullName + "#" + pullRequestNumber + " @ " + headSha + ", testReportRead="
+				+ testReportRead + ", failedTests=" + failedTests.size() + "]";
 	}
 
 	/** The plan written in the student's repository, with the missions resolved from the archetype's catalog. */

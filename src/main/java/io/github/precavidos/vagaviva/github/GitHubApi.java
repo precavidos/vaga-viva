@@ -50,4 +50,12 @@ public interface GitHubApi {
 	/** The comments on an issue or pull request, oldest first (first 100). */
 	List<GitHubComment> issueComments(String token, String repositoryFullName, int number);
 
+	/** The workflow runs for a commit, newest first (first 20). */
+	List<GitHubWorkflowRun> workflowRuns(String token, String repositoryFullName, String headSha);
+
+	List<GitHubArtifact> runArtifacts(String token, String repositoryFullName, long runId);
+
+	/** The artifact's zip. GitHub redirects to a storage URL, which is fetched without the token. */
+	byte[] downloadArtifact(String token, String repositoryFullName, long artifactId);
+
 }

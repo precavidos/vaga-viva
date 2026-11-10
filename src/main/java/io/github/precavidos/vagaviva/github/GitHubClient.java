@@ -10,6 +10,7 @@ import java.util.Optional;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
@@ -214,6 +215,63 @@ public class GitHubClient implements GitHubApi {
 			}
 		}
 		return comments;
+	}
+
+	@Override
+	public List<GitHubWorkflowRun> workflowRuns(String token, String repositoryFullName, String headSha) {
+		JsonNode response = http.get()
+			.uri("/repos/" + repositoryFullName + "/actions/runs?per_page=20&head_sha={sha}", headSha)
+			.headers(h -> h.setBearerAuth(token))
+			.retrieve()
+			.body(JsonNode.class);
+		var runs = new ArrayList<GitHubWorkflowRun>();
+		if (response != null) {
+			for (JsonNode run : response.path("workflow_runs")) {
+				runs.add(new GitHubWorkflowRun(run.path("id").asLong(), run.path("name").asString(""),
+						run.path("status").asString(""), run.path("conclusion").asString(null),
+						run.path("head_sha").asString("")));
+			}
+		}
+		return runs;
+	}
+
+	@Override
+	public List<GitHubArtifact> runArtifacts(String token, String repositoryFullName, long runId) {
+		JsonNode response = http.get()
+			.uri("/repos/" + repositoryFullName + "/actions/runs/" + runId + "/artifacts?per_page=100")
+			.headers(h -> h.setBearerAuth(token))
+			.retrieve()
+			.body(JsonNode.class);
+		var artifacts = new ArrayList<GitHubArtifact>();
+		if (response != null) {
+			for (JsonNode artifact : response.path("artifacts")) {
+				artifacts.add(new GitHubArtifact(artifact.path("id").asLong(), artifact.path("name").asString(""),
+						artifact.path("expired").asBoolean(false), artifact.path("size_in_bytes").asLong()));
+			}
+		}
+		return artifacts;
+	}
+
+	/**
+	 * Redirects are not followed by the HTTP client ({@code spring.http.clients.redirects}),
+	 * so the token is sent to GitHub only, never to the storage host it redirects to.
+	 */
+	@Override
+	public byte[] downloadArtifact(String token, String repositoryFullName, long artifactId) {
+		ResponseEntity<byte[]> response = http.get()
+			.uri("/repos/" + repositoryFullName + "/actions/artifacts/" + artifactId + "/zip")
+			.headers(h -> h.setBearerAuth(token))
+			.retrieve()
+			.toEntity(byte[].class);
+		if (response.getStatusCode().is3xxRedirection() && response.getHeaders().getLocation() != null) {
+			byte[] zip = http.get()
+				.uri(response.getHeaders().getLocation())
+				.header(HttpHeaders.ACCEPT, "*/*")
+				.retrieve()
+				.body(byte[].class);
+			return zip == null ? new byte[0] : zip;
+		}
+		return response.getBody() == null ? new byte[0] : response.getBody();
 	}
 
 	private static GitHubApiException toException(ClientHttpResponse response) throws java.io.IOException {

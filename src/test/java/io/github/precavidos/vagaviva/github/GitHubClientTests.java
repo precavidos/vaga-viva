@@ -232,6 +232,35 @@ class GitHubClientTests {
 	}
 
 	@Test
+	void listsTheWorkflowRunsOfACommitAndTheirArtifacts() {
+		github.expect(requestTo(API + "/repos/maria/vaga-viva-clinica/actions/runs?per_page=20&head_sha=abc123"))
+			.andRespond(withSuccess("""
+					{ "workflow_runs": [ { "id": 7, "name": "Vaga Viva", "status": "completed", "conclusion": "failure",
+					                       "head_sha": "abc123" } ] }""", MediaType.APPLICATION_JSON));
+		github.expect(requestTo(API + "/repos/maria/vaga-viva-clinica/actions/runs/7/artifacts?per_page=100"))
+			.andRespond(withSuccess("""
+					{ "artifacts": [ { "id": 11, "name": "surefire-reports", "expired": false, "size_in_bytes": 2048 } ] }""",
+					MediaType.APPLICATION_JSON));
+
+		assertThat(client.workflowRuns(TOKEN, "maria/vaga-viva-clinica", "abc123"))
+			.containsExactly(new GitHubWorkflowRun(7, "Vaga Viva", "completed", "failure", "abc123"));
+		assertThat(client.runArtifacts(TOKEN, "maria/vaga-viva-clinica", 7))
+			.containsExactly(new GitHubArtifact(11, "surefire-reports", false, 2048));
+	}
+
+	@Test
+	void downloadsAnArtifactFromTheStorageUrlWithoutSendingTheToken() {
+		github.expect(requestTo(API + "/repos/maria/vaga-viva-clinica/actions/artifacts/11/zip"))
+			.andExpect(header("Authorization", "Bearer " + TOKEN))
+			.andRespond(withStatus(HttpStatus.FOUND).location(java.net.URI.create("https://storage.test/artifact.zip?sig=x")));
+		github.expect(requestTo("https://storage.test/artifact.zip?sig=x"))
+			.andExpect(request -> assertThat(request.getHeaders().containsHeader("Authorization")).isFalse())
+			.andRespond(withSuccess(new byte[] { 'P', 'K' }, MediaType.APPLICATION_OCTET_STREAM));
+
+		assertThat(client.downloadArtifact(TOKEN, "maria/vaga-viva-clinica", 11)).containsExactly('P', 'K');
+	}
+
+	@Test
 	void readsTheCommentsAndTellsBotsApart() {
 		github.expect(requestTo(API + "/repos/maria/vaga-viva-clinica/issues/3/comments?per_page=100"))
 			.andRespond(withSuccess("""
