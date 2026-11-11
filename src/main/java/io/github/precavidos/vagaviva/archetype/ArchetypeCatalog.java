@@ -84,7 +84,7 @@ public final class ArchetypeCatalog {
 		Set<String> languages = new LinkedHashSet<>();
 		named.forEach(t -> languages.add(t.isLanguage() ? t.id() : t.language()));
 		Optional<Archetype> chosen = archetypes.stream()
-			.filter(a -> languages.contains(a.language()))
+			.filter(a -> a.languages().stream().anyMatch(languages::contains))
 			.max(Comparator.comparingLong((Archetype a) -> named.stream().filter(a::covers).count())
 				.thenComparing(a -> -archetypes.indexOf(a)));
 		if (chosen.isEmpty()) {
@@ -131,16 +131,25 @@ public final class ArchetypeCatalog {
 			if (!archetypeIds.add(archetype.id())) {
 				problems.add("duplicate archetype: " + archetype.id());
 			}
-			if (!isLanguage(byId.get(archetype.language()))) {
-				problems.add("archetype " + archetype.id() + " has an unknown language: " + archetype.language());
+			if (archetype.languages().isEmpty()) {
+				problems.add("archetype " + archetype.id() + " has no language");
+			}
+			for (String language : archetype.languages()) {
+				if (!isLanguage(byId.get(language))) {
+					problems.add("archetype " + archetype.id() + " has an unknown language: " + language);
+				}
 			}
 			for (String framework : archetype.frameworks()) {
 				StackTechnology technology = byId.get(framework);
-				if (technology == null || technology.isLanguage()
-						|| !technology.language().equals(archetype.language())) {
+				if (technology == null || technology.isLanguage() || !archetype.languages().contains(technology.language())) {
 					problems.add("archetype " + archetype.id() + " lists " + framework + ", which is not a framework of "
-							+ archetype.language());
+							+ String.join(" or ", archetype.languages()));
 				}
+			}
+			if (isBlank(archetype.name()) || isBlank(archetype.templateRepository())
+					|| isBlank(archetype.missionTestCommand()) || !archetype.missionTestCommand().contains("%s")) {
+				problems.add("archetype " + archetype.id()
+						+ " needs a name, a template repository and a mission test command with %s for the mission id");
 			}
 		}
 	}
@@ -167,17 +176,50 @@ public final class ArchetypeCatalog {
 
 	}
 
-	/** An archetype's stack: one language and the frameworks its template repository uses. */
-	record Archetype(String id, String language, List<String> frameworks) {
+	/**
+	 * An archetype: its stack (the languages and frameworks its template
+	 * repository practices) and what provisioning needs to create a student
+	 * repository from it.
+	 *
+	 * @param name the stack as students read it, for example "Java e Spring Boot"
+	 * @param templateRepository the template repository, as {@code owner/name}
+	 * @param missionTestCommand the command that runs one mission's tests, with
+	 * {@code %s} for the mission id
+	 */
+	public record Archetype(String id, String name, List<String> languages, List<String> frameworks,
+			String templateRepository, String missionTestCommand) {
 
-		Archetype {
+		public Archetype {
+			languages = languages == null ? List.of() : List.copyOf(languages);
 			frameworks = frameworks == null ? List.of() : List.copyOf(frameworks);
 		}
 
 		boolean covers(StackTechnology technology) {
-			return technology.isLanguage() ? technology.id().equals(language) : frameworks.contains(technology.id());
+			return technology.isLanguage() ? languages.contains(technology.id()) : frameworks.contains(technology.id());
 		}
 
+		/** The command a student runs to check one mission. */
+		public String missionTestCommand(String missionId) {
+			return missionTestCommand.formatted(missionId);
+		}
+
+	}
+
+	/** The archetype with this id. */
+	public Archetype archetype(String id) {
+		return archetypes.stream()
+			.filter(a -> a.id().equals(id))
+			.findFirst()
+			.orElseThrow(() -> new IllegalArgumentException("Unknown archetype: " + id));
+	}
+
+	/** Every archetype on offer, the default first. */
+	public List<Archetype> archetypes() {
+		return archetypes;
+	}
+
+	private static boolean isBlank(String value) {
+		return value == null || value.isBlank();
 	}
 
 	private record CatalogFile(List<StackTechnology> technologies, List<Archetype> archetypes) {

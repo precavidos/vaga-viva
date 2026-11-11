@@ -6,8 +6,9 @@ import java.util.Optional;
 /** The GitHub operations Vaga Viva uses, each made with the student's token. */
 public interface GitHubApi {
 
-	/** Creates {@code owner/name} from the configured template repository. */
-	GitHubRepository generateFromTemplate(String token, String owner, String name, String description);
+	/** Creates {@code owner/name} from {@code templateRepository} ({@code owner/name} of the template). */
+	GitHubRepository generateFromTemplate(String token, String templateRepository, String owner, String name,
+			String description);
 
 	/**
 	 * The sha of the newest commit on the default branch. GitHub answers 409

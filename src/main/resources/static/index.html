@@ -101,21 +101,21 @@
     try { return await response.json(); } catch { return {}; }
   }
 
-  function fitWarning(fit) {
+  function fitWarning(fit, stack) {
     if (!fit || fit.status === 'COVERED' || fit.status === 'NOT_STATED') return '';
     const missing = fit.uncovered.join(', ');
     if (fit.status === 'PARTIAL') {
-      return `Este projeto usa Java e Spring Boot. A vaga também cita ${missing}, que o projeto não pratica.`;
+      return `Este projeto usa ${stack}. A vaga também cita ${missing}, que o projeto não pratica.`;
     }
-    return `A vaga pede ${missing}, e ainda não temos projeto para essa stack. Você pode criar o projeto em Java e Spring Boot mesmo assim, para praticar o que vale nas duas.`;
+    return `A vaga pede ${missing}, e ainda não temos projeto para essa stack. Você pode criar o projeto em ${stack} mesmo assim, para praticar o que vale nas duas.`;
   }
 
   function showPlan(plan) {
-    const warning = fitWarning(plan.archetypeFit);
+    const warning = fitWarning(plan.archetypeFit, plan.archetypeName);
     $('fit-warning').textContent = warning;
     $('fit-warning').hidden = warning === '';
     $('plan-summary').textContent =
-      `Nível ${LEVELS[plan.seniorityLevel] ?? plan.seniorityLevel} · ${plan.domain.name} · ${plan.missions.length} missões`;
+      `${plan.archetypeName} · Nível ${LEVELS[plan.seniorityLevel] ?? plan.seniorityLevel} · ${plan.domain.name} · ${plan.missions.length} missões`;
     $('missions').replaceChildren(...plan.missions.map((mission) => {
       const item = document.createElement('li');
       const title = document.createElement('strong');

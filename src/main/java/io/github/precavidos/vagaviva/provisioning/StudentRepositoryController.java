@@ -28,7 +28,7 @@ import io.github.precavidos.vagaviva.github.GitHubApi;
 import io.github.precavidos.vagaviva.github.GitHubApiException;
 import io.github.precavidos.vagaviva.jobposting.JobPostingExtractor;
 import io.github.precavidos.vagaviva.jobposting.ReceivesJobPostingText;
-import io.github.precavidos.vagaviva.plan.ProjectPlanner;
+import io.github.precavidos.vagaviva.plan.ProjectPlanners;
 
 /**
  * Creates the signed-in student's repository from a posting. The posting is
@@ -45,7 +45,7 @@ class StudentRepositoryController {
 
 	private final JobPostingExtractor extractor;
 
-	private final ProjectPlanner planner;
+	private final ProjectPlanners planner;
 
 	private final StudentRepositoryProvisioner provisioner;
 
@@ -53,7 +53,7 @@ class StudentRepositoryController {
 
 	private final String installUrl;
 
-	StudentRepositoryController(JobPostingExtractor extractor, ProjectPlanner planner,
+	StudentRepositoryController(JobPostingExtractor extractor, ProjectPlanners planner,
 			StudentRepositoryProvisioner provisioner, GitHubApi github,
 			@Value("${vagaviva.github.app-slug:vaga-viva}") String appSlug) {
 		this.extractor = extractor;

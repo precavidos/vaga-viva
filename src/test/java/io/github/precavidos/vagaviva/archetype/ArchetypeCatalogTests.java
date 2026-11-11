@@ -68,10 +68,42 @@ class ArchetypeCatalogTests {
 
 	@Test
 	void javaScriptIsNotJava() {
-		ArchetypeFit fit = catalog.match("Front-end JavaScript com Node.js.");
+		ArchetypeFit fit = catalog.match("Back-end JavaScript com Node.js.");
 
-		assertThat(fit.status()).isEqualTo(Status.NOT_COVERED);
-		assertThat(fit.uncovered()).containsExactly("JavaScript", "Node.js");
+		assertThat(fit.archetype()).isEqualTo("typescript-node");
+		assertThat(fit.status()).isEqualTo(Status.COVERED);
+		assertThat(fit.covered()).containsExactly("JavaScript", "Node.js");
+	}
+
+	@Test
+	void typeScriptAndNestJsGetTheTypeScriptArchetype() {
+		ArchetypeFit fit = catalog.match("Desenvolvedora júnior TypeScript com NestJS, Prisma e PostgreSQL.");
+
+		assertThat(fit.archetype()).isEqualTo("typescript-node");
+		assertThat(fit.status()).isEqualTo(Status.COVERED);
+		assertThat(fit.covered()).containsExactly("TypeScript", "NestJS");
+	}
+
+	@Test
+	void aFrontEndFrameworkIsWhatTheTypeScriptProjectLeavesOut() {
+		ArchetypeFit fit = catalog.match("Fullstack TypeScript: NestJS no back-end e React no front-end.");
+
+		assertThat(fit.archetype()).isEqualTo("typescript-node");
+		assertThat(fit.status()).isEqualTo(Status.PARTIAL);
+		assertThat(fit.uncovered()).containsExactly("React");
+	}
+
+	@Test
+	void eachArchetypeKnowsItsTemplateAndMissionCommand() {
+		var java = catalog.archetype("java-spring");
+		var typescript = catalog.archetype("typescript-node");
+
+		assertThat(java.name()).isEqualTo("Java e Spring Boot");
+		assertThat(java.templateRepository()).isEqualTo("precavidos/vaga-viva-template-java-spring");
+		assertThat(java.missionTestCommand("bug-hunt")).isEqualTo("./mvnw test -Dgroups=bug-hunt");
+		assertThat(typescript.name()).isEqualTo("TypeScript e NestJS");
+		assertThat(typescript.templateRepository()).isEqualTo("precavidos/vaga-viva-template-typescript-node");
+		assertThat(typescript.missionTestCommand("bug-hunt")).isEqualTo("npm test -- missions/bug-hunt");
 	}
 
 	@Test
@@ -99,8 +131,8 @@ class ArchetypeCatalogTests {
 				    { "id": "python", "name": "Python", "terms": ["Python"] },
 				    { "id": "fastapi", "name": "FastAPI", "language": "python", "terms": ["FastAPI"] } ],
 				  "archetypes": [
-				    { "id": "java-spring", "language": "java", "frameworks": [] },
-				    { "id": "python-fastapi", "language": "python", "frameworks": ["fastapi"] } ] }""");
+				    { "id": "java-spring", "name": "java-spring", "languages": ["java"], "frameworks": [], "templateRepository": "o/java-spring", "missionTestCommand": "t %s" },
+				    { "id": "python-fastapi", "name": "python-fastapi", "languages": ["python"], "frameworks": ["fastapi"], "templateRepository": "o/python-fastapi", "missionTestCommand": "t %s" } ] }""");
 
 		ArchetypeFit fit = twoArchetypes.match("Python com FastAPI; Java é um diferencial.");
 
@@ -116,8 +148,8 @@ class ArchetypeCatalogTests {
 				    { "id": "java", "name": "Java", "terms": ["Java"] },
 				    { "id": "python", "name": "Python", "terms": ["Python"] } ],
 				  "archetypes": [
-				    { "id": "java-spring", "language": "java", "frameworks": [] },
-				    { "id": "python-fastapi", "language": "python", "frameworks": [] } ] }""");
+				    { "id": "java-spring", "name": "java-spring", "languages": ["java"], "frameworks": [], "templateRepository": "o/java-spring", "missionTestCommand": "t %s" },
+				    { "id": "python-fastapi", "name": "python-fastapi", "languages": ["python"], "frameworks": [], "templateRepository": "o/python-fastapi", "missionTestCommand": "t %s" } ] }""");
 
 		assertThat(twoArchetypes.match("Python e Java").archetype()).isEqualTo("java-spring");
 	}
@@ -127,7 +159,7 @@ class ArchetypeCatalogTests {
 		assertThatThrownBy(() -> read("""
 				{ "technologies": [
 				    { "id": "quarkus", "name": "Quarkus", "language": "java", "terms": ["Quarkus"] } ],
-				  "archetypes": [ { "id": "java-spring", "language": "java", "frameworks": ["quarkus"] } ] }"""))
+				  "archetypes": [ { "id": "java-spring", "name": "java-spring", "languages": ["java"], "frameworks": ["quarkus"], "templateRepository": "o/java-spring", "missionTestCommand": "t %s" } ] }"""))
 			.isInstanceOf(InvalidArchetypeCatalogException.class)
 			.hasMessageContaining("quarkus points to an unknown language: java")
 			.hasMessageContaining("archetype java-spring has an unknown language: java");
@@ -136,7 +168,7 @@ class ArchetypeCatalogTests {
 				{ "technologies": [
 				    { "id": "java", "name": "Java", "terms": ["Java"] },
 				    { "id": "java2", "name": "Java 2", "terms": ["java"] } ],
-				  "archetypes": [ { "id": "java-spring", "language": "java", "frameworks": ["java"] } ] }"""))
+				  "archetypes": [ { "id": "java-spring", "name": "java-spring", "languages": ["java"], "frameworks": ["java"], "templateRepository": "o/java-spring", "missionTestCommand": "t %s" } ] }"""))
 			.isInstanceOf(InvalidArchetypeCatalogException.class)
 			.hasMessageContaining("term \"java\" appears in more than one technology")
 			.hasMessageContaining("archetype java-spring lists java, which is not a framework of java");

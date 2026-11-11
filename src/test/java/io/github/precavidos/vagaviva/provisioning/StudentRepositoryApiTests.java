@@ -63,7 +63,7 @@ class StudentRepositoryApiTests {
 			.exchange();
 
 		assertThat(response).hasStatus(HttpStatus.UNAUTHORIZED);
-		verify(github, never()).generateFromTemplate(anyString(), anyString(), anyString(), anyString());
+		verify(github, never()).generateFromTemplate(anyString(), anyString(), anyString(), anyString(), anyString());
 	}
 
 	@Test
@@ -92,15 +92,15 @@ class StudentRepositoryApiTests {
 		assertThat(response).bodyJson()
 			.extractingPath("$.installUrl")
 			.isEqualTo("https://github.com/apps/vaga-viva/installations/new");
-		verify(github, never()).generateFromTemplate(anyString(), anyString(), anyString(), anyString());
+		verify(github, never()).generateFromTemplate(anyString(), anyString(), anyString(), anyString(), anyString());
 	}
 
 	@Test
 	void createsTheRepositoryInTheStudentsAccount(CapturedOutput log) {
 		given(github.isAppInstalledOn(TOKEN, "maria")).willReturn(true);
-		given(github.generateFromTemplate(eq(TOKEN), eq("maria"), anyString(), anyString())).willAnswer(
-				(call) -> new GitHubRepository(call.getArgument(2), "maria/" + call.getArgument(2),
-						"https://github.com/maria/" + call.getArgument(2), new GitHubRepository.Owner("maria")));
+		given(github.generateFromTemplate(eq(TOKEN), anyString(), eq("maria"), anyString(), anyString())).willAnswer(
+				(call) -> new GitHubRepository(call.getArgument(3), "maria/" + call.getArgument(3),
+						"https://github.com/maria/" + call.getArgument(3), new GitHubRepository.Owner("maria")));
 		given(github.createIssue(eq(TOKEN), anyString(), anyString(), anyString()))
 			.willReturn(new GitHubIssue(1, "https://github.com/maria/repo/issues/1"));
 
@@ -116,8 +116,35 @@ class StudentRepositoryApiTests {
 		var json = assertThat(response).bodyJson();
 		json.extractingPath("$.fullName").asString().startsWith("maria/");
 		json.extractingPath("$.issues").asArray().isNotEmpty();
-		verify(github).generateFromTemplate(eq(TOKEN), eq("maria"), anyString(), anyString());
+		verify(github).generateFromTemplate(eq(TOKEN), eq("precavidos/vaga-viva-template-java-spring"), eq("maria"),
+				anyString(), anyString());
 		assertThat(log).doesNotContain("rh@empresa.example").doesNotContain(TOKEN);
+	}
+
+	@Test
+	void createsATypeScriptPostingFromTheTypeScriptTemplate() {
+		given(github.isAppInstalledOn(TOKEN, "maria")).willReturn(true);
+		given(github.generateFromTemplate(eq(TOKEN), anyString(), eq("maria"), anyString(), anyString())).willAnswer(
+				(call) -> new GitHubRepository(call.getArgument(3), "maria/" + call.getArgument(3),
+						"https://github.com/maria/" + call.getArgument(3), new GitHubRepository.Owner("maria")));
+		given(github.createIssue(eq(TOKEN), anyString(), anyString(), anyString()))
+			.willReturn(new GitHubIssue(1, "https://github.com/maria/repo/issues/1"));
+
+		var response = mvc.post()
+			.uri("/api/student-repositories")
+			.with(student())
+			.with(csrf())
+			.contentType(MediaType.APPLICATION_JSON)
+			.content("""
+					{ "text": "Vaga júnior TypeScript com NestJS e PostgreSQL" }""")
+			.exchange();
+
+		assertThat(response).hasStatus(HttpStatus.CREATED);
+		verify(github).generateFromTemplate(eq(TOKEN), eq("precavidos/vaga-viva-template-typescript-node"), eq("maria"),
+				anyString(), anyString());
+		var body = org.mockito.ArgumentCaptor.forClass(String.class);
+		verify(github, org.mockito.Mockito.atLeastOnce()).createIssue(eq(TOKEN), anyString(), anyString(), body.capture());
+		assertThat(body.getValue()).contains("npm test -- missions/").doesNotContain("mvnw");
 	}
 
 	@Test

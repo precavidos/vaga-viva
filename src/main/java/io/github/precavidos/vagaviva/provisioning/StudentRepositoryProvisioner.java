@@ -18,7 +18,10 @@ import io.github.precavidos.vagaviva.github.GitHubIssue;
 import io.github.precavidos.vagaviva.github.GitHubRepository;
 import io.github.precavidos.vagaviva.plan.PlannedMission;
 import io.github.precavidos.vagaviva.plan.ProjectPlan;
+import io.github.precavidos.vagaviva.archetype.ArchetypeCatalog;
+import io.github.precavidos.vagaviva.archetype.ArchetypeCatalog.Archetype;
 import io.github.precavidos.vagaviva.vocabulary.SkillVocabulary;
+import io.github.precavidos.vagaviva.vocabulary.Vocabularies;
 import io.github.precavidos.vagaviva.writing.MissionTextWriter;
 import io.github.precavidos.vagaviva.writing.WrittenTexts;
 import tools.jackson.databind.json.JsonMapper;
@@ -45,28 +48,34 @@ public class StudentRepositoryProvisioner {
 
 	private final GitHubApi github;
 
-	private final SkillVocabulary vocabulary;
+	private final Vocabularies vocabularies;
+
+	private final ArchetypeCatalog archetypes;
 
 	private final MissionTextWriter writer;
 
 	private final Pause pause;
 
 	@Autowired
-	StudentRepositoryProvisioner(GitHubApi github, SkillVocabulary vocabulary, MissionTextWriter writer) {
-		this(github, vocabulary, writer, Pause.SLEEP);
+	StudentRepositoryProvisioner(GitHubApi github, Vocabularies vocabularies, ArchetypeCatalog archetypes,
+			MissionTextWriter writer) {
+		this(github, vocabularies, archetypes, writer, Pause.SLEEP);
 	}
 
-	StudentRepositoryProvisioner(GitHubApi github, SkillVocabulary vocabulary, MissionTextWriter writer,
-			Pause pause) {
+	StudentRepositoryProvisioner(GitHubApi github, Vocabularies vocabularies, ArchetypeCatalog archetypes,
+			MissionTextWriter writer, Pause pause) {
 		this.github = github;
-		this.vocabulary = vocabulary;
+		this.vocabularies = vocabularies;
+		this.archetypes = archetypes;
 		this.writer = writer;
 		this.pause = pause;
 	}
 
 	public ProvisionedRepository provision(String token, String studentLogin, ProjectPlan plan) {
+		Archetype archetype = archetypes.archetype(plan.archetype());
+		SkillVocabulary vocabulary = vocabularies.get(plan.archetype());
 		WrittenTexts texts = writeTexts(plan);
-		GitHubRepository repository = generate(token, studentLogin, plan);
+		GitHubRepository repository = generate(token, archetype.templateRepository(), studentLogin, plan);
 		// GitHub copies the template asynchronously and puts its commit on top of
 		// whatever the branch holds, with the template's files only: a plan written
 		// before the copy lands would be wiped out. So wait for the copy first.
@@ -83,7 +92,7 @@ public class StudentRepositoryProvisioner {
 			String context = Optional.ofNullable(texts.missionContexts().get(mission.id()))
 				.orElseGet(() -> DefaultStudentTexts.missionContext(planned, vocabulary));
 			GitHubIssue issue = github.createIssue(token, repository.fullName(), MissionIssueText.title(i + 1, mission),
-					MissionIssueText.body(mission, context, vocabulary));
+					MissionIssueText.body(mission, context, vocabulary, archetype.missionTestCommand(mission.id())));
 			issues.add(new MissionIssue(mission.id(), issue.number(), issue.htmlUrl()));
 		}
 		String intro = texts.projectIntro().orElseGet(() -> DefaultStudentTexts.projectIntro(plan, vocabulary));
@@ -127,13 +136,13 @@ public class StudentRepositoryProvisioner {
 		}
 	}
 
-	private GitHubRepository generate(String token, String owner, ProjectPlan plan) {
+	private GitHubRepository generate(String token, String template, String owner, ProjectPlan plan) {
 		String baseName = "vaga-viva-" + plan.domain().id();
 		String description = "Projeto de estudo do Vaga Viva: " + plan.domain().name();
 		for (int attempt = 1;; attempt++) {
 			String name = attempt == 1 ? baseName : baseName + "-" + attempt;
 			try {
-				return github.generateFromTemplate(token, owner, name, description);
+				return github.generateFromTemplate(token, template, owner, name, description);
 			}
 			catch (GitHubApiException e) {
 				boolean nameTaken = e.status() == 422;

@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.github.precavidos.vagaviva.archetype.ArchetypeCatalog;
 import io.github.precavidos.vagaviva.archetype.ArchetypeFit;
 import io.github.precavidos.vagaviva.jobposting.ExtractedJobPosting;
 import io.github.precavidos.vagaviva.jobposting.JobPostingExtractor;
@@ -25,28 +26,34 @@ class ProjectPlanController {
 
 	private final JobPostingExtractor extractor;
 
-	private final ProjectPlanner planner;
+	private final ProjectPlanners planner;
 
-	ProjectPlanController(JobPostingExtractor extractor, ProjectPlanner planner) {
+	private final ArchetypeCatalog archetypes;
+
+	ProjectPlanController(JobPostingExtractor extractor, ProjectPlanners planner, ArchetypeCatalog archetypes) {
 		this.extractor = extractor;
 		this.planner = planner;
+		this.archetypes = archetypes;
 	}
 
 	@PostMapping
 	PlanResponse plan(@Valid @RequestBody PlanRequest request) {
 		ExtractedJobPosting posting = extractor.extract(request.text());
-		return PlanResponse.from(planner.plan(posting));
+		ProjectPlan plan = planner.plan(posting);
+		return PlanResponse.from(plan, archetypes.archetype(plan.archetype()).name());
 	}
 
 	record PlanRequest(@NotBlank @Size(max = JobPostingExtractor.MAX_LENGTH) String text) {
 	}
 
-	record PlanResponse(String archetype, ArchetypeFit archetypeFit, FictionalDomain domain, SeniorityLevel seniorityLevel, int difficultyCap,
-			List<MissionDto> missions) {
+	/** {@code archetypeName} is the stack as students read it, for example "TypeScript e NestJS". */
+	record PlanResponse(String archetype, String archetypeName, ArchetypeFit archetypeFit, FictionalDomain domain,
+			SeniorityLevel seniorityLevel, int difficultyCap, List<MissionDto> missions) {
 
-		static PlanResponse from(ProjectPlan plan) {
+		static PlanResponse from(ProjectPlan plan, String archetypeName) {
 			var missions = plan.missions();
-			return new PlanResponse(plan.archetype(), plan.archetypeFit(), plan.domain(), plan.seniorityLevel(), plan.difficultyCap(),
+			return new PlanResponse(plan.archetype(), archetypeName, plan.archetypeFit(), plan.domain(),
+					plan.seniorityLevel(), plan.difficultyCap(),
 					IntStream.range(0, missions.size()).mapToObj(i -> MissionDto.from(i + 1, missions.get(i))).toList());
 		}
 

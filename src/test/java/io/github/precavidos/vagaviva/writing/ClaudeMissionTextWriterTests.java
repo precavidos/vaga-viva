@@ -1,5 +1,6 @@
 package io.github.precavidos.vagaviva.writing;
 
+import io.github.precavidos.vagaviva.vocabulary.Vocabularies;
 import static io.github.precavidos.vagaviva.jobposting.SeniorityLevel.JUNIOR;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -88,7 +89,7 @@ class ClaudeMissionTextWriterTests {
 			.maxRetries(0)
 			.timeout(Duration.ofSeconds(2))
 			.build();
-		writer = new ClaudeMissionTextWriter(client, "claude-haiku-5-5", VOCABULARY);
+		writer = new ClaudeMissionTextWriter(client, "claude-haiku-5-5", Vocabularies.of(VOCABULARY));
 	}
 
 	@AfterEach
@@ -178,7 +179,7 @@ class ClaudeMissionTextWriterTests {
 	void closingTheWriterClosesTheClient() {
 		AnthropicClient client = org.mockito.Mockito.mock(AnthropicClient.class);
 
-		new ClaudeMissionTextWriter(client, "claude-haiku-5-5", VOCABULARY).close();
+		new ClaudeMissionTextWriter(client, "claude-haiku-5-5", Vocabularies.of(VOCABULARY)).close();
 
 		org.mockito.Mockito.verify(client).close();
 	}

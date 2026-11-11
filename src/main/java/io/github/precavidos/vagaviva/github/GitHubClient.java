@@ -31,8 +31,6 @@ public class GitHubClient implements GitHubApi {
 
 	private final RestClient http;
 
-	private final String templateRepository;
-
 	public GitHubClient(RestClient.Builder builder, GitHubProperties properties) {
 		this.http = builder.baseUrl(properties.apiUrl())
 			.defaultHeader(HttpHeaders.ACCEPT, "application/vnd.github+json")
@@ -41,12 +39,11 @@ public class GitHubClient implements GitHubApi {
 				throw toException(response);
 			})
 			.build();
-		this.templateRepository = properties.templateRepository();
 	}
 
-	/** Creates {@code owner/name} from the configured template repository. */
 	@Override
-	public GitHubRepository generateFromTemplate(String token, String owner, String name, String description) {
+	public GitHubRepository generateFromTemplate(String token, String templateRepository, String owner, String name,
+			String description) {
 		return http.post()
 			.uri("/repos/" + templateRepository + "/generate")
 			.headers(h -> h.setBearerAuth(token))

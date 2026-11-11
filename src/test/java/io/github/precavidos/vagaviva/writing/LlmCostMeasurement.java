@@ -1,5 +1,6 @@
 package io.github.precavidos.vagaviva.writing;
 
+import io.github.precavidos.vagaviva.vocabulary.Vocabularies;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
@@ -48,9 +49,10 @@ class LlmCostMeasurement {
 	@Test
 	void measureCostOfThreePostings() {
 		SkillVocabulary vocabulary = SkillVocabulary.fromClasspath("vocabulary/java-spring.json");
-		var extractor = new JobPostingExtractor(vocabulary, ArchetypeCatalog.fromClasspath("archetypes/catalog.json"));
+		var extractor = new JobPostingExtractor(Vocabularies.of(vocabulary),
+				ArchetypeCatalog.fromClasspath("archetypes/catalog.json"));
 		var planner = new ProjectPlanner(MissionCatalog.fromClasspath("missions/java-spring.json", vocabulary));
-		var writer = new ClaudeMissionTextWriter(AnthropicOkHttpClient.fromEnv(), MODEL, vocabulary);
+		var writer = new ClaudeMissionTextWriter(AnthropicOkHttpClient.fromEnv(), MODEL, Vocabularies.of(vocabulary));
 
 		double total = 0;
 		System.out.printf(Locale.ROOT, "arquivo | missões | inputTokens | outputTokens | custo US$%n");

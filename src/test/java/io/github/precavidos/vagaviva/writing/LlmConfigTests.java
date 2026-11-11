@@ -6,12 +6,14 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 
 import io.github.precavidos.vagaviva.vocabulary.SkillVocabulary;
+import io.github.precavidos.vagaviva.vocabulary.Vocabularies;
 
 class LlmConfigTests {
 
 	private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
 		.withUserConfiguration(LlmConfig.class)
-		.withBean(SkillVocabulary.class, () -> SkillVocabulary.fromClasspath("vocabulary/java-spring.json"));
+		.withBean(Vocabularies.class,
+				() -> Vocabularies.of(SkillVocabulary.fromClasspath("vocabulary/java-spring.json")));
 
 	@Test
 	void usesTheDefaultTextsWithoutAKey() {
