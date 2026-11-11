@@ -36,6 +36,12 @@
     { "id": "flutter", "name": "Flutter", "language": "dart", "terms": ["Flutter"] }
   ],
   "archetypes": [
-    { "id": "java-spring", "language": "java", "frameworks": ["spring-boot"] }
+    { "id": "java-spring", "name": "Java e Spring Boot", "languages": ["java"], "frameworks": ["spring-boot"],
+      "templateRepository": "precavidos/vaga-viva-template-java-spring",
+      "missionTestCommand": "./mvnw test -Dgroups=%s" },
+    { "id": "typescript-node", "name": "TypeScript e NestJS", "languages": ["typescript", "javascript"],
+      "frameworks": ["nestjs", "nodejs", "express"],
+      "templateRepository": "precavidos/vaga-viva-template-typescript-node",
+      "missionTestCommand": "npm test -- missions/%s" }
   ]
 }

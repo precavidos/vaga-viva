@@ -35,7 +35,7 @@ class GitHubClientTests {
 	void setUp() {
 		RestClient.Builder builder = RestClient.builder();
 		github = MockRestServiceServer.bindTo(builder).build();
-		client = new GitHubClient(builder, new GitHubProperties(API, "precavidos/template"));
+		client = new GitHubClient(builder, new GitHubProperties(API));
 	}
 
 	@Test
@@ -52,7 +52,7 @@ class GitHubClientTests {
 					{ "name": "vaga-viva-clinica", "full_name": "maria/vaga-viva-clinica",
 					  "html_url": "https://github.com/maria/vaga-viva-clinica", "owner": { "login": "maria" } }"""));
 
-		GitHubRepository repository = client.generateFromTemplate(TOKEN, "maria", "vaga-viva-clinica", "Projeto");
+		GitHubRepository repository = client.generateFromTemplate(TOKEN, "precavidos/template", "maria", "vaga-viva-clinica", "Projeto");
 
 		assertThat(repository.fullName()).isEqualTo("maria/vaga-viva-clinica");
 		assertThat(repository.htmlUrl()).isEqualTo("https://github.com/maria/vaga-viva-clinica");

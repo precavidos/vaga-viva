@@ -65,7 +65,7 @@ Sem essas três variáveis, a API sobe normalmente e o webhook responde 503. Com
 
 ## 4. Repositório-modelo
 
-O repositório-modelo (por padrão `precavidos/vaga-viva-template-java-spring`, configurável em `vagaviva.github.template-repository`) precisa ser **público** e ter *Template repository* marcado em *Settings → General*. Ele segue o contrato do ADR 0005.
+Cada arquétipo tem o seu repositório-modelo, definido em `src/main/resources/archetypes/catalog.json` (hoje `precavidos/vaga-viva-template-java-spring` e `precavidos/vaga-viva-template-typescript-node`). Todo modelo precisa ser **público** e ter *Template repository* marcado em *Settings → General*. Eles seguem o contrato do ADR 0005.
 
 ## 5. Como o aluno usa
 

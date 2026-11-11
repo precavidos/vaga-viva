@@ -22,7 +22,7 @@ import com.anthropic.models.messages.ThinkingConfigDisabled;
 
 import io.github.precavidos.vagaviva.archetype.ArchetypeFit;
 import io.github.precavidos.vagaviva.plan.ProjectPlan;
-import io.github.precavidos.vagaviva.vocabulary.SkillVocabulary;
+import io.github.precavidos.vagaviva.vocabulary.Vocabularies;
 import tools.jackson.databind.json.JsonMapper;
 
 /**
@@ -52,12 +52,12 @@ public final class ClaudeMissionTextWriter implements MissionTextWriter {
 
 	private final String model;
 
-	private final SkillVocabulary vocabulary;
+	private final Vocabularies vocabularies;
 
-	public ClaudeMissionTextWriter(AnthropicClient client, String model, SkillVocabulary vocabulary) {
+	public ClaudeMissionTextWriter(AnthropicClient client, String model, Vocabularies vocabularies) {
 		this.client = client;
 		this.model = model;
-		this.vocabulary = vocabulary;
+		this.vocabularies = vocabularies;
 	}
 
 	@Override
@@ -99,7 +99,7 @@ public final class ClaudeMissionTextWriter implements MissionTextWriter {
 			.model(model)
 			.maxTokens(MAX_TOKENS)
 			.system(MissionTextPrompt.SYSTEM)
-			.addUserMessage(MissionTextPrompt.user(plan, vocabulary))
+			.addUserMessage(MissionTextPrompt.user(plan, vocabularies.get(plan.archetype())))
 			.thinking(ThinkingConfigDisabled.builder().build())
 			.outputConfig(OutputConfig.builder()
 				.effort(OutputConfig.Effort.LOW)

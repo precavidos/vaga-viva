@@ -6,14 +6,14 @@ import org.springframework.context.annotation.Configuration;
 
 import com.anthropic.client.okhttp.AnthropicOkHttpClient;
 
-import io.github.precavidos.vagaviva.vocabulary.SkillVocabulary;
+import io.github.precavidos.vagaviva.vocabulary.Vocabularies;
 
 @Configuration(proxyBeanMethods = false)
 @EnableConfigurationProperties(LlmProperties.class)
 class LlmConfig {
 
 	@Bean
-	MissionTextWriter missionTextWriter(LlmProperties properties, SkillVocabulary vocabulary) {
+	MissionTextWriter missionTextWriter(LlmProperties properties, Vocabularies vocabularies) {
 		if (properties.apiKey().isBlank()) {
 			return new DefaultMissionTextWriter();
 		}
@@ -22,7 +22,7 @@ class LlmConfig {
 			.timeout(properties.timeout())
 			.maxRetries(properties.maxRetries())
 			.build();
-		return new ClaudeMissionTextWriter(client, properties.model(), vocabulary);
+		return new ClaudeMissionTextWriter(client, properties.model(), vocabularies);
 	}
 
 }

@@ -18,7 +18,8 @@ final class MissionIssueText {
 		return "Missão " + order + ": " + mission.title();
 	}
 
-	static String body(Mission mission, String context, SkillVocabulary vocabulary) {
+	/** @param testCommand the archetype's command that runs only this mission's tests */
+	static String body(Mission mission, String context, SkillVocabulary vocabulary, String testCommand) {
 		String skills = mission.skills()
 			.stream()
 			.map(vocabulary::skillLabel)
@@ -37,11 +38,11 @@ final class MissionIssueText {
 				Os testes desta missão passam:
 
 				```bash
-				./mvnw test -Dgroups=%s
+				%s
 				```
 
 				Quando terminar, abra um pull request com a sua solução.
-				""".formatted(context, mission.summary(), skills, mission.id());
+				""".formatted(context, mission.summary(), skills, testCommand);
 	}
 
 }

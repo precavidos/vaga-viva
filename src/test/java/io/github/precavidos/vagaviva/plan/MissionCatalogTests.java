@@ -24,6 +24,24 @@ class MissionCatalogTests {
 			{ "id": "e", "title": "E", "summary": "E", "difficulty": 2, "core": false, "skills": ["api-design"] }""";
 
 	@Test
+	void typescriptNodeCatalogHasTheSameMissionsAsJava() {
+		var typescript = MissionCatalog.fromClasspath("missions/typescript-node.json",
+				SkillVocabulary.fromClasspath("vocabulary/typescript-node.json"));
+		var java = MissionCatalog.fromClasspath("missions/java-spring.json", VOCABULARY);
+
+		assertThat(typescript.archetype()).isEqualTo("typescript-node");
+		assertThat(typescript.domain()).isEqualTo(java.domain());
+		assertThat(typescript.missions()).extracting(Mission::id, Mission::title, Mission::difficulty, Mission::core)
+			.containsExactlyElementsOf(java.missions()
+				.stream()
+				.map(m -> org.assertj.core.groups.Tuple.tuple(m.id(), m.title(), m.difficulty(), m.core()))
+				.toList());
+		assertThat(typescript.missions()).filteredOn(m -> m.id().equals("persistence"))
+			.singleElement()
+			.satisfies(m -> assertThat(m.summary()).contains("Prisma"));
+	}
+
+	@Test
 	void javaSpringCatalogIsValid() {
 		var catalog = MissionCatalog.fromClasspath("missions/java-spring.json", VOCABULARY);
 

@@ -1,5 +1,7 @@
 package io.github.precavidos.vagaviva.provisioning;
 
+import io.github.precavidos.vagaviva.vocabulary.Vocabularies;
+import io.github.precavidos.vagaviva.archetype.ArchetypeCatalog;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -38,6 +40,8 @@ class StudentRepositoryProvisionerTests {
 
 	private static final SkillVocabulary VOCABULARY = SkillVocabulary.fromClasspath("vocabulary/java-spring.json");
 
+	private static final ArchetypeCatalog ARCHETYPES = ArchetypeCatalog.fromClasspath("archetypes/catalog.json");
+
 	static final String TEMPLATE_README = """
 			# Vaga Viva: modelo Java/Spring
 
@@ -59,7 +63,7 @@ class StudentRepositoryProvisionerTests {
 	private final StudentRepositoryProvisioner provisioner = provisionerWith(plan -> WrittenTexts.none());
 
 	private StudentRepositoryProvisioner provisionerWith(MissionTextWriter writer) {
-		return new StudentRepositoryProvisioner(github, VOCABULARY, writer, pauses::add);
+		return new StudentRepositoryProvisioner(github, Vocabularies.of(VOCABULARY), ARCHETYPES, writer, pauses::add);
 	}
 
 	@Test
@@ -294,12 +298,16 @@ class StudentRepositoryProvisionerTests {
 
 		final List<String> calls = new ArrayList<>();
 
+		final List<String> templates = new ArrayList<>();
+
 		/** How many times the new repository still looks empty, as while GitHub copies the template. */
 		int emptyRepositoryChecks;
 
 		@Override
-		public GitHubRepository generateFromTemplate(String token, String owner, String name, String description) {
+		public GitHubRepository generateFromTemplate(String token, String templateRepository, String owner, String name,
+				String description) {
 			calls.add("generate");
+			templates.add(templateRepository);
 			generated.add(owner + "/" + name);
 			failIfQueued(failGenerate);
 			return new GitHubRepository(name, owner + "/" + name, "https://github.com/" + owner + "/" + name,

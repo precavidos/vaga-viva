@@ -37,6 +37,7 @@ class ProjectPlanApiTests {
 		assertThat(response).hasStatusOk();
 		var json = assertThat(response).bodyJson();
 		json.extractingPath("$.archetype").isEqualTo("java-spring");
+		json.extractingPath("$.archetypeName").isEqualTo("Java e Spring Boot");
 		json.extractingPath("$.domain.id").isEqualTo("clinic-scheduling");
 		json.extractingPath("$.domain.name").isEqualTo("Agendamento de clínica");
 		json.extractingPath("$.seniorityLevel").isEqualTo("JUNIOR");
@@ -52,6 +53,24 @@ class ProjectPlanApiTests {
 		json.extractingPath("$.missions[4].matchedSkills").asArray().containsExactly("sql", "postgresql");
 		json.extractingPath("$.archetypeFit.status").isEqualTo("COVERED");
 		json.extractingPath("$.archetypeFit.covered").asArray().containsExactly("Java", "Spring Boot");
+	}
+
+	@Test
+	void plansATypeScriptPostingWithTheTypeScriptCatalog() {
+		var response = mvc.post()
+			.uri("/api/project-plans")
+			.contentType(MediaType.APPLICATION_JSON)
+			.content("""
+					{ "text": "Desenvolvedor Júnior Node.js com TypeScript, NestJS, Prisma e Docker" }""")
+			.exchange();
+
+		assertThat(response).hasStatusOk();
+		var json = assertThat(response).bodyJson();
+		json.extractingPath("$.archetype").isEqualTo("typescript-node");
+		json.extractingPath("$.archetypeName").isEqualTo("TypeScript e NestJS");
+		json.extractingPath("$.archetypeFit.status").isEqualTo("COVERED");
+		json.extractingPath("$.missions[0].summary").asString().contains("NestJS");
+		json.extractingPath("$.missions[*].id").asArray().contains("containerization");
 	}
 
 	@Test
