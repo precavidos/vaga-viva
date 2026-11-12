@@ -8,11 +8,12 @@ Só para quem entra numa turma e consente:
 
 - o nome que o aluno escolheu para aparecer no painel;
 - o login do GitHub e o repositório do aluno;
-- a missão atual e há quanto tempo ele está nela;
+- a missão atual, há quanto tempo ele está nela e os números dos PRs abertos nessa missão;
+- se o aluno concluiu todas as missões e a hora da última atividade;
 - os nomes dos testes que falham e as mensagens filtradas;
 - a última pergunta do revisor e o link do último PR;
-- a contagem de dicas pedidas por missão;
-- o e-mail do professor, se ele consentir.
+- a contagem de dicas pedidas por missão: o campo existe, mas só passa a ser preenchido quando a função de dicas existir (Tarefa 10);
+- na turma: o login do GitHub do professor e, se ele consentir, o e-mail e a hora do consentimento.
 
 O texto da vaga-base continua sem ser gravado: a turma guarda só ids de arquétipo, missões, motivos, competências e tecnologias. O código do aluno também não é gravado.
 

@@ -2,6 +2,7 @@ package io.github.precavidos.vagaviva.classroom;
 
 import java.time.Clock;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -55,7 +56,7 @@ class ClassroomService {
 	 */
 	Classroom create(String teacherLogin, String postingText, String name, String teacherEmail,
 			boolean emailConsent) {
-		if (!properties.teachers().contains(teacherLogin)) {
+		if (!properties.teachers().contains(teacherLogin.toLowerCase(Locale.ROOT))) {
 			throw new NotATeacherException();
 		}
 		String cleanName = name == null ? "" : name.strip();
