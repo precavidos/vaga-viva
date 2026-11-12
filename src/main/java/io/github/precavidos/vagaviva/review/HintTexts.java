@@ -87,12 +87,12 @@ final class HintTexts {
 			case 2 -> "Uma abordagem para a missão **" + mission.title() + "**: releia o contrato em `missoes/"
 					+ mission.id() + ".md` e anote, em palavras, cada coisa que ele pede: o que entra, o que sai e o que acontece nos casos de erro."
 					+ (failing.isEmpty() ? ""
-							: " Depois, compare essa lista com o teste **" + failing.getFirst().testName()
+							: " Depois, compare essa lista com o teste **" + ReviewTextFilter.neutralize(failing.getFirst().testName())
 									+ "**: qual item da lista ele verifica?")
 					+ "\n\nQue passos, em ordem, levam do que entra ao que o contrato espera que saia?";
 			case 3 -> failing.isEmpty()
 					? "Quase lá na missão **" + mission.title() + "**. Rode só os testes desta missão e leia a primeira asserção que falha: o que ela esperava e o que recebeu? A diferença entre os dois é o ponto a corrigir."
-					: "Quase lá na missão **" + mission.title() + "**. O teste **" + failing.getFirst().testName()
+					: "Quase lá na missão **" + mission.title() + "**. O teste **" + ReviewTextFilter.neutralize(failing.getFirst().testName())
 							+ "** falha com esta mensagem:\n\n> " + quote(failing.getFirst().message()) + "\n\n"
 							+ "O que essa mensagem diz que era esperado, e o que a sua implementação devolve nesse caso? A diferença entre os dois é o ponto a corrigir.";
 			default -> throw new IllegalArgumentException("no hint of level " + level);
@@ -101,7 +101,7 @@ final class HintTexts {
 
 	/** After the last level: no more hints, back to the test and the contract. */
 	static String exhausted(Mission mission, List<FailedTest> failing) {
-		String test = failing.isEmpty() ? "os testes desta missão" : "o teste **" + failing.getFirst().testName() + "**";
+		String test = failing.isEmpty() ? "os testes desta missão" : "o teste **" + ReviewTextFilter.neutralize(failing.getFirst().testName()) + "**";
 		return "As dicas da missão **" + mission.title() + "** acabaram neste PR: você já recebeu as " + LAST_LEVEL
 				+ ".\n\nAgora é com você. Releia com calma " + test + " e o contrato em `missoes/" + mission.id()
 				+ ".md`: o que o teste verifica, passo a passo, e em qual desses passos a sua implementação se afasta dele?";
@@ -119,6 +119,18 @@ final class HintTexts {
 				+ "\n\nOu comente só `/dica` para receber uma dica da primeira missão que ainda falha.";
 	}
 
+	/**
+	 * No test report for the pull request's last commit. Unlike the reviewer,
+	 * which only runs after the workflow completed, a {@code /dica} often
+	 * arrives while the workflow is still running.
+	 */
+	static String noReport() {
+		return """
+				Ainda não encontrei o relatório de testes do último commit deste PR, então não sei qual missão está falhando.
+
+				Se o workflow **Vaga Viva** ainda está rodando, espere ele terminar e comente `/dica` de novo. Se ele já terminou, abra a aba **Actions** deste PR e veja o passo **Testes**: qual é a primeira mensagem de erro? Você também pode pedir a dica de uma missão específica, como em `/dica` seguido do id dela.""";
+	}
+
 	static String missionPassing(Mission mission) {
 		return "Os testes da missão **" + mission.title() + "** já passam neste PR, então não há dica a dar sobre ela. "
 				+ "Comente só `/dica` para receber uma dica da primeira missão que ainda falha.";
@@ -130,7 +142,7 @@ final class HintTexts {
 	}
 
 	private static String quote(String message) {
-		return message.strip().replace("\n", "\n> ");
+		return ReviewTextFilter.neutralize(message.strip()).replace("\n", "\n> ");
 	}
 
 }

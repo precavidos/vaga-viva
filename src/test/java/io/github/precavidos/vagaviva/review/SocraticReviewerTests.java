@@ -122,6 +122,16 @@ class SocraticReviewerTests {
 	}
 
 	@Test
+	void fallbackNeverMentionsAnyoneFromTheReport() {
+		llmText = Optional.empty();
+
+		reviewer.review(context(true, List.of(new FailedTest("persistence", "gravaNoBanco", "veio @maria e #3")),
+				List.of()));
+
+		assertThat(postedBody()).doesNotContain("@maria").doesNotContain("#3").contains("maria");
+	}
+
+	@Test
 	void usesTheMissionSummaryWhenTheContractFileIsMissing() {
 		when(github.readFile("token", REPO, "missoes/patients-api.md")).thenReturn(Optional.empty());
 

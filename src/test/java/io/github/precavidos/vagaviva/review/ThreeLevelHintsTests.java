@@ -191,7 +191,7 @@ class ThreeLevelHintsTests {
 	void noReportAndNoMissionSaysTheTestsDidNotRun() {
 		hints.respond(context(false, List.of(), List.of()), "");
 
-		assertThat(posts.getLast()).isEqualTo(ReviewTexts.noReport());
+		assertThat(posts.getLast()).isEqualTo(HintTexts.noReport());
 		assertThat(levels).isEmpty();
 		assertThat(hintsGiven).isEmpty();
 	}

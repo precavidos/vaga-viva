@@ -58,7 +58,7 @@ class ThreeLevelHints implements HintResponder {
 			}
 		}
 		else if (!context.testReportRead()) {
-			post(context, ReviewTexts.noReport());
+			post(context, HintTexts.noReport());
 			return;
 		}
 		else if (context.failedTests().isEmpty()) {

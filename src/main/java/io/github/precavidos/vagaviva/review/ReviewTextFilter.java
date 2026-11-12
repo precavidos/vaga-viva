@@ -38,6 +38,17 @@ public final class ReviewTextFilter {
 	private ReviewTextFilter() {
 	}
 
+	/**
+	 * Makes text from the student's repository (test names, assertion
+	 * messages) safe to place into one of the app's fixed comments: a zero-width
+	 * space after {@code @} and {@code #} keeps GitHub from turning them into
+	 * mentions or cross-references, and an HTML comment cannot fake the
+	 * reviewer's or the hints' hidden markers.
+	 */
+	public static String neutralize(String text) {
+		return text.replace("@", "@​").replace("#", "#​").replace("<!--", "&lt;!--");
+	}
+
 	public static boolean isSafe(String text) {
 		if (text == null || text.isBlank() || text.length() > MAX_LENGTH) {
 			return false;

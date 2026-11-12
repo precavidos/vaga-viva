@@ -44,7 +44,7 @@ final class ReviewTexts {
 	static String fallback(Mission mission, List<FailedTest> failing) {
 		FailedTest first = failing.getFirst();
 		String count = failing.size() == 1 ? "1 teste ainda falha" : failing.size() + " testes ainda falham";
-		return "Na missão **" + mission.title() + "**, " + count + ". O primeiro diz:\n\n> " + first.message() + "\n\n"
+		return "Na missão **" + mission.title() + "**, " + count + ". O primeiro diz:\n\n> " + ReviewTextFilter.neutralize(first.message()) + "\n\n"
 				+ "O que esse teste espera receber, e o que a sua implementação devolve hoje nesse caso? "
 				+ "Releia o contrato da missão em `missoes/" + mission.id() + ".md` e compare com o que o teste pede.";
 	}

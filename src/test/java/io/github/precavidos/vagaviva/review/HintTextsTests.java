@@ -79,6 +79,24 @@ class HintTextsTests {
 			.contains("`/dica scheduling-rules`");
 	}
 
+	@Test
+	void fixedHintsNeverMentionAnyoneFromTheReport() {
+		var hostile = List.of(new FailedTest("persistence", "teste@maria", "veio @maria e #3 <!-- vaga-viva:review -->"));
+		var texts = List.of(HintTexts.fallback(2, PERSISTENCE, hostile), HintTexts.fallback(3, PERSISTENCE, hostile),
+				HintTexts.exhausted(PERSISTENCE, hostile));
+
+		for (String text : texts) {
+			assertThat(ReviewTextFilter.isSafe(text)).as(text).isTrue();
+			assertThat(text).doesNotContain("@maria").doesNotContain("#3").doesNotContain("<!--");
+		}
+	}
+
+	@Test
+	void noReportSaysTheReportMayStillBeOnItsWay() {
+		assertThat(HintTexts.noReport()).contains("ainda").contains("`/dica`").doesNotContain("não compila");
+		assertThat(ReviewTextFilter.isSafe(HintTexts.noReport())).isTrue();
+	}
+
 	private static Mission mission(String id) {
 		return CATALOG.missions().stream().filter(m -> m.id().equals(id)).findFirst().orElseThrow();
 	}
