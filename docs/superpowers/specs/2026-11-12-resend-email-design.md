@@ -67,7 +67,7 @@ Ficam todos num pacote novo, `io.github.precavidos.vagaviva.email`, package-priv
 | `InboundLimits` | Repetições, limite por remetente e limite diário, tudo em memória. Ver "Fluxo". |
 | `PlanReplyTemplate` | Texto puro e HTML simples da resposta com o plano e da resposta de ajuda. O HTML escapa todos os valores. |
 
-Se a chave ou o segredo estiver em branco, o endpoint responde 404, como o webhook do GitHub.
+Se a chave ou o segredo estiver em branco, o endpoint responde 503, como o webhook do GitHub.
 
 O `SecurityConfig` passa a aceitar `/api/inbound-email` sem sessão e sem CSRF, porque quem garante a origem é a assinatura.
 
@@ -204,7 +204,7 @@ O `unsubscribe_token` tem 32 bytes de `SecureRandom` em base64url.
 ### Disparo
 
 - `.github/workflows/weekly-email.yml` roda com `cron: '0 11 * * 1'` (segunda, 8:00 em Brasília), aceita `workflow_dispatch` e chama `POST {VAGAVIVA_PUBLIC_URL}/api/weekly-emails` com o cabeçalho `X-Vaga-Viva-Secret: ${{ secrets.WEEKLY_EMAIL_SECRET }}`.
-- O endpoint responde 404 se o segredo ou a `RESEND_API_KEY` estiver em branco, e 401 se o cabeçalho não conferir (comparação em tempo constante). Não exige sessão nem CSRF.
+- O endpoint responde 503 se o segredo ou a `RESEND_API_KEY` estiver em branco, e 401 se o cabeçalho não conferir (comparação em tempo constante). Não exige sessão nem CSRF.
 - A resposta é `{ "sent": n, "skipped": n, "failed": n }`.
 
 ### Montagem de cada e-mail (`WeeklyEmailService`)
