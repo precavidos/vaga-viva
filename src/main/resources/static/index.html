@@ -199,7 +199,7 @@
   // The teacher and invite pages leave their own address here before sending someone to GitHub.
   // It is read once and followed only when it is one of those pages, so it cannot become an open redirect.
   const RETURN_KEY = 'vagaviva.voltar';
-  const RETURN_PATH = /^\/(professor|turma\/[a-z0-9]{10})$/;
+  const RETURN_PATH = /^\/(professor|turma\/[a-z0-9]{10}|turmas\/[0-9a-f-]{36})$/;
   function takeReturnPath() {
     try {
       const path = sessionStorage.getItem(RETURN_KEY);

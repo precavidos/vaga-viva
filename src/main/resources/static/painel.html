@@ -1,0 +1,371 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Vaga Viva — Painel da turma</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/vv.css">
+</head>
+<body>
+<main>
+  <div class="wrap wide stack lg">
+    <p id="status" class="sr" role="status" aria-live="polite"></p>
+
+    <div class="row between" style="align-items:flex-end">
+      <div class="stack" style="min-width:0;max-width:100%">
+        <a class="link small" href="/professor" style="justify-self:start">← Suas turmas</a>
+        <div class="stack" id="head" hidden>
+          <h1 id="class-name" tabindex="-1" style="overflow-wrap:anywhere"></h1>
+          <div class="chips"><span class="chip"><span data-icon="users"></span><span id="students-count"></span></span><span class="chip"><span data-icon="clock"></span><span id="updated"></span></span></div>
+        </div>
+      </div>
+      <div class="stack" id="invite-head" style="gap:6px;min-width:0;max-width:100%" hidden>
+        <span class="label small">Link do convite</span>
+        <div id="invite"></div>
+      </div>
+    </div>
+
+    <!-- Loading -->
+    <div id="loading" class="stack" aria-hidden="true">
+      <div class="skeleton"><i class="tall" style="height:110px"></i></div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px">
+        <div class="skeleton"><i class="tall" style="height:260px"></i></div>
+        <div class="skeleton"><i class="tall" style="height:260px"></i></div>
+        <div class="skeleton"><i class="tall" style="height:260px"></i></div>
+      </div>
+    </div>
+
+    <!-- Error -->
+    <div class="banner error" id="error" role="alert" hidden><span data-icon="warning"></span><div><b id="error-title">Não foi possível carregar a turma.</b> <span id="error-text"></span> <button type="button" class="link" id="retry">Tentar de novo</button></div></div>
+
+    <!-- Signed out or session over -->
+    <section class="board stack" id="signed-out" aria-labelledby="out-title" hidden>
+      <h2 id="out-title" tabindex="-1">Entre para ver a turma.</h2>
+      <p class="muted">O painel é só do professor da turma. Entre com o GitHub e você volta para cá.</p>
+      <div class="row"><button type="button" class="btn" id="sign-in"><span data-icon="github"></span>Entrar com o GitHub</button></div>
+    </section>
+
+    <!-- Empty -->
+    <section class="board empty" id="empty" aria-labelledby="empty-title" hidden>
+      <div class="art" id="empty-art"></div>
+      <h2 id="empty-title">Ninguém entrou ainda.</h2>
+      <p class="muted" style="max-width:30em">Mande o link do convite para a turma. Cada aluno aparece aqui assim que criar o repositório.</p>
+      <div id="invite-big" style="max-width:100%"></div>
+    </section>
+
+    <!-- Dashboard -->
+    <div id="dashboard" class="stack lg" hidden>
+      <section class="card summary" aria-label="Resumo da turma">
+        <div class="meter" id="meter"></div>
+        <div class="stats" id="stats" role="group" aria-label="Filtrar por situação"></div>
+      </section>
+      <div class="row between">
+        <h2>Onde cada um está</h2>
+        <p class="muted small" id="filter-note">Clique num aluno para ver o que está segurando ele.</p>
+      </div>
+      <div class="kanban" id="kanban" tabindex="0" role="region" aria-label="Alunos por missão"></div>
+      <div id="done-band"></div>
+    </div>
+  </div>
+</main>
+
+<dialog class="drawer" id="drawer" aria-labelledby="drawer-name">
+  <div class="drawer-head">
+    <span id="drawer-avatar"></span>
+    <div style="min-width:0">
+      <h2 id="drawer-name" style="font-size:24px;overflow-wrap:anywhere"></h2>
+      <div class="row" style="gap:8px"><span class="mono muted" id="drawer-login" style="overflow-wrap:anywhere"></span><span id="drawer-status"></span></div>
+    </div>
+    <button type="button" class="close" id="drawer-close" aria-label="Fechar a ficha"></button>
+  </div>
+  <div class="drawer-body" id="drawer-body" aria-live="polite"></div>
+  <div class="drawer-foot" id="drawer-foot"></div>
+</dialog>
+
+<script src="/vv.js"></script>
+<script>
+  const { $, $$, ICON, esc } = VV;
+
+  const STATUS = {
+    STUCK: { one: 'travado', many: 'travados', plural: 'Travados', tile: 'coral' },
+    IDLE: { one: 'parado', many: 'parados', plural: 'Parados', tile: 'idle' },
+    ADVANCING: { one: 'avançando', many: 'avançando', plural: 'Avançando', tile: 'green' },
+    COMPLETED: { one: 'concluído', many: 'concluídos', plural: 'Concluídos', tile: 'purple' },
+  };
+  const ORDER = ['STUCK', 'IDLE', 'ADVANCING', 'COMPLETED'];
+
+  const CLASSROOM_ID = (location.pathname.match(/^\/turmas\/([0-9a-f-]{36})\/?$/) ?? [])[1];
+  const say = (text) => { $('#status').textContent = text; };
+  const num = (value) => Math.max(0, Math.floor(Number(value) || 0));
+  const statusOf = (value) => (STATUS[value] ? value : 'ADVANCING');
+  const statusBadge = (status) => `<span class="status" data-status="${status}">${ICON[status]}${esc(STATUS[status].one)}</span>`;
+
+  // The server's links are followed only when they point at GitHub.
+  function githubUrl(value) {
+    try {
+      const url = new URL(String(value));
+      return url.protocol === 'https:' && url.hostname === 'github.com' ? url.href : '';
+    } catch { return ''; }
+  }
+
+  VV.chrome('Professor');
+  $$('[data-icon]').forEach((el) => { el.innerHTML = ICON[el.dataset.icon]; });
+  $('#drawer-close').innerHTML = ICON.close;
+  $('#empty-art').innerHTML = VV.ic('link', 'yellow', 'lg') + VV.ic('users', 'plain', 'lg');
+
+  // ---- What is on screen: one panel at a time ----
+  const PANELS = ['loading', 'error', 'signed-out', 'empty', 'dashboard'];
+  function show(panel) {
+    PANELS.forEach((id) => { $('#' + id).hidden = id !== panel; });
+    const ready = panel === 'empty' || panel === 'dashboard';
+    $('#head').hidden = !ready;
+    $('#invite-head').hidden = panel !== 'dashboard';
+  }
+
+  function showError(title, text, retry) {
+    $('#error-title').textContent = title;
+    $('#error-text').textContent = text;
+    $('#retry').hidden = !retry;
+    show('error');
+    say(`${title} ${text}`);
+  }
+
+  function showSignedOut() {
+    VV.setUser(null);
+    show('signed-out');
+    say('Entre com o GitHub para ver a turma.');
+  }
+  $('#sign-in').addEventListener('click', VV.signIn);
+  $('#retry').addEventListener('click', load);
+
+  // ---- The dashboard ----
+  let data = null;
+  let loadedAt = 0;
+
+  function ago() {
+    const minutes = Math.floor((Date.now() - loadedAt) / 60000);
+    if (minutes < 1) return 'Atualizado agora';
+    if (minutes < 60) return `Atualizado há ${minutes} min`;
+    const hours = Math.floor(minutes / 60);
+    return hours < 24 ? `Atualizado há ${hours} h` : `Atualizado há ${Math.floor(hours / 24)} d`;
+  }
+  setInterval(() => { if (loadedAt) $('#updated').textContent = ago(); }, 30000);
+
+  async function load() {
+    if (!CLASSROOM_ID) { showError('Esta turma não existe ou não é sua.', '', false); return; }
+    show('loading');
+    say('Carregando a turma…');
+    let response;
+    try {
+      response = await fetch(`/api/classrooms/${CLASSROOM_ID}/dashboard`, { headers: { Accept: 'application/json' } });
+    } catch {
+      showError('Não foi possível carregar a turma.', 'Confira a sua conexão.', true);
+      return;
+    }
+    if (response.status === 401) { showSignedOut(); return; }
+    if (response.status === 404) { showError('Esta turma não existe ou não é sua.', '', false); return; }
+    if (!response.ok) { showError('Não foi possível carregar a turma.', 'O Vaga Viva não respondeu como esperado.', true); return; }
+    try {
+      data = await response.json();
+    } catch {
+      showError('Não foi possível carregar a turma.', 'O Vaga Viva não respondeu como esperado.', true);
+      return;
+    }
+    loadedAt = Date.now();
+    render();
+  }
+
+  function countUp(el, to) {
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) { el.textContent = to; return; }
+    const start = performance.now();
+    const tick = (now) => {
+      const t = Math.min(1, (now - start) / 600);
+      el.textContent = Math.round(to * (1 - Math.pow(1 - t, 3)));
+      if (t < 1) requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  }
+
+  const columnsOf = () => (Array.isArray(data.columns) ? data.columns : []).map((c) => ({
+    order: c.order ?? null,
+    title: String(c.title ?? ''),
+    students: (Array.isArray(c.students) ? c.students : []).map((s) => ({ ...s, status: statusOf(s.status) })),
+  }));
+
+  function render() {
+    const columns = columnsOf();
+    const everyone = columns.flatMap((c) => c.students);
+    const counts = Object.fromEntries(ORDER.map((status) => [status, everyone.filter((s) => s.status === status).length]));
+    const inviteUrl = /^\/turma\/[A-Za-z0-9]+$/.test(data.inviteUrl ?? '') ? location.origin + data.inviteUrl : '';
+
+    $('#class-name').textContent = String(data.name ?? '');
+    $('#students-count').textContent = `${everyone.length} ${everyone.length === 1 ? 'aluno' : 'alunos'}`;
+    $('#updated').textContent = ago();
+    $('#invite').innerHTML = inviteUrl ? VV.copyField(inviteUrl) : '';
+    $('#invite-big').innerHTML = inviteUrl ? VV.copyField(inviteUrl) : '';
+
+    if (!everyone.length) {
+      show('empty');
+      say('Ninguém entrou na turma ainda. Mande o link do convite.');
+      return;
+    }
+
+    // One bar for the whole class, then a counter per situation that also filters the board.
+    const summary = ORDER.map((s) => `${counts[s]} ${counts[s] === 1 ? STATUS[s].one : STATUS[s].many}`);
+    $('#meter').setAttribute('role', 'img');
+    $('#meter').setAttribute('aria-label', summary.join(', '));
+    $('#meter').innerHTML = ORDER.filter((s) => counts[s]).map((s) => `<i data-status="${s}" style="flex:${counts[s]}"></i>`).join('');
+    $('#stats').innerHTML = ORDER.map((status) => `<button type="button" class="stat" data-status="${status}" aria-pressed="false" aria-label="${counts[status]} ${counts[status] === 1 ? STATUS[status].one : STATUS[status].many}">
+      ${VV.ic(status, STATUS[status].tile)}<span class="value" aria-hidden="true">0</span>
+      <span class="name" aria-hidden="true">${esc(STATUS[status].plural)}</span></button>`).join('');
+    $$('#stats .value').forEach((el, i) => countUp(el, counts[ORDER[i]]));
+
+    const card = (s) => `<button type="button" class="student" data-status="${s.status}" data-login="${esc(s.login)}">
+      ${VV.avatar(s.displayName)}
+      <span class="name">${esc(s.displayName)} ${statusBadge(s.status)}</span>
+      <span class="reason">${esc(s.reason)}</span></button>`;
+    const column = (c) => {
+      const done = c.order === null;
+      const badge = done ? `<span class="num" style="background:var(--purple);color:#fff">${ICON.check}</span>` : `<span class="num">${String(num(c.order)).padStart(2, '0')}</span>`;
+      return `<section class="column ${done ? 'done band' : ''} ${c.students.length ? '' : 'is-empty'}" aria-label="${esc(c.title)}${c.students.length ? '' : ', ninguém nesta missão'}">
+        <div class="column-head">${badge}<h3>${esc(c.title)}</h3><span class="count">${c.students.length}</span></div>
+        ${c.students.length ? `<div class="cards stagger">${c.students.map(card).join('')}</div>` : '<span class="none" aria-hidden="true"></span>'}
+      </section>`;
+    };
+    $('#kanban').innerHTML = columns.filter((c) => c.order !== null).map(column).join('');
+    const done = columns.find((c) => c.order === null);
+    $('#done-band').innerHTML = done && done.students.length ? column(done) : '';
+    $('#filter-note').textContent = 'Clique num aluno para ver o que está segurando ele.';
+
+    show('dashboard');
+    const last = summary.pop();
+    say(`Painel carregado: ${summary.join(', ')} e ${last}.`);
+  }
+
+  // Counters filter the board; pressing the active one again clears it.
+  $('#stats').addEventListener('click', (e) => {
+    const stat = e.target.closest('.stat');
+    if (!stat) return;
+    const on = stat.getAttribute('aria-pressed') !== 'true';
+    $$('.stat').forEach((s) => s.setAttribute('aria-pressed', String(on && s === stat)));
+    $$('.student').forEach((s) => s.classList.toggle('dim', on && s.dataset.status !== stat.dataset.status));
+    const label = STATUS[stat.dataset.status].plural.toLowerCase();
+    $('#filter-note').textContent = on ? `Mostrando só: ${label}. Clique de novo para limpar.` : 'Clique num aluno para ver o que está segurando ele.';
+    say(on ? `Filtro: ${label}.` : 'Filtro removido.');
+  });
+
+  // ---- The student's card ----
+  const drawer = $('#drawer');
+  let opener = null;
+  let closing = false;
+  let request = 0;
+
+  function studentIn(login) {
+    return columnsOf().flatMap((c) => c.students).find((s) => s.login === login);
+  }
+
+  function drawerHead(name, login, status) {
+    $('#drawer-avatar').innerHTML = VV.avatar(name, 'lg');
+    $('#drawer-name').textContent = name;
+    $('#drawer-login').textContent = '@' + login;
+    $('#drawer-status').innerHTML = status ? statusBadge(status) : '';
+  }
+
+  function openDrawer(login, from) {
+    opener = from;
+    closing = false;
+    const known = studentIn(login);
+    drawerHead(known?.displayName ?? login, login, known?.status);
+    $('#drawer-foot').innerHTML = '';
+    drawer.showModal();
+    void drawer.offsetWidth;
+    drawer.classList.add('in');
+    $('#drawer-close').focus();
+    loadStudent(login);
+  }
+
+  async function loadStudent(login) {
+    const mine = ++request;
+    $('#drawer-body').innerHTML = '<div class="skeleton" aria-hidden="true"><i class="tall" style="height:90px"></i><i class="tall" style="height:120px"></i></div>';
+    const fail = (title, text, retry) => {
+      if (mine !== request) return;
+      $('#drawer-body').innerHTML = `<div class="banner error" role="alert"><span>${ICON.warning}</span><div><b>${esc(title)}</b> ${esc(text)}${retry ? ' <button type="button" class="link" id="retry-student">Tentar de novo</button>' : ''}</div></div>`;
+      if (retry) $('#retry-student').addEventListener('click', () => loadStudent(login));
+    };
+    let response;
+    try {
+      response = await fetch(`/api/classrooms/${CLASSROOM_ID}/students/${encodeURIComponent(login)}`, { headers: { Accept: 'application/json' } });
+    } catch {
+      fail('Não foi possível abrir a ficha.', 'Confira a sua conexão.', true);
+      return;
+    }
+    if (mine !== request) return;
+    if (response.status === 401) { closeDrawer(true); showSignedOut(); return; }
+    if (response.status === 404) { fail('Esta ficha não existe mais.', 'Atualize a página para ver a turma como está.', false); return; }
+    if (!response.ok) { fail('Não foi possível abrir a ficha.', 'O Vaga Viva não respondeu como esperado.', true); return; }
+    let student;
+    try { student = await response.json(); } catch { fail('Não foi possível abrir a ficha.', 'O Vaga Viva não respondeu como esperado.', true); return; }
+    if (mine !== request) return;
+    renderStudent(student);
+  }
+
+  function renderStudent(s) {
+    const status = statusOf(s.status);
+    const total = Math.max(0, columnsOf().length - 1);
+    const completed = status === 'COMPLETED';
+    const failing = Array.isArray(s.failingTests) ? s.failingTests : [];
+    drawerHead(String(s.displayName ?? s.login), String(s.login), status);
+
+    const tests = failing.length
+      ? `<ul class="tests">${failing.map((t) => `<li><span class="dot"></span><div><code>${esc(t?.name)}</code>${t?.message ? `<span>${esc(t.message)}</span>` : ''}</div></li>`).join('')}</ul>`
+      : `<p class="muted">${completed ? 'Nenhum. Todos os testes do plano passam.' : 'Nenhum teste falhando registrado ainda.'}</p>`;
+    const question = s.lastReviewerQuestion
+      ? `<div class="question"><span class="avatar bot" aria-hidden="true">?</span><p class="bubble">${esc(s.lastReviewerQuestion)}</p></div>`
+      : '<p class="muted">O revisor ainda não fez perguntas.</p>';
+    let hints = '<p class="muted">Dicas ainda não disponíveis.</p>';
+    if (s.hintsOnMission !== null && s.hintsOnMission !== undefined) {
+      const n = num(s.hintsOnMission);
+      const dots = [1, 2, 3].map((i) => `<span class="dot ${i <= n ? '' : 'off'}"></span>`).join('');
+      const text = n <= 3 ? `${n} de 3 nesta missão` : `${n} nesta missão`;
+      hints = `<div class="hints" role="img" aria-label="${esc(text)}">${dots}<span>${esc(text)}</span></div>`;
+    }
+    const reason = String(s.reason ?? '');
+    $('#drawer-body').innerHTML = `
+      <div class="block rise">
+        <div class="row"><span class="chip">${completed ? 'Todas as missões' : `Missão ${num(s.missionOrder)} de ${total}`}</span></div>
+        <p style="font-size:18px;font-weight:600;overflow-wrap:anywhere">${completed ? 'Projeto concluído' : esc(s.missionTitle)}</p>
+        <p class="muted">${esc(reason.charAt(0).toUpperCase() + reason.slice(1))}.</p>
+      </div>
+      <div class="block rise" style="animation-delay:60ms"><h3>${ICON.tests}Testes que falham</h3>${tests}</div>
+      <div class="block rise" style="animation-delay:120ms"><h3>${ICON.question}Última pergunta do revisor</h3>${question}</div>
+      <div class="block rise" style="animation-delay:180ms"><h3>${ICON.hint}Dicas pedidas</h3>${hints}</div>`;
+    const pr = githubUrl(s.lastPullRequestUrl);
+    const repo = githubUrl(s.repositoryUrl);
+    $('#drawer-foot').innerHTML = (pr ? `<a class="btn sm" href="${esc(pr)}" target="_blank" rel="noopener noreferrer">${ICON.github}Abrir o PR no GitHub</a>` : '')
+      + (repo ? `<a class="btn sm ghost" href="${esc(repo)}" target="_blank" rel="noopener noreferrer">Abrir o repositório</a>` : '');
+  }
+
+  function closeDrawer(now = false) {
+    if (closing || !drawer.open) return;
+    closing = true;
+    request++;
+    drawer.classList.remove('in');
+    const finish = () => { drawer.close(); closing = false; if (opener?.isConnected) opener.focus(); };
+    now || matchMedia('(prefers-reduced-motion: reduce)').matches ? finish() : setTimeout(finish, 320);
+  }
+
+  $('#dashboard').addEventListener('click', (e) => {
+    const button = e.target.closest('.student');
+    if (button) openDrawer(button.dataset.login, button);
+  });
+  $('#drawer-close').addEventListener('click', () => closeDrawer());
+  drawer.addEventListener('cancel', (e) => { e.preventDefault(); closeDrawer(); });
+  drawer.addEventListener('click', (e) => { if (e.target === drawer) closeDrawer(); });
+
+  load();
+</script>
+</body>
+</html>

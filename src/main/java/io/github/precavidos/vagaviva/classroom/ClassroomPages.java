@@ -16,6 +16,12 @@ class ClassroomPages {
 		return "forward:/professor.html";
 	}
 
+	/** The dashboard; only a UUID is a classroom id, anything else is not a page. */
+	@GetMapping("/turmas/{id:[0-9a-f-]{36}}")
+	String dashboard() {
+		return "forward:/painel.html";
+	}
+
 	@GetMapping("/turma/{joinCode}")
 	String invite() {
 		return "forward:/turma.html";

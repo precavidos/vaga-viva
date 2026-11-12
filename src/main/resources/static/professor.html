@@ -28,12 +28,12 @@
     <section class="board stack lg" aria-labelledby="out-title">
       <div class="stack">
         <h1 id="out-title" tabindex="-1">Sua turma,<br>de <mark>relance</mark>.</h1>
-        <p class="lead">Escolha uma vaga real e mande um link para a turma. Cada aluno recebe o projeto no próprio repositório. O painel com a missão de cada aluno vem em breve.</p>
+        <p class="lead">Escolha uma vaga real e mande um link para a turma. Cada aluno recebe o projeto no próprio repositório. O painel mostra a missão de cada aluno.</p>
       </div>
       <div class="banner info" id="out-note" role="alert" hidden><span data-icon="info"></span><div id="out-note-text"></div></div>
       <ul class="benefits">
         <li><span data-tile="users|yellow"></span>Todos recebem o mesmo projeto, a partir de uma vaga-base.</li>
-        <li><span data-tile="board|green"></span>Em breve, o painel mostra a missão de cada aluno e quem vale uma conversa.</li>
+        <li><span data-tile="board|green"></span>O painel mostra a missão de cada aluno e quem vale uma conversa.</li>
         <li><span data-tile="mail|lilac"></span>Toda segunda, um resumo chega no seu e-mail.</li>
       </ul>
       <div class="row"><button type="button" class="btn" id="sign-in"><span data-icon="github"></span>Entrar com o GitHub</button></div>
@@ -109,7 +109,7 @@
             <p class="muted">Mande este link para os alunos. Cada um entra com o GitHub e recebe o projeto no próprio repositório.</p>
           </div>
           <div id="invite"></div>
-          <div class="row"><a class="btn" id="open-panel" href="#" hidden>Abrir o painel <span class="arrow" data-icon="arrow"></span></a><button type="button" class="btn ghost" id="again">Criar outra turma</button></div>
+          <div class="row"><a class="btn" id="open-panel" href="#">Abrir o painel <span class="arrow" data-icon="arrow"></span></a><button type="button" class="btn ghost" id="again">Criar outra turma</button></div>
         </div>
       </section>
 
@@ -125,9 +125,6 @@
 <script src="/vv.js"></script>
 <script>
   const { $, ICON, LEVELS, esc } = VV;
-
-  // Task 8: set to true when /turmas/{id} (the dashboard) exists; cards then link to it and "Abrir o painel" shows.
-  const DASHBOARD_READY = false;
 
   // Static icons.
   document.querySelectorAll('[data-icon]').forEach((el) => { el.innerHTML = ICON[el.dataset.icon]; });
@@ -289,8 +286,7 @@
 
   function showCreated(created) {
     $('#invite').innerHTML = VV.copyField(location.origin + created.inviteUrl);
-    $('#open-panel').hidden = !DASHBOARD_READY;
-    if (DASHBOARD_READY) $('#open-panel').href = '/turmas/' + encodeURIComponent(created.id);
+    $('#open-panel').href = '/turmas/' + encodeURIComponent(created.id);
     go('f-done', 4);
     say('Turma criada.');
     $('#done-title').focus();
@@ -317,9 +313,7 @@
       const n = Number(c.students) || 0;
       const head = `<div class="row between"><h3>${esc(c.name)}</h3><span class="chip">${ICON.users}${n} ${n === 1 ? 'aluno' : 'alunos'}</span></div>`;
       const empty = n ? '' : '<p class="muted small">Ninguém entrou ainda. Mande o link do convite.</p>';
-      // Task 8: DASHBOARD_READY turns the card into a link to /turmas/{id}.
-      if (DASHBOARD_READY) return `<a class="card classroom" href="/turmas/${encodeURIComponent(c.id)}">${head}${empty}<span class="mono muted small">/turma/${esc(c.joinCode)}</span></a>`;
-      return `<div class="card classroom">${head}${empty}${VV.copyField(`${location.origin}/turma/${c.joinCode}`)}<p class="muted small">O painel desta turma vem em breve.</p></div>`;
+      return `<a class="card classroom" href="/turmas/${encodeURIComponent(c.id)}">${head}${empty}<span class="mono muted small">/turma/${esc(c.joinCode)}</span></a>`;
     }).join('');
   }
 
