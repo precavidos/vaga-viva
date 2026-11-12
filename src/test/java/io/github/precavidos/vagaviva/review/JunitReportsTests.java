@@ -78,8 +78,9 @@ class JunitReportsTests {
 	@Test
 	void readsTheJavaTemplatesSurefireReports() {
 		List<FailedTest> failed = JunitReports
-			.failedTests(zip(Map.of("TEST-io.github.precavidos.clinic.missions.PatientsApiTest.xml", SUREFIRE,
-					"io.github.precavidos.clinic.missions.PatientsApiTest.txt", "not xml")));
+			.read(zip(Map.of("TEST-io.github.precavidos.clinic.missions.PatientsApiTest.xml", SUREFIRE,
+					"io.github.precavidos.clinic.missions.PatientsApiTest.txt", "not xml")))
+			.failed();
 
 		assertThat(failed).containsExactly(
 				new FailedTest("patients-api", "createsAPatient",
@@ -89,17 +90,43 @@ class JunitReportsTests {
 
 	@Test
 	void readsTheTypeScriptTemplatesJestReportAndIgnoresSkippedAndNonMissionTests() {
-		List<FailedTest> failed = JunitReports.failedTests(zip(Map.of("junit.xml", JEST)));
+		List<FailedTest> failed = JunitReports.read(zip(Map.of("junit.xml", JEST))).failed();
 
 		assertThat(failed).containsExactly(new FailedTest("scheduling-rules", "recusa com 422 uma consulta no passado",
 				"esperava recusar consulta no passado com status 422"));
 	}
 
 	@Test
+	void reportsWhichMissionsRan() {
+		String persistence = """
+				<testsuite name="x"><testcase name="saves" classname="Missão persistence: persistência"/></testsuite>
+				""";
+
+		TestReport report = JunitReports.read(zip(Map.of("TEST-a.xml", SUREFIRE, "TEST-b.xml", persistence)));
+
+		assertThat(report.missionsRun()).containsExactlyInAnyOrder("patients-api", "persistence");
+		assertThat(report.failed()).hasSize(2);
+	}
+
+	@Test
+	void skippedTestsDoNotCountAsRun() {
+		String skipped = """
+				<testsuite name="x">
+				  <testcase name="a" classname="Missão pagination: paginação"><skipped/></testcase>
+				  <testcase name="b" classname="Missão pagination: paginação"><skipped message="later"/></testcase>
+				</testsuite>
+				""";
+
+		TestReport report = JunitReports.read(zip(Map.of("TEST-a.xml", skipped)));
+
+		assertThat(report.missionsRun()).doesNotContain("pagination");
+	}
+
+	@Test
 	void capsLongMessages() {
 		String report = SUREFIRE.replace("esperava 404 para paciente inexistente", "x".repeat(2_000));
 
-		List<FailedTest> failed = JunitReports.failedTests(zip(Map.of("TEST-a.xml", report)));
+		List<FailedTest> failed = JunitReports.read(zip(Map.of("TEST-a.xml", report))).failed();
 
 		assertThat(failed.get(1).message()).hasSize(JunitReports.MAX_MESSAGE_LENGTH + 1).endsWith("…");
 	}
@@ -112,13 +139,13 @@ class JunitReportsTests {
 				<testsuite><testcase classname="Missão patients-api: x" name="t"><failure message="&secret;"/></testcase></testsuite>
 				""";
 
-		assertThatThrownBy(() -> JunitReports.failedTests(zip(Map.of("TEST-a.xml", xxe))))
+		assertThatThrownBy(() -> JunitReports.read(zip(Map.of("TEST-a.xml", xxe))))
 			.isInstanceOf(IllegalArgumentException.class);
 	}
 
 	@Test
 	void refusesAZipThatIsNotOne() {
-		assertThat(JunitReports.failedTests("not a zip".getBytes(StandardCharsets.UTF_8))).isEmpty();
+		assertThat(JunitReports.read("not a zip".getBytes(StandardCharsets.UTF_8)).failed()).isEmpty();
 	}
 
 	@Test

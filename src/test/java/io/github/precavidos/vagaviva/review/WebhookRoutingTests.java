@@ -12,6 +12,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -49,8 +50,9 @@ class WebhookRoutingTests {
 
 	@BeforeEach
 	void setUp() {
-		FailedTestsSource failedTests = (token, repository, sha, plan) -> Optional
-			.of(List.of(new FailedTest("patients-api", "createsAPatient", "esperava status 201")));
+		FailedTestsSource failedTests = (token, repository, sha) -> Optional
+			.of(new TestReport(Set.of("patients-api"),
+					List.of(new FailedTest("patients-api", "createsAPatient", "esperava status 201"))));
 		var app = new GitHubAppProperties("1", "key", "secret", "vaga-viva");
 		var builder = new ReviewContextBuilder(github, List.of(CATALOG), failedTests, app);
 		var tokens = new InstallationTokens(github, () -> "jwt", java.time.Clock.systemUTC()) {

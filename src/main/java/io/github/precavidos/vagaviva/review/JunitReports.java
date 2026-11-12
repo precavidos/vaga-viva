@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.regex.Matcher;
@@ -49,8 +50,9 @@ final class JunitReports {
 	private JunitReports() {
 	}
 
-	/** The failed tests, in report order, of every mission test in the zip. */
-	static List<FailedTest> failedTests(byte[] zip) {
+	/** The missions that ran and the failed tests, in report order, of every mission test in the zip. */
+	static TestReport read(byte[] zip) {
+		var missionsRun = new LinkedHashSet<String>();
 		var failed = new ArrayList<FailedTest>();
 		long read = 0;
 		try (var entries = new ZipInputStream(new ByteArrayInputStream(zip))) {
@@ -61,16 +63,18 @@ final class JunitReports {
 				}
 				byte[] xml = readCapped(entries, MAX_UNCOMPRESSED_BYTES - read);
 				read += xml.length;
-				failed.addAll(failedTestsInXml(xml));
+				TestReport report = reportInXml(xml);
+				missionsRun.addAll(report.missionsRun());
+				failed.addAll(report.failed());
 			}
 		}
 		catch (IOException e) {
 			throw new IllegalArgumentException("Unreadable test report");
 		}
-		return failed;
+		return new TestReport(missionsRun, failed);
 	}
 
-	static List<FailedTest> failedTestsInXml(byte[] xml) {
+	static TestReport reportInXml(byte[] xml) {
 		Document document;
 		try {
 			document = parser().parse(new ByteArrayInputStream(xml));
@@ -78,24 +82,25 @@ final class JunitReports {
 		catch (SAXException | IOException e) {
 			throw new IllegalArgumentException("Unreadable test report");
 		}
+		var missionsRun = new LinkedHashSet<String>();
 		var failed = new ArrayList<FailedTest>();
 		NodeList testCases = document.getElementsByTagName("testcase");
 		for (int i = 0; i < testCases.getLength(); i++) {
 			Element testCase = (Element) testCases.item(i);
+			Matcher mission = MISSION.matcher(testCase.getAttribute("classname").strip());
+			if (!mission.find() || firstChild(testCase, "skipped") != null) {
+				continue;
+			}
+			missionsRun.add(mission.group(1));
 			Element failure = firstChild(testCase, "failure");
 			if (failure == null) {
 				failure = firstChild(testCase, "error");
 			}
-			if (failure == null) {
-				continue;
+			if (failure != null) {
+				failed.add(new FailedTest(mission.group(1), testCase.getAttribute("name"), message(failure)));
 			}
-			Matcher mission = MISSION.matcher(testCase.getAttribute("classname").strip());
-			if (!mission.find()) {
-				continue;
-			}
-			failed.add(new FailedTest(mission.group(1), testCase.getAttribute("name"), message(failure)));
 		}
-		return failed;
+		return new TestReport(missionsRun, failed);
 	}
 
 	/**

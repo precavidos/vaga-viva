@@ -1,8 +1,10 @@
 package io.github.precavidos.vagaviva.review;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
+import io.github.precavidos.vagaviva.plan.Mission;
 import io.github.precavidos.vagaviva.review.ReviewContext.FailedTest;
 import io.github.precavidos.vagaviva.review.ReviewContext.StudentPlan;
 
@@ -13,6 +15,18 @@ import io.github.precavidos.vagaviva.review.ReviewContext.StudentPlan;
  */
 public interface FailedTestsSource {
 
-	Optional<List<FailedTest>> failedTests(String token, String repositoryFullName, String headSha, StudentPlan plan);
+	/** The whole report of the commit, not narrowed to any plan. */
+	Optional<TestReport> report(String token, String repositoryFullName, String headSha);
+
+	/** The plan's failed tests on the commit, in plan order. */
+	default Optional<List<FailedTest>> failedTests(String token, String repositoryFullName, String headSha,
+			StudentPlan plan) {
+		List<String> order = plan.missions().stream().map(Mission::id).toList();
+		return report(token, repositoryFullName, headSha).map(report -> report.failed()
+			.stream()
+			.filter(test -> order.contains(test.missionId()))
+			.sorted(Comparator.comparingInt(test -> order.indexOf(test.missionId())))
+			.toList());
+	}
 
 }
