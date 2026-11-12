@@ -12,6 +12,7 @@ import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
 import org.springframework.context.annotation.Import;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.test.context.TestPropertySource;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -20,6 +21,7 @@ import static org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTest
 @DataJpaTest
 @Import(TestcontainersConfiguration.class)
 @AutoConfigureTestDatabase(replace = NONE)
+@TestPropertySource(properties = "logging.level.org.hibernate.orm.jdbc.error=OFF")
 class ClassroomRepositoryTests {
 
 	private static final Instant NOW = Instant.parse("2026-11-12T10:00:00Z");
@@ -60,8 +62,27 @@ class ClassroomRepositoryTests {
 		EnrollmentProgress reloaded = entityManager.find(EnrollmentProgress.class, enrollment.getId());
 		assertThat(reloaded.getCurrentMissionId()).isEqualTo("patients-api");
 		assertThat(reloaded.isCompleted()).isFalse();
-		assertThat(reloaded.getPullRequestsOnMission()).contains("7");
-		assertThat(reloaded.getHintsByMission()).contains("patients-api");
+		assertThat(reloaded.getPullRequestsOnMission()).isEqualTo("[7]");
+		assertThat(reloaded.getHintsByMission()).isEqualTo("{\"patients-api\": 2}");
+		assertThat(reloaded.getFailingTests()).isEqualTo("[{\"name\": \"createsPatient\", \"message\": \"expected 201\"}]");
+		assertThat(entityManager.find(Classroom.class, classroom.getId()).getPlan())
+			.isEqualTo("{\"missions\": [\"patients-api\"], \"archetype\": \"java-spring\"}"); // jsonb orders keys by length
+
+		assertThat(jsonbType("classroom", "plan", "id", classroom.getId())).isEqualTo("object");
+		assertThat(jsonbType("enrollment_progress", "failing_tests", "enrollment_id", enrollment.getId()))
+			.isEqualTo("array");
+		assertThat(jsonbType("enrollment_progress", "pull_requests_on_mission", "enrollment_id", enrollment.getId()))
+			.isEqualTo("array");
+		assertThat(jsonbType("enrollment_progress", "hints_by_mission", "enrollment_id", enrollment.getId()))
+			.isEqualTo("object");
+	}
+
+	@Test
+	void rejectsTheSameJoinCodeTwice() {
+		classrooms.saveAndFlush(classroom("ABC123"));
+
+		assertThatThrownBy(() -> classrooms.saveAndFlush(classroom("ABC123")))
+			.isInstanceOf(DataIntegrityViolationException.class);
 	}
 
 	@Test
@@ -81,6 +102,13 @@ class ClassroomRepositoryTests {
 
 		assertThatThrownBy(() -> enrollments.saveAndFlush(enrollment(classroom, "maria", "maria/another-repository")))
 			.isInstanceOf(DataIntegrityViolationException.class);
+	}
+
+	private String jsonbType(String table, String column, String idColumn, UUID id) {
+		return (String) entityManager
+			.createNativeQuery("select jsonb_typeof(" + column + ") from " + table + " where " + idColumn + " = ?1")
+			.setParameter(1, id)
+			.getSingleResult();
 	}
 
 	private static Classroom classroom(String joinCode) {
