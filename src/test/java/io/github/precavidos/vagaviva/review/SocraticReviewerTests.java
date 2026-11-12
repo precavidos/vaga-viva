@@ -45,6 +45,8 @@ class SocraticReviewerTests {
 
 	private final List<String> contracts = new ArrayList<>();
 
+	private final List<String> asked = new ArrayList<>();
+
 	private Optional<String> llmText = Optional.of("Muito bom ter criado o controller. O que o teste espera receber quando o paciente é criado?");
 
 	private SocraticReviewer reviewer;
@@ -55,6 +57,30 @@ class SocraticReviewerTests {
 			focuses.add(focus);
 			contracts.add(contract);
 			return llmText;
+		}, new ReviewEvents() {
+
+			@Override
+			public boolean tracks(String repositoryFullName) {
+				return true;
+			}
+
+			@Override
+			public void activity(String repositoryFullName) {
+			}
+
+			@Override
+			public void testsRan(String repositoryFullName, Integer pullRequestNumber, TestReport report) {
+			}
+
+			@Override
+			public void reviewerAsked(String repositoryFullName, int pullRequestNumber, String question) {
+				asked.add(repositoryFullName + "#" + pullRequestNumber + ": " + question);
+			}
+
+			@Override
+			public void hintGiven(String repositoryFullName, String missionId) {
+			}
+
 		});
 		when(github.readFile("token", REPO, "missoes/persistence.md"))
 			.thenReturn(Optional.of(new GitHubFile("# Contrato de persistence", "sha")));
@@ -133,6 +159,14 @@ class SocraticReviewerTests {
 		verify(github).updateIssueComment(eq("token"), eq(REPO), eq(41L), body.capture());
 		assertThat(body.getValue()).contains("O que o teste espera receber");
 		verify(github, never()).createIssueComment(anyString(), anyString(), anyInt(), anyString());
+	}
+
+	@Test
+	void tellsTheEventsWhatItAsked() {
+		reviewer.review(context(true, List.of(failed("persistence", "gravaNoBanco")), List.of()));
+
+		assertThat(asked).containsExactly(REPO + "#7: " + llmText.orElseThrow());
+		assertThat(postedBody()).contains(llmText.orElseThrow());
 	}
 
 	private String postedBody() {

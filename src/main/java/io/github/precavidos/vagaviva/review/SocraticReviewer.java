@@ -28,9 +28,12 @@ class SocraticReviewer implements PullRequestReviewer {
 
 	private final ReviewWriter writer;
 
-	SocraticReviewer(GitHubApi github, ReviewWriter writer) {
+	private final ReviewEvents events;
+
+	SocraticReviewer(GitHubApi github, ReviewWriter writer, ReviewEvents events) {
 		this.github = github;
 		this.writer = writer;
+		this.events = events;
 	}
 
 	@Override
@@ -46,6 +49,7 @@ class SocraticReviewer implements PullRequestReviewer {
 			text = aboutFirstFailingMission(context);
 		}
 		post(context, ReviewTexts.comment(text));
+		events.reviewerAsked(context.repositoryFullName(), context.pullRequestNumber(), text);
 	}
 
 	private String aboutFirstFailingMission(ReviewContext context) {

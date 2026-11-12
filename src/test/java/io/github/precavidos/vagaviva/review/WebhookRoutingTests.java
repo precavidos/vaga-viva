@@ -46,13 +46,53 @@ class WebhookRoutingTests {
 
 	private final List<ReviewContext> hintContexts = new ArrayList<>();
 
+	private final List<String> calls = new ArrayList<>();
+
+	private boolean tracked = true;
+
+	private int reportReads;
+
+	private boolean failTheFirstRead;
+
+	private Optional<TestReport> report = Optional.of(new TestReport(Set.of("patients-api"),
+			List.of(new FailedTest("patients-api", "createsAPatient", "esperava status 201"))));
+
 	private WebhookDispatcher dispatcher;
 
 	@BeforeEach
 	void setUp() {
-		FailedTestsSource failedTests = (token, repository, sha) -> Optional
-			.of(new TestReport(Set.of("patients-api"),
-					List.of(new FailedTest("patients-api", "createsAPatient", "esperava status 201"))));
+		FailedTestsSource failedTests = (token, repository, sha) -> {
+			if (reportReads++ == 0 && failTheFirstRead) {
+				throw new IllegalStateException("GitHub is down");
+			}
+			return report;
+		};
+		ReviewEvents events = new ReviewEvents() {
+
+			@Override
+			public boolean tracks(String repositoryFullName) {
+				return tracked;
+			}
+
+			@Override
+			public void activity(String repositoryFullName) {
+				calls.add("activity " + repositoryFullName);
+			}
+
+			@Override
+			public void testsRan(String repositoryFullName, Integer pullRequestNumber, TestReport testReport) {
+				calls.add("testsRan " + repositoryFullName + " " + pullRequestNumber + " " + testReport.missionsRun());
+			}
+
+			@Override
+			public void reviewerAsked(String repositoryFullName, int pullRequestNumber, String question) {
+			}
+
+			@Override
+			public void hintGiven(String repositoryFullName, String missionId) {
+			}
+
+		};
 		var app = new GitHubAppProperties("1", "key", "secret", "vaga-viva");
 		var builder = new ReviewContextBuilder(github, List.of(CATALOG), failedTests, app);
 		var tokens = new InstallationTokens(github, () -> "jwt", java.time.Clock.systemUTC()) {
@@ -66,7 +106,7 @@ class WebhookRoutingTests {
 		dispatcher = new WebhookDispatcher(tokens, builder, github, reviews::add, (context, request) -> {
 			hintContexts.add(context);
 			hintRequests.add(request);
-		});
+		}, failedTests, events);
 		when(github.readFile("ghs_installation_99", REPO, ".vaga-viva/plan.json"))
 			.thenReturn(Optional.of(new GitHubFile(PLAN, "sha")));
 		when(github.pullRequestDiff("ghs_installation_99", REPO, 3)).thenReturn("diff --git a/x b/x");
@@ -167,15 +207,83 @@ class WebhookRoutingTests {
 		assertThat(reviews).isEmpty();
 	}
 
+	@Test
+	void recordsTheTestsOfAPullRequestAndStillReviewsIt() {
+		dispatch("workflow_run", workflowRun("completed", "Vaga Viva", "[{\"number\": 3}]"));
+
+		assertThat(calls).containsExactly("testsRan " + REPO + " 3 [patients-api]");
+		assertThat(reviews).hasSize(1);
+	}
+
+	@Test
+	void recordsTestsOnTheDefaultBranchWithoutAPullRequest() {
+		dispatch("workflow_run", workflowRun("completed", "Vaga Viva", "[]", "main"));
+
+		assertThat(calls).containsExactly("testsRan " + REPO + " null [patients-api]");
+		assertThat(reviews).isEmpty();
+	}
+
+	@Test
+	void recordsOnlyActivityWhenThereIsNoReadableReport() {
+		report = Optional.empty();
+
+		dispatch("workflow_run", workflowRun("completed", "Vaga Viva", "[]", "main"));
+
+		assertThat(calls).containsExactly("activity " + REPO);
+	}
+
+	@Test
+	void ignoresPushesOnOtherBranchesWithoutAPullRequest() {
+		dispatch("workflow_run", workflowRun("completed", "Vaga Viva", "[]", "feature"));
+
+		assertThat(calls).isEmpty();
+		assertThat(reportReads).isZero();
+	}
+
+	@Test
+	void doesNotReadTheReportForUntrackedRepositories() {
+		tracked = false;
+
+		dispatch("workflow_run", workflowRun("completed", "Vaga Viva", "[]", "main"));
+
+		assertThat(calls).isEmpty();
+		assertThat(reportReads).isZero();
+		verify(github, never()).workflowRuns(anyString(), anyString(), anyString());
+	}
+
+	@Test
+	void aFailureWhileReadingTheReportDoesNotStopTheReview() {
+		failTheFirstRead = true;
+
+		dispatch("workflow_run", workflowRun("completed", "Vaga Viva", "[{\"number\": 3}]"));
+
+		assertThat(reviews).hasSize(1);
+	}
+
+	@Test
+	void aHintCommandCountsAsActivity() {
+		when(github.pullRequest("ghs_installation_99", REPO, 3)).thenReturn(new GitHubPullRequest(3, "def456"));
+
+		dispatch("issue_comment", issueComment("created", "/dica", "User", true));
+
+		assertThat(calls).containsExactly("activity " + REPO);
+	}
+
 	private void dispatch(String event, String body) {
 		dispatcher.dispatch(event, body.getBytes(StandardCharsets.UTF_8));
 	}
 
 	private static String workflowRun(String action, String name, String pullRequests) {
+		return workflowRun(action, name, pullRequests, "feature");
+	}
+
+	private static String workflowRun(String action, String name, String pullRequests, String headBranch) {
 		return """
-				{ "action": "%s", "installation": { "id": 99 }, "repository": { "full_name": "%s" },
-				  "workflow_run": { "id": 5, "name": "%s", "head_sha": "abc123", "pull_requests": %s } }"""
-			.formatted(action, REPO, name, pullRequests);
+				{ "action": "%s", "installation": { "id": 99 },
+				  "repository": { "full_name": "%s", "default_branch": "main" },
+				  "workflow_run": { "id": 5, "name": "%s", "head_sha": "abc123", "head_branch": "%s",
+				                    "pull_requests": %s } }"""
+			.formatted(action, REPO, name, headBranch, pullRequests);
 	}
 
 	private static String issueComment(String action, String body, String userType, boolean onPullRequest) {
