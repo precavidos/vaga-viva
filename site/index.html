@@ -130,7 +130,14 @@
       font-size: 1em; margin: 0 .04em;
     }
     .pill.job { background: var(--yellow); padding: 0 .22em; }
-    .pill.job span {
+    .pill.job { display: inline-grid; }
+    .swap { grid-area: 1 / 1; display: inline-flex; align-items: center; justify-content: center; gap: .14em; }
+    .swap.a { animation: swap-a 9s infinite var(--ease, ease); }
+    .swap.b { animation: swap-b 9s infinite var(--ease, ease); }
+    @keyframes swap-a { 0%, 42% { opacity: 1; transform: none; } 50%, 92% { opacity: 0; transform: translateY(-35%); } 100% { opacity: 1; transform: none; } }
+    @keyframes swap-b { 0%, 42% { opacity: 0; transform: translateY(35%); } 50%, 92% { opacity: 1; transform: none; } 100% { opacity: 0; transform: translateY(35%); } }
+    @media (prefers-reduced-motion: reduce) { .swap.a, .swap.b { animation: none; } .swap.b { display: none; } }
+    .pill.job .swap > span {
       font: 600 .2em/1 var(--mono); letter-spacing: 0; background: #141414; color: var(--yellow);
       padding: .45em .7em; border-radius: 999px;
     }
@@ -187,21 +194,28 @@
     .classified h4 { margin: 0 0 8px; font: 800 19px/1.15 var(--display); letter-spacing: -.02em; }
     .classified p { margin: 0; }
     mark {
-      background: linear-gradient(transparent 12%, var(--yellow) 12%, var(--yellow) 88%, transparent 88%) no-repeat 0 0 / 0% 100%;
+      background: linear-gradient(transparent 12%, var(--yellow) 12%, var(--yellow) 88%, transparent 88%) no-repeat 0 0 / 100% 100%;
       color: inherit; padding: 0 .12em; border-radius: 3px;
-      animation: marker .55s ease forwards; animation-play-state: paused;
+      transition: background-size .45s cubic-bezier(.2, .8, .2, 1);
     }
     mark.lvl { background-image: linear-gradient(transparent 12%, #c9bdff 12%, #c9bdff 88%, transparent 88%); }
-    .in-view mark { animation-play-state: running; }
-    mark:nth-of-type(2) { animation-delay: .25s; } mark:nth-of-type(3) { animation-delay: .5s; }
-    mark:nth-of-type(4) { animation-delay: .75s; } mark:nth-of-type(5) { animation-delay: 1s; }
-    mark:nth-of-type(6) { animation-delay: 1.25s; }
-    @keyframes marker { to { background-size: 100% 100%; } }
-    @media (prefers-reduced-motion: reduce) { mark { animation: none; background-size: 100% 100%; } }
+    mark.out { background-image: linear-gradient(transparent 12%, #ffc2b5 12%, #ffc2b5 88%, transparent 88%); }
+    .js mark:not(.on) { background-size: 0% 100%; }
+    @media (prefers-reduced-motion: reduce) { mark { transition: none; } }
 
+    .classified { position: relative; border: 2px dashed #cfc9ba; }
+    .clip-label { display: flex; align-items: center; gap: 6px; margin-bottom: 10px; font: 600 11px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: #4a4740; }
+    .clip-label svg { width: 14px; height: 14px; }
     .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; }
     .chip { font: 600 12px/1 var(--mono); padding: 7px 10px; border-radius: 999px; background: var(--night-3); color: var(--night-text); }
     .chip.lvl { background: var(--purple); color: #fff; }
+    .chip.out { background: transparent; box-shadow: inset 0 0 0 2px var(--coral); }
+    .chip.waiting { opacity: 0; }
+    .chip.landed { animation: pop .5s cubic-bezier(.34, 1.56, .64, 1); }
+    .flyer { position: fixed; z-index: 50; margin: 0; pointer-events: none; padding: 7px 11px; border-radius: 999px; background: var(--yellow); color: #141414; font: 600 12px/1 var(--mono); box-shadow: 0 5px 0 rgba(20, 20, 20, .7); white-space: nowrap; }
+    .flyer.lvl { background: #c9bdff; } .flyer.out { background: #ffc2b5; }
+    .replay { align-self: flex-start; margin-top: 12px; padding: 0; border: 0; background: none; color: var(--night-muted); font: 600 13px/1 var(--body); text-decoration: underline; text-underline-offset: 4px; cursor: pointer; }
+    .replay:hover { color: var(--night-text); }
 
     .plan { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; flex: 1; }
     .plan li { display: grid; grid-template-columns: 26px 1fr auto; align-items: center; gap: 10px; padding: 10px 12px; background: var(--night-3); border-radius: 12px; font-size: 14.5px; line-height: 1.3; }
@@ -299,15 +313,22 @@
     .ticks li::before { content: ""; width: 22px; height: 22px; border-radius: 50%; margin-top: 2px; background: var(--purple) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M6 12.5l4 4 8-9' stroke='white' stroke-width='3' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / 16px no-repeat; }
     .aud.teacher .ticks li::before { background-color: var(--green); }
 
-    .board { margin-top: auto; background: #1f1f1f; border-radius: var(--radius-sm); padding: 16px; font-size: 14px; }
-    .board-head { display: flex; justify-content: space-between; font: 600 12px/1 var(--mono); color: #a9a59b; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 12px; }
-    .row { display: grid; grid-template-columns: 30px 1fr 90px; gap: 10px; align-items: center; padding: 7px 0; }
-    .row + .row { border-top: 1px solid #2c2c2c; }
-    .row .ini { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; font: 800 12px/1 var(--display); color: #141414; }
-    .row .name small { display: block; color: #a9a59b; font-size: 12px; }
-    .bar { height: 8px; background: #333; border-radius: 999px; overflow: hidden; }
-    .bar i { display: block; height: 100%; background: var(--green); border-radius: 999px; }
-    .stuck { font: 700 10px/1 var(--mono); text-transform: uppercase; color: #141414; background: var(--coral); padding: 3px 6px; border-radius: 999px; margin-left: 6px; vertical-align: 1px; }
+    .st-stuck { --st: var(--coral); } .st-idle { --st: #8b8678; } .st-adv { --st: var(--green); } .st-done { --st: var(--purple); }
+    .board { margin-top: auto; background: #1f1f1f; border-radius: var(--radius-sm); padding: 16px; font-size: 14px; display: grid; gap: 14px; }
+    .board-head { display: flex; justify-content: space-between; font: 600 12px/1 var(--mono); color: #a9a59b; text-transform: uppercase; letter-spacing: .06em; }
+    .dash-meter { display: flex; gap: 3px; height: 10px; }
+    .dash-meter i { background: var(--st); border-radius: 3px; transform-origin: left; }
+    .in-view .dash-meter i { animation: grow .7s cubic-bezier(.2, .8, .2, 1) both; }
+    @keyframes grow { from { transform: scaleX(0); } }
+    .dash-legend { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 12.5px; color: #cfcabe; }
+    .dash-legend span::before { content: ""; display: inline-block; width: 8px; height: 8px; margin-right: 6px; border-radius: 50%; background: var(--st); }
+    .dash-cols { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    .dash-col { background: #2a2a2a; border-radius: 12px; padding: 10px; display: grid; gap: 8px; align-content: start; }
+    .dash-col b { font: 600 11px/1 var(--mono); color: #a9a59b; letter-spacing: .04em; }
+    .dash-card { position: relative; overflow: hidden; background: #1f1f1f; border-radius: 10px; padding: 9px 9px 9px 14px; font-weight: 700; font-size: 13.5px; line-height: 1.25; }
+    .dash-card::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 5px; background: var(--st); }
+    .dash-card small { display: block; margin-top: 3px; font: 600 10.5px/1.3 var(--mono); text-transform: uppercase; letter-spacing: .04em; color: var(--st); }
+    .dash-note { margin: 0; font-size: 12.5px; color: #a9a59b; }
 
     .portfolio { margin-top: auto; background: var(--card); border-radius: var(--radius-sm); padding: 16px; display: grid; gap: 10px; font-size: 14px; }
     .portfolio .repo-line { display: flex; align-items: center; gap: 10px; font: 600 13px/1.3 var(--mono); overflow-wrap: anywhere; }
@@ -433,12 +454,13 @@
       .aud h3 { font-size: 28px; }
       .rules li { grid-template-columns: 1fr; gap: 12px; padding: 18px; }
       .thread, .pr-bar, .pr-foot { padding-left: 16px; padding-right: 16px; }
-      .row { grid-template-columns: 30px 1fr 60px; }
+      .dash-cols { grid-template-columns: 1fr; }
       .hb-badge { border-radius: 18px; padding: 10px 14px; gap: 6px 10px; }
       .hb-badge .sep { display: none; }
       .hb-badge .trail { width: 100%; font-size: 13px; }
     }
   </style>
+  <script>document.documentElement.className += ' js';</script>
 </head>
 <body>
   <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -452,6 +474,7 @@
     <symbol id="i-docker" viewBox="0 0 24 24"><path d="M13.983 11.078h2.119a.186.186 0 00.186-.185V9.006a.186.186 0 00-.186-.186h-2.119a.185.185 0 00-.185.185v1.888c0 .102.083.185.185.185m-2.954-5.43h2.118a.186.186 0 00.186-.186V3.574a.186.186 0 00-.186-.185h-2.118a.185.185 0 00-.185.185v1.888c0 .102.082.185.185.185m0 2.716h2.118a.187.187 0 00.186-.186V6.29a.186.186 0 00-.186-.185h-2.118a.185.185 0 00-.185.185v1.887c0 .102.082.185.185.186m-2.93 0h2.12a.186.186 0 00.184-.186V6.29a.185.185 0 00-.185-.185H8.1a.185.185 0 00-.185.185v1.887c0 .102.083.185.185.186m-2.964 0h2.119a.186.186 0 00.185-.186V6.29a.185.185 0 00-.185-.185H5.136a.186.186 0 00-.186.185v1.887c0 .102.084.185.186.186m5.893 2.715h2.118a.186.186 0 00.186-.185V9.006a.186.186 0 00-.186-.186h-2.118a.185.185 0 00-.185.185v1.888c0 .102.082.185.185.185m-2.93 0h2.12a.185.185 0 00.184-.185V9.006a.185.185 0 00-.184-.186h-2.12a.185.185 0 00-.184.185v1.888c0 .102.083.185.185.185m-2.964 0h2.119a.185.185 0 00.185-.185V9.006a.185.185 0 00-.184-.186h-2.12a.186.186 0 00-.186.186v1.887c0 .102.084.185.186.185m-2.92 0h2.12a.185.185 0 00.184-.185V9.006a.185.185 0 00-.184-.186h-2.12a.185.185 0 00-.184.185v1.888c0 .102.082.185.185.185M23.763 9.89c-.065-.051-.672-.51-1.954-.51-.338.001-.676.03-1.01.087-.248-1.7-1.653-2.53-1.716-2.566l-.344-.199-.226.327c-.284.438-.49.922-.612 1.43-.23.97-.09 1.882.403 2.661-.595.332-1.55.413-1.744.42H.751a.751.751 0 00-.75.748 11.376 11.376 0 00.692 4.062c.545 1.428 1.355 2.48 2.41 3.124 1.18.723 3.1 1.137 5.275 1.137.983.003 1.963-.086 2.93-.266a12.248 12.248 0 003.823-1.389c.98-.567 1.86-1.288 2.61-2.136 1.252-1.418 1.998-2.997 2.553-4.4h.221c1.372 0 2.215-.549 2.68-1.009.309-.293.55-.65.707-1.046l.098-.288Z"/></symbol>
     <symbol id="i-githubactions" viewBox="0 0 24 24"><path d="M10.984 13.836a.5.5 0 0 1-.353-.146l-.745-.743a.5.5 0 1 1 .706-.708l.392.391 1.181-1.18a.5.5 0 0 1 .708.707l-1.535 1.533a.504.504 0 0 1-.354.146zm9.353-.147l1.534-1.532a.5.5 0 0 0-.707-.707l-1.181 1.18-.392-.391a.5.5 0 1 0-.706.708l.746.743a.497.497 0 0 0 .706-.001zM4.527 7.452l2.557-1.585A1 1 0 0 0 7.09 4.17L4.533 2.56A1 1 0 0 0 3 3.406v3.196a1.001 1.001 0 0 0 1.527.85zm2.03-2.436L4 6.602V3.406l2.557 1.61zM24 12.5c0 1.93-1.57 3.5-3.5 3.5a3.503 3.503 0 0 1-3.46-3h-2.08a3.503 3.503 0 0 1-3.46 3 3.502 3.502 0 0 1-3.46-3h-.558c-.972 0-1.85-.399-2.482-1.042V17c0 1.654 1.346 3 3 3h.04c.244-1.693 1.7-3 3.46-3 1.93 0 3.5 1.57 3.5 3.5S13.43 24 11.5 24a3.502 3.502 0 0 1-3.46-3H8c-2.206 0-4-1.794-4-4V9.899A5.008 5.008 0 0 1 0 5c0-2.757 2.243-5 5-5s5 2.243 5 5a5.005 5.005 0 0 1-4.952 4.998A2.482 2.482 0 0 0 7.482 12h.558c.244-1.693 1.7-3 3.46-3a3.502 3.502 0 0 1 3.46 3h2.08a3.503 3.503 0 0 1 3.46-3c1.93 0 3.5 1.57 3.5 3.5zm-15 8c0 1.378 1.122 2.5 2.5 2.5s2.5-1.122 2.5-2.5-1.122-2.5-2.5-2.5S9 19.122 9 20.5zM5 9c2.206 0 4-1.794 4-4S7.206 1 5 1 1 2.794 1 5s1.794 4 4 4zm9 3.5c0-1.378-1.122-2.5-2.5-2.5S9 11.122 9 12.5s1.122 2.5 2.5 2.5 2.5-1.122 2.5-2.5zm9 0c0-1.378-1.122-2.5-2.5-2.5S18 11.122 18 12.5s1.122 2.5 2.5 2.5 2.5-1.122 2.5-2.5zm-13 8a.5.5 0 1 0 1 0 .5.5 0 0 0-1 0zm2 0a.5.5 0 1 0 1 0 .5.5 0 0 0-1 0zm12 0c0 1.93-1.57 3.5-3.5 3.5a3.503 3.503 0 0 1-3.46-3.002c-.007.001-.013.005-.021.005l-.506.017h-.017a.5.5 0 0 1-.016-.999l.506-.017c.018-.002.035.006.052.007A3.503 3.503 0 0 1 20.5 17c1.93 0 3.5 1.57 3.5 3.5zm-1 0c0-1.378-1.122-2.5-2.5-2.5S18 19.122 18 20.5s1.122 2.5 2.5 2.5 2.5-1.122 2.5-2.5z"/></symbol>
     <symbol id="i-resend" viewBox="0 0 24 24"><path d="M2.023 0v24h5.553v-8.434h2.998L15.326 24h6.65l-5.372-9.258a7.652 7.652 0 0 0 3.316-3.016c.709-1.21 1.062-2.57 1.062-4.08 0-1.462-.353-2.767-1.062-3.91-.709-1.165-1.692-2.079-2.95-2.742C15.737.331 14.355 0 12.823 0Zm5.553 4.87h4.219c.731 0 1.349.125 1.851.376.526.252.925.618 1.2 1.098.274.457.412.994.412 1.611S15.132 9.12 14.88 9.6c-.229.48-.572.856-1.03 1.13-.434.252-.948.38-1.542.38H7.576Z"/></symbol>
+    <symbol id="i-typescript" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="4"/><text x="12" y="16.6" font-size="10.5" font-weight="800" text-anchor="middle" fill="#f4f1ea" font-family="JetBrains Mono, monospace">TS</text></symbol>
     <symbol id="i-europeanunion" viewBox="0 0 24 24"><path d="M11.373 1.94 10.36 1.2h1.253L12 0l.387 1.2h1.253l-1.013.74.386 1.207L12 2.4l-1.013.747Zm1.254 20.86.386 1.2L12 23.26l-1.013.74.386-1.2-1.013-.74h1.253L12 20.853l.387 1.207h1.253ZM1.64 12.8l-1.013.747.386-1.2L0 11.627h1.253l.387-1.2.387 1.2h1.26l-1.02.746.386 1.2-1.013-.746Zm5.807-9.467.386 1.2L6.82 3.8l-1.013.74.386-1.2L5.18 2.6h1.253l.387-1.2.387 1.2H8.46Zm-4.78 3.08.386-1.2.394 1.2h1.22l-1.014.747.387 1.2-1.02-.747L2 8.36l.387-1.2-1.014-.747ZM1.387 16.84h1.28l.386-1.2.394 1.2h1.22l-1.014.747.387 1.2-1.02-.74-1.02.74.387-1.2-1.014-.747Zm4.806 4.56-1.013-.733h1.253l.387-1.2.387 1.2H8.46l-1.013.733.386 1.2-1.013-.74-1.013.74Zm16.794-9.027.386 1.2-1.013-.746-1.027.746.387-1.2-1.02-.746H22l.387-1.2.386 1.2H24Zm-6.434-9.04L15.54 2.6h1.253l.387-1.2.387 1.2h1.253l-1.013.733.386 1.2L17.18 3.8l-1.013.74.386-1.2Zm4 3.074.394-1.2.386 1.2h1.254l-.987.753.387 1.2-1.014-.747-1.02.747.387-1.2-1.007-.747Zm.78 10.433h1.254l-.987.747.387 1.2-1.014-.74-1.02.74.387-1.2-1.007-.747h1.254l.393-1.2.387 1.2zm-2.513 3.827-1.013.733.386 1.2-1.013-.74-1.013.74.386-1.2-1.013-.733h1.253l.387-1.2.387 1.2z"/></symbol>
   </svg>
   <a class="skip" href="#conteudo">Pular para o conteúdo</a>
@@ -487,7 +510,7 @@
             <span class="trail">2026 · Trilha Acesso à educação</span>
           </a>
           <h1 id="titulo">
-            Cole uma vaga <span class="pill job" aria-hidden="true"><span>Java</span><span>Spring</span></span>
+            Cole uma vaga <span class="pill job" aria-hidden="true"><span class="swap a"><span>Java</span><span>Spring</span></span><span class="swap b"><span>TypeScript</span><span>Nest</span></span></span>
             ganhe <span class="pill tests" aria-hidden="true"><i></i><i></i><i class="fail"></i></span> um projeto
             que te faz <span class="pill ask" aria-hidden="true"><b>?</b></span> pensar.
           </h1>
@@ -530,6 +553,7 @@
         <ul class="logos">
           <li style="--brand: #e76f00"><svg class="ico" aria-hidden="true"><use href="#i-openjdk"/></svg>Java 21</li>
           <li style="--brand: #6db33f"><svg class="ico" aria-hidden="true"><use href="#i-springboot"/></svg>Spring Boot</li>
+          <li style="--brand: #3178c6"><svg class="ico" aria-hidden="true"><use href="#i-typescript"/></svg>TypeScript e NestJS</li>
           <li style="--brand: #4169e1"><svg class="ico" aria-hidden="true"><use href="#i-postgresql"/></svg>PostgreSQL</li>
           <li style="--brand: #cc0200"><svg class="ico" aria-hidden="true"><use href="#i-flyway"/></svg>Flyway</li>
           <li style="--brand: #25a162"><svg class="ico" aria-hidden="true"><use href="#i-junit5"/></svg>JUnit 5</li>
@@ -554,21 +578,24 @@
             <span class="eyebrow">Um exemplo de ponta a ponta</span>
             <h2 id="exemplo">Da vaga ao repositório, sem inventar nada.</h2>
           </div>
-          <p>Cada termo marcado na vaga vira uma competência de um vocabulário fechado. As regras escolhem as missões; o mesmo texto sempre gera o mesmo plano.</p>
+          <p>Cada termo marcado na vaga vira uma competência de um vocabulário fechado. O que a vaga pede e o projeto não pratica fica de fora, e o aluno é avisado. As regras escolhem as missões; o mesmo texto sempre gera o mesmo plano.</p>
         </div>
 
         <div class="flow">
           <div class="panel" id="vaga-panel">
             <div class="panel-tag"><span>1 · A vaga</span><b>lida em memória</b></div>
             <article class="classified">
-              <h4>Pessoa Desenvolvedora Java <mark class="lvl">Júnior</mark></h4>
-              <p>Buscamos quem tenha conhecimento em <mark>Java</mark> e <mark>Spring Boot</mark>, construção de <mark>APIs REST</mark>, banco de dados <mark>PostgreSQL</mark> e <mark>testes automatizados</mark>. Trabalho híbrido em equipe pequena.</p>
+              <span class="clip-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="6" r="2.5"/><circle cx="6" cy="18" r="2.5"/><path d="M8 7.5L20 18M8 16.5L20 6"/></svg>vaga</span>
+              <h4>Pessoa Desenvolvedora Java <mark class="lvl" data-chip="lvl">Júnior</mark></h4>
+              <p>Buscamos quem tenha conhecimento em <mark data-chip="java">Java</mark> e <mark data-chip="spring">Spring Boot</mark>, construção de <mark data-chip="api">APIs REST</mark>, banco de dados <mark data-chip="pg">PostgreSQL</mark> e <mark data-chip="tests">testes automatizados</mark>. Diferencial: <mark class="out" data-chip="kafka">Kafka</mark>. Trabalho híbrido em equipe pequena.</p>
             </article>
             <div class="chips" aria-label="O que foi reconhecido">
-              <span class="chip lvl">nível: júnior</span>
-              <span class="chip">java</span><span class="chip">spring</span><span class="chip">api-design</span>
-              <span class="chip">postgresql</span><span class="chip">automated-testing</span>
+              <span class="chip lvl" data-chip="lvl">nível: júnior</span>
+              <span class="chip" data-chip="java">java</span><span class="chip" data-chip="spring">spring</span><span class="chip" data-chip="api">api-design</span>
+              <span class="chip" data-chip="pg">postgresql</span><span class="chip" data-chip="tests">automated-testing</span>
+              <span class="chip out" data-chip="kafka">kafka · fora do projeto</span>
             </div>
+            <button class="replay" id="replay" type="button" hidden>Ver de novo</button>
           </div>
 
           <svg class="flow-arrow" width="40" height="40" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15m-6-6l6 6-6 6" stroke="currentColor" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -623,7 +650,7 @@
           <li class="b1">
             <svg class="shape" viewBox="0 0 100 100" aria-hidden="true"><path d="M50 4l12 30 32 4-24 22 7 32-27-16-27 16 7-32L6 38l32-4z" fill="#141414" opacity=".08"/></svg>
             <h3>Cole a vaga</h3>
-            <p>O texto de uma vaga real, colado no site ou encaminhado por e-mail. Ele é lido e descartado.</p>
+            <p>O texto de uma vaga real, colado no site ou lido de um link de página de carreira. Ele é lido em memória e descartado.</p>
           </li>
           <li class="b2">
             <div class="mini-plan" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span></div>
@@ -712,15 +739,20 @@
             <h3>Professores</h3>
             <p class="muted">Quem acompanha turmas de programação e quer saber onde cada aluno travou.</p>
             <ul class="ticks">
-              <li>Toda a turma recebe o mesmo projeto, a partir de uma vaga escolhida.</li>
-              <li>Um painel mostra a missão de cada aluno e quem está travado.</li>
-              <li>Um resumo semanal chega por e-mail.</li>
+              <li>Os alunos entram por um link e recebem o mesmo projeto, a partir de uma vaga escolhida.</li>
+              <li>O painel mostra a missão de cada aluno e quem está travado ou parado, sempre com o motivo.</li>
+              <li>Um resumo chega por e-mail toda segunda.</li>
             </ul>
-            <div class="board" aria-hidden="true">
-              <div class="board-head"><span>Painel da turma</span><span>3 alunos</span></div>
-              <div class="row"><span class="ini" style="background: var(--yellow)">AN</span><span class="name">Ana<small>Missão 5 de 6</small></span><span class="bar"><i style="width: 80%"></i></span></div>
-              <div class="row"><span class="ini" style="background: var(--coral)">JP</span><span class="name">João Pedro <span class="stuck">travado</span><small>Missão 2 de 6</small></span><span class="bar"><i style="width: 20%; background: var(--coral)"></i></span></div>
-              <div class="row"><span class="ini" style="background: #b8a8ff">LU</span><span class="name">Luiza<small>Missão 4 de 6</small></span><span class="bar"><i style="width: 55%"></i></span></div>
+            <div class="board" role="img" aria-label="Exemplo do painel da turma: 2 travados, 1 parado, 2 avançando e 1 concluído, com cada aluno na missão em que está">
+              <div class="board-head"><span>Painel da turma</span><span>6 alunos</span></div>
+              <div class="dash-meter"><i class="st-stuck" style="flex: 2"></i><i class="st-idle" style="flex: 1"></i><i class="st-adv" style="flex: 2"></i><i class="st-done" style="flex: 1"></i></div>
+              <div class="dash-legend"><span class="st-stuck">2 travados</span><span class="st-idle">1 parado</span><span class="st-adv">2 avançando</span><span class="st-done">1 concluído</span></div>
+              <div class="dash-cols">
+                <div class="dash-col"><b>MISSÃO 1</b><div class="dash-card st-idle">Caio<small>parado · 6 dias</small></div></div>
+                <div class="dash-col"><b>MISSÃO 2</b><div class="dash-card st-stuck">João Pedro<small>travado · 4 dias</small></div></div>
+                <div class="dash-col"><b>MISSÃO 3</b><div class="dash-card st-stuck">Bia<small>travado · 3 dias</small></div><div class="dash-card st-adv">Rafa<small>avançando</small></div></div>
+              </div>
+              <p class="dash-note">O professor vê o nome, a missão, os testes que falham e as perguntas do revisor. Nunca o código.</p>
             </div>
           </article>
         </div>
@@ -741,15 +773,15 @@
         </div>
         <ul class="rules">
           <li>
-            <span class="ic" style="background: var(--yellow)" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24"><path d="M4 7h10M4 12h16M4 17h7" stroke="#141414" stroke-width="2.6" stroke-linecap="round"/></svg></span>
+            <span class="ic" style="background: var(--yellow)" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#141414" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7.8 4.5v9L12 21l-7.8-4.5v-9z"/><circle cx="12" cy="12" r="2.5"/></svg></span>
             <div><h3>Competências com nome</h3><p>As habilidades da vaga são reconhecidas num vocabulário fechado, baseado na ESCO. O sistema prefere deixar de reconhecer a inventar.</p></div>
           </li>
           <li>
-            <span class="ic" style="background: var(--green)" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24"><path d="M5 5h14v14H5zM9 12l2 2 4-4" stroke="#141414" stroke-width="2.4" fill="none" stroke-linejoin="round" stroke-linecap="round"/></svg></span>
+            <span class="ic" style="background: var(--green)" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#141414" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 6h10M10 12h10M10 18h10M4 6h1.5M4 12h1.5M4 18h1.5"/></svg></span>
             <div><h3>Mesmo texto, mesmo plano</h3><p>A escolha e a ordem das missões seguem regras fixas; a IA só escreve os textos. Se ela falhar, o aluno recebe o projeto mesmo assim, com textos padrão.</p></div>
           </li>
           <li>
-            <span class="ic" style="background: var(--coral)" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24"><path d="M7 11V8a5 5 0 0 1 10 0v3M5 11h14v9H5z" stroke="#141414" stroke-width="2.4" fill="none" stroke-linejoin="round"/></svg></span>
+            <span class="ic" style="background: var(--coral)" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#141414" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></span>
             <div><h3>Privacidade desde o início</h3><p>O texto da vaga é lido em memória e não é guardado. Do aluno, ficam só o usuário do GitHub e o e-mail, com consentimento.</p></div>
           </li>
         </ul>
@@ -767,10 +799,11 @@
         </div>
         <ol class="timeline">
           <li class="done"><span class="n">01</span><div><h3>Leitura da vaga <span class="tag done">pronto</span></h3><p>Nível, tecnologias e competências reconhecidos no texto.</p></div></li>
-          <li class="done"><span class="n">02</span><div><h3>Plano do projeto <span class="tag done">pronto</span></h3><p>Missões escolhidas e ordenadas pelas competências da vaga.</p></div></li>
-          <li class="done"><span class="n">03</span><div><h3>Repositório do aluno <span class="tag done">pronto</span></h3><p>Criado pelo GitHub App, com uma issue por missão.</p></div></li>
-          <li><span class="n">04</span><div><h3>Revisor de pull requests <span class="tag next">a seguir</span></h3><p>Perguntas e dicas em 3 níveis, sem código da solução.</p></div></li>
-          <li><span class="n">05</span><div><h3>Modo turma <span class="tag next">a seguir</span></h3><p>Painel do professor e resumo semanal por e-mail.</p></div></li>
+          <li class="done"><span class="n">02</span><div><h3>Plano do projeto <span class="tag done">pronto</span></h3><p>Missões escolhidas e ordenadas pelas competências da vaga, em Java e Spring Boot ou em TypeScript e NestJS.</p></div></li>
+          <li class="done"><span class="n">03</span><div><h3>Repositório do aluno <span class="tag done">pronto</span></h3><p>Criado pelo GitHub App na conta do aluno, com uma issue por missão.</p></div></li>
+          <li class="done"><span class="n">04</span><div><h3>Revisor de pull requests <span class="tag done">pronto</span></h3><p>Lê os testes que falham e comenta com perguntas, sem código da solução.</p></div></li>
+          <li><span class="n">05</span><div><h3>Dicas em 3 níveis <span class="tag next">a seguir</span></h3><p>Uma dica por vez, quando o aluno pede com /dica.</p></div></li>
+          <li><span class="n">06</span><div><h3>Modo turma <span class="tag next">a seguir</span></h3><p>Convite por link, painel por missão e resumo semanal por e-mail.</p></div></li>
         </ol>
       </div>
     </section>
@@ -825,17 +858,77 @@
 
   <script>
     (function () {
-      // Highlight the job posting terms when the example scrolls into view.
+      // The example posting: each recognized term lights up and flies to its chip when the panel scrolls into view.
       var vaga = document.getElementById('vaga-panel');
-      if ('IntersectionObserver' in window) {
+      var replay = document.getElementById('replay');
+      var marks = Array.prototype.slice.call(vaga.querySelectorAll('mark'));
+      var chips = {};
+      Array.prototype.forEach.call(vaga.querySelectorAll('.chip[data-chip]'), function (c) { chips[c.getAttribute('data-chip')] = c; });
+      var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      var run = 0;
+
+      function land(chip) { chip.classList.remove('waiting'); chip.classList.add('landed'); }
+      function showAll() {
+        marks.forEach(function (m) { m.classList.add('on'); });
+        Object.keys(chips).forEach(function (k) { chips[k].classList.remove('waiting'); });
+      }
+      function fly(mark, chip) {
+        var from = mark.getBoundingClientRect(), to = chip.getBoundingClientRect();
+        var flyer = document.createElement('span');
+        flyer.className = 'flyer' + (mark.classList.contains('out') ? ' out' : mark.classList.contains('lvl') ? ' lvl' : '');
+        flyer.textContent = mark.textContent;
+        flyer.style.left = from.left + 'px'; flyer.style.top = (from.top - 4) + 'px';
+        document.body.appendChild(flyer);
+        var dx = to.left - from.left, dy = to.top - from.top + 4, ended = false;
+        function end() { if (ended) return; ended = true; flyer.remove(); land(chip); }
+        var a = flyer.animate([
+          { transform: 'translate(0, 0) scale(1) rotate(0)' },
+          { transform: 'translate(' + dx * 0.45 + 'px, ' + (dy * 0.45 - 40) + 'px) scale(1.15) rotate(-4deg)', offset: 0.45 },
+          { transform: 'translate(' + dx + 'px, ' + dy + 'px) scale(1) rotate(0)' }
+        ], { duration: 520, easing: 'cubic-bezier(.2, .8, .2, 1)' });
+        a.onfinish = end;
+        setTimeout(end, 750); // a background tab pauses animations; the chip still arrives
+      }
+      function play() {
+        var id = ++run;
+        replay.hidden = true;
+        marks.forEach(function (m) { m.classList.remove('on'); });
+        Object.keys(chips).forEach(function (k) { chips[k].classList.add('waiting'); chips[k].classList.remove('landed'); });
+        marks.forEach(function (m, i) {
+          setTimeout(function () {
+            if (id !== run) return;
+            m.classList.add('on');
+            var chip = chips[m.getAttribute('data-chip')];
+            setTimeout(function () { if (id === run && chip) fly(m, chip); }, 220);
+          }, 350 + i * 340);
+        });
+        setTimeout(function () { if (id === run) replay.hidden = false; }, 350 + marks.length * 340 + 900);
+      }
+      replay.addEventListener('click', play);
+
+      if (reduce || !('IntersectionObserver' in window)) {
+        showAll();
+      } else {
+        Object.keys(chips).forEach(function (k) { chips[k].classList.add('waiting'); });
         var io = new IntersectionObserver(function (entries) {
           entries.forEach(function (e) {
-            if (e.isIntersecting) { vaga.classList.add('in-view'); io.disconnect(); }
+            if (e.isIntersecting) { play(); io.disconnect(); }
           });
         }, { threshold: 0.4 });
         io.observe(vaga);
-      } else {
-        vaga.classList.add('in-view');
+      }
+
+      // The teacher's dashboard draws its bar when it scrolls into view.
+      var board = document.querySelector('.audience .board');
+      if (board && 'IntersectionObserver' in window) {
+        var io2 = new IntersectionObserver(function (entries) {
+          entries.forEach(function (e) {
+            if (e.isIntersecting) { board.classList.add('in-view'); io2.disconnect(); }
+          });
+        }, { threshold: 0.5 });
+        io2.observe(board);
+      } else if (board) {
+        board.classList.add('in-view');
       }
 
       // Reveal reviewer hints one at a time. Without JS all hints stay visible.
