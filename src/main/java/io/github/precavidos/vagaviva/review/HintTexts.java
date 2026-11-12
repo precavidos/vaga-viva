@@ -47,6 +47,22 @@ final class HintTexts {
 		return count;
 	}
 
+	/** Whether {@code comment} is a hint of levels 1 to {@value #LAST_LEVEL} about {@code missionId}. */
+	static boolean isHintAbout(PreviousComment comment, String missionId) {
+		return hintsGiven(List.of(comment), missionId) == 1;
+	}
+
+	/** The text a hint comment carries, without its marker and footer. */
+	static String text(PreviousComment comment) {
+		String body = comment.body();
+		Matcher marker = MARKER.matcher(body);
+		if (marker.find()) {
+			body = body.substring(marker.end());
+		}
+		int footer = body.indexOf(FOOTER_START);
+		return (footer < 0 ? body : body.substring(0, footer)).strip();
+	}
+
 	/** A hint comment: the marker, the text and a footer that says where the student is. */
 	static String comment(Mission mission, int level, String text) {
 		return marker(mission.id(), level) + "\n" + text.strip() + FOOTER_START + footer(mission, level) + "</sub>";
