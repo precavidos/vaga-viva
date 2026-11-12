@@ -38,3 +38,6 @@ build/
 *.pem
 .neon
 node_modules/
+
+### Brainstorming mockups ###
+.superpowers/

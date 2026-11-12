@@ -1,0 +1,349 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Vaga Viva — Aluno</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="vv.css?v=3">
+</head>
+<body>
+<main>
+  <div class="wrap stack lg">
+    <ol class="steps" aria-label="Etapas">
+      <li aria-current="step"><span class="n">1</span><span class="t">Vaga</span></li>
+      <li><span class="n">2</span><span class="t">Plano</span></li>
+      <li><span class="n">3</span><span class="t">Repositório</span></li>
+    </ol>
+
+    <p id="status" class="sr" role="status" aria-live="polite"></p>
+
+    <!-- Step 1: the posting -->
+    <section id="step-posting" class="duo" aria-labelledby="posting-title">
+      <div class="stack lg" style="padding-top:clamp(0px,3vw,40px)">
+        <h1 id="posting-title">Cole uma vaga.<br>Receba um <mark>projeto</mark>.</h1>
+        <p class="lead">O Vaga Viva lê o que a vaga pede e monta, no seu GitHub, um projeto com missões e testes para você praticar exatamente isso.</p>
+        <ul class="benefits">
+          <li><span id="b1"></span>Lemos o nível, as tecnologias e as competências.</li>
+          <li><span id="b2"></span>Montamos de 5 a 6 missões, da mais simples à mais difícil.</li>
+          <li><span id="b3"></span>Um revisor faz perguntas nos seus PRs, sem dar a resposta.</li>
+        </ul>
+      </div>
+
+      <form id="posting-form" class="stack" novalidate>
+        <div class="tabs" role="tablist" aria-label="Como enviar a vaga" style="justify-self:start">
+          <button type="button" role="tab" id="tab-text" aria-selected="true" aria-controls="panel-text">Colar o texto</button>
+          <button type="button" role="tab" id="tab-url" aria-selected="false" aria-controls="panel-url" tabindex="-1">Usar um link</button>
+        </div>
+        <div id="panel-text" role="tabpanel" aria-labelledby="tab-text" class="stack" style="gap:8px">
+          <div class="clip">
+            <label class="clip-tag" for="posting"><span id="scissors"></span>Texto da vaga</label>
+            <textarea id="posting" maxlength="20000" aria-describedby="posting-error" placeholder="Cole aqui a descrição da vaga: requisitos, nível, tecnologias…"></textarea>
+          </div>
+          <div class="row between small"><span id="posting-error" class="error-text" hidden>Cole o texto da vaga para montarmos o plano.</span><span></span><span class="mono muted" id="posting-count">0 / 20.000</span></div>
+        </div>
+        <div id="panel-url" role="tabpanel" aria-labelledby="tab-url" class="field" hidden>
+          <label for="posting-url">Link da página da vaga</label>
+          <span class="help">Funciona com páginas de carreira abertas, sem login.</span>
+          <input id="posting-url" class="input" type="url" inputmode="url" placeholder="https://empresa.com/carreiras/dev-junior">
+        </div>
+        <div class="row between">
+          <button type="button" class="link small" id="sample">Usar uma vaga de exemplo</button>
+          <button type="submit" class="btn" id="plan-button">Montar meu plano <span class="arrow" id="arrow"></span></button>
+        </div>
+        <p class="privacy"><span id="lock"></span><span>O texto da vaga é lido em memória e não fica guardado no servidor.</span></p>
+      </form>
+    </section>
+
+    <!-- Step 2: reading the posting, then the plan -->
+    <section id="step-plan" class="duo" aria-labelledby="read-title" hidden>
+      <div class="sticky stack">
+        <div class="clip">
+          <span class="clip-tag"><span id="scissors2"></span>Sua vaga</span>
+          <span class="scanline" id="scanline"></span>
+          <p class="clip-text" id="clip-text"></p>
+        </div>
+        <button type="button" class="link small" id="change" style="justify-self:start">Trocar a vaga</button>
+      </div>
+
+      <div class="stack lg">
+        <div class="card stack">
+          <div class="row between">
+            <h2 id="read-title" tabindex="-1">Lendo a vaga…</h2>
+            <button type="button" class="link small" id="skip">Pular a animação</button>
+          </div>
+          <div class="findings" id="findings"></div>
+        </div>
+
+        <div id="plan-ready" class="stack lg" hidden>
+          <div class="stack">
+            <h2 id="plan-title" tabindex="-1">Seis missões, do cadastro ao contêiner.</h2>
+            <p class="muted">Cada missão já vem com testes. Eles ficam vermelhos até você implementar.</p>
+          </div>
+          <ol class="missions stagger" id="missions"></ol>
+          <div class="row" style="justify-content:flex-end">
+            <button type="button" class="btn brand-btn" id="create-button"><span id="gh"></span>Criar meu repositório no GitHub</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Step 3: the repository -->
+    <div class="wrap narrow" id="step-repo" hidden style="padding:0;width:100%">
+      <section class="board stack lg" aria-labelledby="repo-title">
+        <div id="repo-creating" class="stack lg">
+          <h2>Criando o seu repositório…</h2>
+          <ol class="progress" id="progress">
+            <li><span class="dot"></span>Copiando o repositório-modelo</li>
+            <li><span class="dot"></span>Gravando o seu plano</li>
+            <li><span class="dot"></span>Abrindo as missões</li>
+            <li><span class="dot"></span>Escrevendo o README do seu projeto</li>
+          </ol>
+          <p class="muted small">Isso leva alguns segundos. Pode deixar esta página aberta.</p>
+        </div>
+        <div id="repo-ready" class="stack lg" hidden>
+          <svg class="zig" viewBox="0 0 460 260" aria-hidden="true"><path d="M20 230 L110 60 L170 200 L260 40 L320 180 L440 50" stroke="var(--green)"/></svg>
+          <div class="stack">
+            <span class="big-check" id="big-check"></span>
+            <h1 id="repo-title" tabindex="-1">Seu repositório está <mark>pronto</mark>.</h1>
+            <p class="lead">Comece pela Missão 1. Quando abrir um PR, o revisor responde com perguntas, e você pode pedir uma dica comentando <span class="mono">/dica</span>.</p>
+          </div>
+          <div id="repo-panel"></div>
+          <div class="row">
+            <a class="btn" href="#">Abrir a Missão 1 <span class="arrow" id="arrow2"></span></a>
+            <a class="btn ghost" href="#">Ver o repositório</a>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+</main>
+
+<script src="vv.js?v=3"></script>
+<script>
+  const { $, $$, ICON, ic, PLAN, LEVELS, esc } = VV;
+  window.PROTO_STATES = [['Início', ''], ['Lendo a vaga', 'plano'], ['Repositório pronto', 'pronto']];
+  VV.chrome({ user: VV.state() === 'pronto' ? 'maria' : null });
+  $('#lock').innerHTML = ICON.lock; $('#arrow').innerHTML = ICON.arrow; $('#arrow2').innerHTML = ICON.arrow;
+  $('#gh').innerHTML = ICON.github; $('#big-check').innerHTML = ICON.check;
+  $('#scissors').innerHTML = ICON.scissors; $('#scissors2').innerHTML = ICON.scissors;
+  $('#b1').innerHTML = ic('posting', 'yellow'); $('#b2').innerHTML = ic('mission', 'green'); $('#b3').innerHTML = ic('question', 'lilac');
+
+  const SAMPLE = `Pessoa Desenvolvedora Java Júnior
+
+Sobre o time
+Você vai trabalhar no time de agendamentos, que cuida das consultas de mais de 200 clínicas.
+
+O que esperamos
+• Conhecimento de Java e Spring Boot
+• Experiência com APIs REST, mesmo em projetos de estudo
+• SQL e noções de PostgreSQL
+• Vontade de aprender Docker no dia a dia
+
+Diferenciais
+• Kafka
+• Inglês para leitura
+
+Modelo híbrido, em São Paulo.`;
+
+  // What the extraction endpoint answers for this posting (POST /api/job-postings/extraction):
+  // every term below is a `matchedTerms` or `evidence` entry, so the page only marks what the server recognized.
+  const EXTRACTION = {
+    level: { term: 'Júnior', label: 'Júnior' },
+    technologies: [
+      { term: 'Java', name: 'Java' }, { term: 'Spring Boot', name: 'Spring Boot' }, { term: 'SQL', name: 'SQL' },
+      { term: 'PostgreSQL', name: 'PostgreSQL' }, { term: 'Docker', name: 'Docker' },
+    ],
+    uncovered: [{ term: 'Kafka', name: 'Kafka' }],
+    skills: [
+      { label: 'Programação em Java', evidence: 'Java' }, { label: 'Spring Framework', evidence: 'Spring Boot' },
+      { label: 'Design de APIs', evidence: 'APIs REST', own: true }, { label: 'SQL', evidence: 'SQL' },
+      { label: 'Contêineres', evidence: 'Docker' },
+    ],
+  };
+
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let fast = reduced;
+  const wait = (ms) => (fast ? Promise.resolve() : new Promise((resolve) => setTimeout(resolve, ms)));
+  const say = (text) => { $('#status').textContent = text; };
+  const show = (id) => ['step-posting', 'step-plan', 'step-repo'].forEach((s) => { $('#' + s).hidden = s !== id; });
+
+  // Tabs: arrow keys move between them (DESIGN.md, item 7).
+  const tabs = $$('[role="tab"]');
+  const select = (tab) => tabs.forEach((t) => {
+    const on = t === tab;
+    t.setAttribute('aria-selected', on); t.tabIndex = on ? 0 : -1;
+    $('#' + t.getAttribute('aria-controls')).hidden = !on;
+  });
+  tabs.forEach((tab, i) => {
+    tab.addEventListener('click', () => select(tab));
+    tab.addEventListener('keydown', (e) => {
+      if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+      const next = tabs[(i + (e.key === 'ArrowRight' ? 1 : tabs.length - 1)) % tabs.length];
+      select(next); next.focus();
+    });
+  });
+
+  $('#posting').addEventListener('input', (e) => {
+    $('#posting-count').textContent = `${e.target.value.length.toLocaleString('pt-BR')} / 20.000`;
+    $('#posting-error').hidden = true; e.target.removeAttribute('aria-invalid');
+  });
+  $('#sample').addEventListener('click', () => {
+    select(tabs[0]);
+    $('#posting').value = SAMPLE; $('#posting').dispatchEvent(new Event('input')); $('#posting').focus();
+  });
+
+  // Wraps each recognized term in the posting with <mark>, without matching inside other words ("Java" is not "JavaScript").
+  function markUp(text, terms) {
+    const pattern = terms.map((t) => t.term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).sort((a, b) => b.length - a.length).join('|');
+    const regex = new RegExp(`(?<![\\p{L}\\p{N}])(${pattern})(?![\\p{L}\\p{N}])`, 'giu');
+    let html = '', last = 0;
+    for (const match of text.matchAll(regex)) {
+      const term = terms.find((t) => t.term.toLowerCase() === match[0].toLowerCase());
+      html += esc(text.slice(last, match.index)) + `<mark data-kind="${term.kind}" data-term="${esc(term.term)}">${esc(match[0])}</mark>`;
+      last = match.index + match[0].length;
+    }
+    return html + esc(text.slice(last));
+  }
+
+  const GROUPS = [
+    { kind: 'level', icon: 'level', color: 'lilac', what: 'Nível' },
+    { kind: 'tech', icon: 'stack', color: 'yellow', what: 'Tecnologias' },
+    { kind: 'skill', icon: 'skill', color: 'green', what: 'Competências' },
+    { kind: 'out', icon: 'out', color: 'coral', what: 'Fora deste projeto', note: `Este projeto usa ${PLAN.archetypeName}. Estes itens a vaga cita, mas o projeto não pratica.` },
+  ];
+  const HL = { level: '#c9bdff', tech: 'var(--yellow)', out: '#ffc2b5' };
+
+  function addChip(kind, html, cls = '') {
+    const group = $(`.finding[data-kind="${kind}"]`);
+    group.hidden = false;
+    const chip = Object.assign(document.createElement('span'), { className: `chip ${cls}`, innerHTML: html });
+    $('.chips', group).append(chip);
+    return chip;
+  }
+
+  // The word leaves the posting and lands as a chip in its group.
+  async function fly(mark, chip) {
+    if (fast) { chip.classList.remove('waiting'); return; }
+    const from = mark.getBoundingClientRect(), to = chip.getBoundingClientRect();
+    const ghost = Object.assign(document.createElement('span'), { className: 'flyer', textContent: mark.textContent });
+    ghost.style.cssText = `left:${from.left}px;top:${from.top - 4}px;--hl:${HL[mark.dataset.kind]}`;
+    document.body.append(ghost);
+    const dx = to.left - from.left, dy = to.top - from.top + 4;
+    const flight = ghost.animate([
+      { transform: 'translate(0,0) scale(1) rotate(0)' },
+      { transform: `translate(${dx * .45}px, ${dy * .45 - 46}px) scale(1.18) rotate(-4deg)`, offset: .45 },
+      { transform: `translate(${dx}px, ${dy}px) scale(1) rotate(0)` },
+    ], { duration: 520, easing: 'cubic-bezier(.2,.8,.2,1)' });
+    // A background tab pauses animations: the timer makes sure the plan still arrives.
+    await Promise.race([flight.finished, new Promise((resolve) => setTimeout(resolve, 700))]);
+    ghost.remove();
+    chip.classList.remove('waiting'); chip.classList.add('pop');
+  }
+
+  let run = 0;
+  async function read(text) {
+    const mine = ++run;
+    fast = reduced;
+    VV.setStep(2); show('step-plan');
+    $('#plan-ready').hidden = true; $('#skip').hidden = false;
+    $('#read-title').textContent = 'Lendo a vaga…';
+    say('Lendo a vaga…');
+
+    const terms = [
+      { ...EXTRACTION.level, kind: 'level' },
+      ...EXTRACTION.technologies.map((t) => ({ ...t, kind: 'tech' })),
+      ...EXTRACTION.uncovered.map((t) => ({ ...t, kind: 'out' })),
+      ...EXTRACTION.skills.filter((s) => s.own).map((s) => ({ term: s.evidence, kind: 'tech', own: true })),
+    ];
+    $('#clip-text').innerHTML = markUp(text, terms);
+    $('#findings').innerHTML = GROUPS.map((g) => `<div class="finding" data-kind="${g.kind}" ${g.kind === 'out' ? 'hidden' : ''}>
+      ${ic(g.icon, g.color)}<span class="what">${g.what}</span><div class="chips"></div>${g.note ? `<p class="note">${esc(g.note)}</p>` : ''}</div>`).join('');
+
+    // 1. A reading line sweeps the clipping.
+    const line = $('#scanline');
+    line.style.setProperty('--sweep', `${$('.clip', $('#step-plan')).offsetHeight - 62}px`);
+    line.classList.remove('run'); void line.offsetWidth; line.classList.add('run');
+    await wait(900);
+
+    // 2. Each recognized term lights up, in reading order, and flies to its group.
+    const seen = new Set(), flights = []; let found = 0;
+    for (const mark of $$('#clip-text mark')) {
+      if (mine !== run) return;
+      mark.classList.add('on');
+      const key = mark.dataset.term.toLowerCase();
+      if (seen.has(key)) continue;
+      seen.add(key);
+      const term = terms.find((t) => t.term.toLowerCase() === key);
+      if (!fast) mark.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      await wait(140);
+      if (term.own) continue; // evidence of a skill only: it becomes a chip in step 3
+      const chip = addChip(term.kind, esc(term.label ?? term.name), `waiting ${term.kind === 'out' ? 'out' : ''}`);
+      chip.dataset.term = key;
+      // Flights overlap: the next word lights up while this one is still in the air.
+      flights.push(fly(mark, chip).then(() => {
+        if (mine !== run) return;
+        $('#read-title').innerHTML = `<span class="counter">${++found}</span> ${found === 1 ? 'termo reconhecido' : 'termos reconhecidos'}`;
+      }));
+      await wait(240);
+    }
+    await Promise.all(flights);
+    if (mine !== run) return;
+    await wait(200);
+
+    // 3. Competências: each one names the term that evidences it.
+    for (const skill of EXTRACTION.skills) {
+      if (mine !== run) return;
+      const source = $(`.finding .chip[data-term="${skill.evidence.toLowerCase()}"]`);
+      if (source && !fast) { source.classList.remove('pulse'); void source.offsetWidth; source.classList.add('pulse'); }
+      addChip('skill', `${esc(skill.label)} <small>por “${esc(skill.evidence)}”</small>`, 'pop');
+      await wait(130);
+    }
+    if (mine !== run) return;
+    await wait(350);
+
+    // 4. The plan.
+    $('#skip').hidden = true;
+    $('#read-title').textContent = 'O que a vaga pede';
+    $('#missions').innerHTML = PLAN.missions.map(VV.missionItem).join('');
+    $('#plan-ready').hidden = false;
+    say(`Leitura concluída: nível ${LEVELS[PLAN.seniorityLevel]}, ${EXTRACTION.technologies.length} tecnologias e ${EXTRACTION.skills.length} competências. Plano pronto, com ${PLAN.missions.length} missões.`);
+    if (!fast) $('#plan-ready').scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }
+
+  async function create() {
+    VV.setStep(3); show('step-repo');
+    $('#repo-creating').hidden = false; $('#repo-ready').hidden = true;
+    say('Criando o seu repositório no GitHub.');
+    await VV.runProgress($('#progress'), VV.wait(2600));
+    ready();
+  }
+
+  function ready() {
+    VV.setStep(4); show('step-repo');
+    $('#repo-creating').hidden = true; $('#repo-ready').hidden = false;
+    $('#repo-panel').innerHTML = VV.repoPanel('maria/vaga-viva-clinic-scheduling', PLAN.missions);
+    say('Seu repositório está pronto.'); $('#repo-title').focus();
+  }
+
+  $('#posting-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const byText = tabs[0].getAttribute('aria-selected') === 'true';
+    if (byText && !$('#posting').value.trim()) {
+      $('#posting-error').hidden = false; $('#posting').setAttribute('aria-invalid', 'true'); $('#posting').focus();
+      return;
+    }
+    // The prototype recognizes the example's terms; with a link, it reads the example posting.
+    read(byText ? $('#posting').value : SAMPLE);
+  });
+  $('#skip').addEventListener('click', () => { fast = true; $$('.flyer').forEach((g) => g.getAnimations().forEach((a) => a.finish())); });
+  $('#change').addEventListener('click', () => { run++; VV.setStep(1); show('step-posting'); $('#posting').focus(); });
+  $('#create-button').addEventListener('click', create);
+
+  if (VV.state() === 'plano') { $('#posting').value = SAMPLE; read(SAMPLE); }
+  if (VV.state() === 'pronto') ready();
+</script>
+</body>
+</html>
