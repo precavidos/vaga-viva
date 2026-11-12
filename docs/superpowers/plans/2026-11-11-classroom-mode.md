@@ -368,6 +368,7 @@ Esta tarefa vem depois da Tarefa 7, das páginas do professor e do convite. Assi
 
 **Interfaces:**
 - Consome: `StudentStatus.of` (Tarefa 3), `ClassroomProperties`, `Clock`, o catálogo de missões (para os títulos) e `ClassroomPages` (Tarefa 7).
+- Atenção: o `SecurityConfig` libera `GET /api/classrooms/{joinCode}`, que casa com qualquer segmento único depois de `/api/classrooms`. A API do painel não pode ser um `GET /api/classrooms/{id}`: use `/api/classrooms/{id}/dashboard`, como planejado. Na Tarefa 8, o `professor.html` troca `DASHBOARD_READY` para `true` (os cartões voltam a ser links e o botão "Abrir o painel" aparece), e a regex de volta do `index.html` ganha `turmas/[0-9a-f-]{36}`.
 - Produz:
   - `record Dashboard(UUID id, String name, String inviteUrl, Counts counts, List<Column> columns)`, com:
     - `record Counts(int stuck, int idle, int advancing, int completed)`;

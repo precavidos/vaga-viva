@@ -1,0 +1,338 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Vaga Viva — Professor</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/vv.css">
+</head>
+<body>
+<main>
+  <p id="status" class="sr" role="status" aria-live="polite"></p>
+
+  <!-- Looking up who is signed in -->
+  <div class="wrap narrow" id="loading" aria-busy="true">
+    <div class="board skeleton" aria-hidden="true"><i class="tall"></i><i></i><i></i></div>
+  </div>
+
+  <!-- The session could not be checked -->
+  <div class="wrap narrow" id="failed" hidden>
+    <div class="banner error" role="alert"><span data-icon="warning"></span><div><b>Não deu para abrir a área do professor.</b><span id="failed-text">Sem conexão com o Vaga Viva. Tente de novo.</span> <button type="button" class="link" id="retry-me">Tentar de novo</button></div></div>
+  </div>
+
+  <!-- Signed out -->
+  <div class="wrap narrow" id="signed-out" hidden>
+    <section class="board stack lg" aria-labelledby="out-title">
+      <div class="stack">
+        <h1 id="out-title" tabindex="-1">Sua turma,<br>de <mark>relance</mark>.</h1>
+        <p class="lead">Escolha uma vaga real e mande um link para a turma. Cada aluno recebe o projeto no próprio repositório. O painel mostra a missão de cada aluno.</p>
+      </div>
+      <div class="banner info" id="out-note" role="alert" hidden><span data-icon="info"></span><div id="out-note-text"></div></div>
+      <ul class="benefits">
+        <li><span data-tile="users|yellow"></span>Todos recebem o mesmo projeto, a partir de uma vaga-base.</li>
+        <li><span data-tile="board|green"></span>O painel mostra a missão de cada aluno e quem vale uma conversa.</li>
+        <li><span data-tile="mail|lilac"></span>Toda segunda, um resumo chega no seu e-mail.</li>
+      </ul>
+      <div class="row"><button type="button" class="btn" id="sign-in"><span data-icon="github"></span>Entrar com o GitHub</button></div>
+    </section>
+  </div>
+
+  <!-- Signed in -->
+  <div class="wrap stack lg" id="signed-in" hidden>
+    <h1>Suas turmas.</h1>
+    <div class="banner info" id="forbidden" role="alert" hidden><span data-icon="info"></span><div><b id="forbidden-text"></b>Se você faz parte do piloto, fale com a equipe do Vaga Viva para liberar o seu usuário.</div></div>
+
+    <div class="two" id="workspace">
+      <!-- New classroom -->
+      <section class="board stack lg" id="new-board" aria-labelledby="new-title">
+        <div class="row between">
+          <h2 id="new-title">Nova turma</h2>
+          <ol class="steps" aria-label="Etapas">
+            <li aria-current="step"><span class="n">1</span><span class="t">Vaga-base</span></li>
+            <li><span class="n">2</span><span class="t">Plano</span></li>
+            <li><span class="n">3</span><span class="t">Turma</span></li>
+          </ol>
+        </div>
+
+        <form id="f-posting" class="stack" novalidate>
+          <div class="field">
+            <label for="posting">Vaga-base</label>
+            <span class="help">É a vaga que define o projeto de toda a turma. Escolha uma do nível dos seus alunos.</span>
+            <textarea id="posting" class="textarea" style="min-height:160px" maxlength="20000" placeholder="Cole aqui a descrição da vaga…" aria-describedby="posting-error"></textarea>
+            <span id="posting-error" class="error-text" hidden></span>
+          </div>
+          <div class="row between">
+            <p class="privacy"><span data-icon="lock"></span><span>A vaga não fica guardada. A turma guarda só o plano.</span></p>
+            <button type="submit" class="btn" id="b-plan">Ver o plano <span class="arrow" data-icon="arrow"></span></button>
+          </div>
+        </form>
+
+        <div id="f-plan" class="stack" hidden>
+          <h3 id="plan-title" tabindex="-1">O plano desta turma</h3>
+          <div class="chips pops" id="plan-chips"></div>
+          <div class="banner warn" id="plan-fit" hidden><span data-icon="warning"></span><div id="plan-fit-text"></div></div>
+          <ol class="missions stagger" id="missions"></ol>
+          <div class="row between">
+            <button type="button" class="link" id="back">Trocar a vaga-base</button>
+            <button type="button" class="btn" id="b-next">Usar este plano <span class="arrow" data-icon="arrow"></span></button>
+          </div>
+        </div>
+
+        <form id="f-details" class="stack lg" hidden novalidate>
+          <div class="field">
+            <label for="name">Nome da turma</label>
+            <input id="name" class="input" maxlength="80" placeholder="Ex.: Back-end 2026.2" aria-describedby="name-error">
+            <span id="name-error" class="error-text" hidden>Dê um nome para a turma.</span>
+          </div>
+          <div class="field">
+            <label for="email">Seu e-mail <span class="muted" style="font-weight:400">(opcional)</span></label>
+            <span class="help">Para receber o resumo da turma toda segunda de manhã.</span>
+            <input id="email" class="input" type="email" autocomplete="email" placeholder="voce@escola.edu.br" aria-describedby="email-error">
+            <span id="email-error" class="error-text" hidden>Esse e-mail não parece certo. Confira se tem @ e o domínio, ou apague o campo.</span>
+          </div>
+          <label class="check"><input type="checkbox" id="consent" aria-describedby="consent-error"><span>Quero receber o resumo semanal neste e-mail. <span class="muted">Guardamos o endereço só para isso.</span></span></label>
+          <span id="consent-error" class="error-text" hidden>Marque a caixa para recebermos a sua autorização, ou apague o e-mail.</span>
+          <div class="banner error" id="create-error" role="alert" hidden><span data-icon="warning"></span><div id="create-error-text"></div></div>
+          <div class="row between">
+            <button type="button" class="link" id="back-plan">Voltar ao plano</button>
+            <button type="submit" class="btn brand-btn" id="b-create">Criar a turma</button>
+          </div>
+        </form>
+
+        <div id="f-done" class="stack lg" hidden>
+          <div class="stack">
+            <span class="big-check" data-icon="check"></span>
+            <h2 id="done-title" tabindex="-1">Turma criada. Agora, <mark>convide</mark>.</h2>
+            <p class="muted">Mande este link para os alunos. Cada um entra com o GitHub e recebe o projeto no próprio repositório.</p>
+          </div>
+          <div id="invite"></div>
+          <div class="row"><a class="btn" id="open-panel" href="#">Abrir o painel <span class="arrow" data-icon="arrow"></span></a><button type="button" class="btn ghost" id="again">Criar outra turma</button></div>
+        </div>
+      </section>
+
+      <!-- Classrooms -->
+      <section class="stack" aria-labelledby="list-title">
+        <h2 id="list-title" class="sr">Turmas criadas</h2>
+        <div id="classrooms" class="stack"></div>
+      </section>
+    </div>
+  </div>
+</main>
+
+<script src="/vv.js"></script>
+<script>
+  const { $, ICON, LEVELS, esc } = VV;
+
+  // Static icons.
+  document.querySelectorAll('[data-icon]').forEach((el) => { el.innerHTML = ICON[el.dataset.icon]; });
+  document.querySelectorAll('[data-tile]').forEach((el) => { const [name, color] = el.dataset.tile.split('|'); el.innerHTML = VV.ic(name, color); });
+  VV.chrome('Professor');
+
+  const say = (text) => { $('#status').textContent = text; };
+  const show = (id) => { ['loading', 'failed', 'signed-out', 'signed-in'].forEach((p) => { $('#' + p).hidden = p !== id; }); };
+
+  // ---- Who is signed in ----
+  async function start() {
+    show('loading');
+    let response;
+    try {
+      response = await fetch('/api/me');
+    } catch {
+      show('failed'); say('Sem conexão com o Vaga Viva.');
+      return;
+    }
+    if (response.status === 401) { showSignedOut(); return; }
+    if (!response.ok) { $('#failed-text').textContent = 'O Vaga Viva não respondeu como esperado.'; show('failed'); return; }
+    const me = await response.json();
+    VV.setUser(me.login);
+    show('signed-in');
+    loadClassrooms();
+  }
+
+  function showSignedOut(note) {
+    VV.setUser(null);
+    $('#out-note').hidden = !note;
+    if (note) $('#out-note-text').textContent = note;
+    show('signed-out');
+    if (note) say(note);
+  }
+  $('#sign-in').addEventListener('click', VV.signIn);
+  $('#retry-me').addEventListener('click', start);
+
+  // ---- Posting -> plan -> details -> invite ----
+  const parts = ['f-posting', 'f-plan', 'f-details', 'f-done'];
+  const go = (id, step) => { parts.forEach((p) => { $('#' + p).hidden = p !== id; }); VV.setStep(step); };
+
+  function fitText(fit, stack) {
+    if (!fit || fit.status === 'COVERED' || fit.status === 'NOT_STATED') return '';
+    const missing = (fit.uncovered ?? []).join(', ');
+    if (fit.status === 'PARTIAL') return `O projeto da turma usa ${stack}. A vaga também cita ${missing}, que ele não pratica.`;
+    return `A vaga pede ${missing}, e ainda não temos projeto para essa stack. A turma recebe o projeto em ${stack}, que pratica o que vale nas duas.`;
+  }
+
+  function fieldError(input, error, message) {
+    error.hidden = !message;
+    if (message) error.textContent = message;
+    input.toggleAttribute('aria-invalid', Boolean(message));
+  }
+
+  $('#f-posting').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const text = $('#posting').value;
+    if (!text.trim()) {
+      fieldError($('#posting'), $('#posting-error'), 'Cole a descrição da vaga para ver o plano.');
+      $('#posting').focus();
+      return;
+    }
+    fieldError($('#posting'), $('#posting-error'), '');
+    VV.busy($('#b-plan'), 'Lendo a vaga');
+    say('Lendo a vaga-base…');
+    try {
+      const response = await fetch('/api/project-plans', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text }),
+      });
+      if (!response.ok) {
+        const message = (await VV.problemDetail(response)).detail ?? 'Não foi possível ler a vaga. Confira o texto e tente de novo.';
+        fieldError($('#posting'), $('#posting-error'), message);
+        say(message);
+        $('#posting').focus();
+        return;
+      }
+      showPlan(await response.json());
+    } catch {
+      const message = 'Sem conexão com o Vaga Viva. Tente de novo.';
+      fieldError($('#posting'), $('#posting-error'), message);
+      say(message);
+    } finally {
+      VV.idle($('#b-plan'));
+    }
+  });
+
+  function showPlan(plan) {
+    const missions = Array.isArray(plan.missions) ? plan.missions : [];
+    $('#plan-chips').innerHTML = `<span class="chip dark">${ICON.stack}${esc(plan.archetypeName)}</span>`
+      + `<span class="chip purple">${ICON.level}Nível ${esc(LEVELS[plan.seniorityLevel] ?? plan.seniorityLevel)}</span>`
+      + `<span class="chip yellow">${ICON.mission}${missions.length} ${missions.length === 1 ? 'missão' : 'missões'}</span>`;
+    const fit = fitText(plan.archetypeFit, plan.archetypeName);
+    $('#plan-fit').hidden = !fit;
+    $('#plan-fit-text').textContent = fit;
+    $('#missions').innerHTML = missions.map(VV.missionItem).join('');
+    go('f-plan', 2);
+    say(`Plano pronto, com ${missions.length} ${missions.length === 1 ? 'missão' : 'missões'}.`);
+    $('#plan-title').focus();
+  }
+
+  $('#back').addEventListener('click', () => { go('f-posting', 1); $('#posting').focus(); });
+  $('#b-next').addEventListener('click', () => { go('f-details', 3); $('#name').focus(); });
+  $('#back-plan').addEventListener('click', () => { go('f-plan', 2); $('#plan-title').focus(); });
+
+  $('#f-details').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const name = $('#name').value.trim();
+    const email = $('#email').value.trim();
+    const noName = !name;
+    const badEmail = email !== '' && !$('#email').checkValidity();
+    const noConsent = email !== '' && !badEmail && !$('#consent').checked;
+    fieldError($('#name'), $('#name-error'), noName ? 'Dê um nome para a turma.' : '');
+    fieldError($('#email'), $('#email-error'), badEmail ? $('#email-error').textContent : '');
+    $('#consent-error').hidden = !noConsent;
+    $('#consent').toggleAttribute('aria-invalid', noConsent);
+    $('#create-error').hidden = true;
+    if (noName) { $('#name').focus(); return; }
+    if (badEmail) { $('#email').focus(); return; }
+    if (noConsent) { $('#consent').focus(); return; }
+
+    VV.busy($('#b-create'), 'Criando a turma');
+    say('Criando a turma…');
+    try {
+      const response = await fetch('/api/classrooms', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-XSRF-TOKEN': VV.csrfToken() },
+        body: JSON.stringify({ text: $('#posting').value, name, teacherEmail: email || null, emailConsent: email !== '' && $('#consent').checked }),
+      });
+      if (response.status === 401) {
+        showSignedOut('Sua sessão terminou. Entre de novo e cole a vaga-base outra vez: ela não fica guardada.');
+        return;
+      }
+      const body = await VV.problemDetail(response);
+      if (response.status === 403) { showForbidden(body.detail); return; }
+      if (!response.ok) { showCreateError(body.detail ?? 'Não foi possível criar a turma agora. Tente de novo em instantes.'); return; }
+      showCreated(body);
+    } catch {
+      showCreateError('Sem conexão com o Vaga Viva. Tente de novo.');
+    } finally {
+      VV.idle($('#b-create'));
+    }
+  });
+
+  function showCreateError(message) {
+    $('#create-error-text').textContent = message;
+    $('#create-error').hidden = false;
+    say(message);
+  }
+
+  // The server says who may create classrooms; this replaces the form with its message.
+  function showForbidden(detail) {
+    $('#posting').value = '';
+    $('#forbidden-text').textContent = detail ?? 'Só professores do piloto podem criar turmas.';
+    $('#forbidden').hidden = false;
+    $('#new-board').hidden = true;
+    if (!document.querySelector('.classroom')) $('#workspace').hidden = true;
+    say($('#forbidden-text').textContent);
+  }
+
+  function showCreated(created) {
+    $('#invite').innerHTML = VV.copyField(location.origin + created.inviteUrl);
+    $('#open-panel').href = '/turmas/' + encodeURIComponent(created.id);
+    go('f-done', 4);
+    say('Turma criada.');
+    $('#done-title').focus();
+    loadClassrooms();
+  }
+
+  $('#again').addEventListener('click', () => {
+    $('#f-details').reset();
+    $('#posting').value = '';
+    $('#create-error').hidden = true;
+    go('f-posting', 1);
+    $('#posting').focus();
+  });
+
+  // ---- The teacher's classrooms ----
+  function renderClassrooms(list) {
+    if (!list.length) {
+      $('#classrooms').innerHTML = `<div class="card empty"><div class="art">${VV.ic('users', 'plain', 'lg')}</div>
+        <h3>Nenhuma turma ainda</h3><p class="muted small">A primeira aparece aqui assim que você criar.</p></div>`;
+      return;
+    }
+    $('#classrooms').className = 'stack stagger';
+    $('#classrooms').innerHTML = list.map((c) => {
+      const n = Number(c.students) || 0;
+      const head = `<div class="row between"><h3>${esc(c.name)}</h3><span class="chip">${ICON.users}${n} ${n === 1 ? 'aluno' : 'alunos'}</span></div>`;
+      const empty = n ? '' : '<p class="muted small">Ninguém entrou ainda. Mande o link do convite.</p>';
+      return `<a class="card classroom" href="/turmas/${encodeURIComponent(c.id)}">${head}${empty}<span class="mono muted small">/turma/${esc(c.joinCode)}</span></a>`;
+    }).join('');
+  }
+
+  async function loadClassrooms() {
+    $('#classrooms').className = 'stack';
+    $('#classrooms').innerHTML = '<div class="card skeleton" aria-hidden="true"><i class="tall"></i><i></i></div>';
+    try {
+      const response = await fetch('/api/classrooms');
+      if (response.status === 401) { showSignedOut('Sua sessão terminou. Entre de novo para ver as suas turmas.'); return; }
+      if (!response.ok) throw new Error('status ' + response.status);
+      renderClassrooms(await response.json());
+    } catch {
+      $('#classrooms').innerHTML = `<div class="banner error" role="alert"><span>${ICON.warning}</span><div><b>Não deu para carregar as turmas.</b> <button type="button" class="link" id="retry-list">Tentar de novo</button></div></div>`;
+      $('#retry-list').addEventListener('click', loadClassrooms);
+    }
+  }
+
+  go('f-posting', 1);
+  start();
+</script>
+</body>
+</html>

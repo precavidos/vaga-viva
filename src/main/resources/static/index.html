@@ -195,7 +195,24 @@
   // Back from GitHub (sign-in or app installation): resume with the stored posting.
   const params = new URLSearchParams(window.location.search);
   const pending = recall();
-  if (pending && (params.has('entrou') || params.has('instalado'))) {
+
+  // The teacher and invite pages leave their own address here before sending someone to GitHub.
+  // It is read once and followed only when it is one of those pages, so it cannot become an open redirect.
+  const RETURN_KEY = 'vagaviva.voltar';
+  const RETURN_PATH = /^\/(professor|turma\/[a-z0-9]{10}|turmas\/[0-9a-f-]{36})$/;
+  function takeReturnPath() {
+    try {
+      const path = sessionStorage.getItem(RETURN_KEY);
+      sessionStorage.removeItem(RETURN_KEY);
+      return RETURN_PATH.test(path ?? '') ? path : null;
+    } catch { return null; }
+  }
+  const comingBack = params.has('entrou') || params.has('instalado');
+  // A pending student posting wins, and then the key stays for the invite page's return.
+  const returnTo = comingBack && !pending ? takeReturnPath() : null;
+  if (returnTo) {
+    window.location.replace(returnTo);
+  } else if (pending && comingBack) {
     history.replaceState(null, '', '/');
     $('posting').value = pending;
     plan(pending).then(() => create(pending));

@@ -46,6 +46,10 @@ Em <https://dashboard.render.com>, *New → Web Service*, conecte o repositório
 
 Em *Environment*, cadastre `DATABASE_URL` e `DATABASE_URL_UNPOOLED` com os mesmos valores do seu `.env` (passo 1), sem mudar nada. O Render define `PORT` sozinho, e a API já lê essa variável.
 
+Para o modo turma, cadastre `CLASSROOM_TEACHERS` com os logins do GitHub dos professores do piloto, separados por vírgula (maiúsculas e minúsculas não importam, e espaços em volta das vírgulas são ignorados). Vazia, ninguém consegue criar turma, e os professores recebem 403.
+
+Exclusão manual de um aluno ou de uma turma (procedimento de privacidade do piloto): as chaves estrangeiras não têm cascata, então apague nesta ordem. Primeiro `enrollment_progress` do aluno (ou de todos os alunos da turma), depois `enrollment`, e por último `classroom`.
+
 Cadastre também `ANTHROPIC_API_KEY` com a chave da conta do time na Anthropic. Sem ela, a API funciona e os alunos recebem os textos padrão.
 
 ## 3. Ligar o CI ao Render

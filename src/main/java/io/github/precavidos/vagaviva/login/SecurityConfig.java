@@ -2,6 +2,7 @@ package io.github.precavidos.vagaviva.login;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
@@ -25,7 +26,11 @@ class SecurityConfig {
 		var api = PathPatternRequestMatcher.withDefaults();
 		return http
 			.authorizeHttpRequests((requests) -> requests
-				.requestMatchers(api.matcher("/api/me"), api.matcher("/api/student-repositories/**"))
+				// The invite page is open to anyone holding the join code.
+				.requestMatchers(api.matcher(HttpMethod.GET, "/api/classrooms/{joinCode}"))
+				.permitAll()
+				.requestMatchers(api.matcher("/api/me"), api.matcher("/api/student-repositories/**"),
+						api.matcher("/api/classrooms/**"))
 				.authenticated()
 				.anyRequest()
 				.permitAll())

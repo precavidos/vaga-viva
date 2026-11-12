@@ -45,13 +45,19 @@ class WebhookDispatcher {
 
 	private final HintResponder hints;
 
+	private final FailedTestsSource failedTests;
+
+	private final ReviewEvents events;
+
 	WebhookDispatcher(InstallationTokens tokens, ReviewContextBuilder contexts, GitHubApi github,
-			PullRequestReviewer reviewer, HintResponder hints) {
+			PullRequestReviewer reviewer, HintResponder hints, FailedTestsSource failedTests, ReviewEvents events) {
 		this.tokens = tokens;
 		this.contexts = contexts;
 		this.github = github;
 		this.reviewer = reviewer;
 		this.hints = hints;
+		this.failedTests = failedTests;
+		this.events = events;
 	}
 
 	void dispatch(String event, byte[] body) {
@@ -74,17 +80,47 @@ class WebhookDispatcher {
 
 	private void workflowRun(JsonNode payload) {
 		JsonNode run = payload.path("workflow_run");
-		if (!"completed".equals(payload.path("action").asString("")) || !WORKFLOW.equals(run.path("name").asString(""))
-				|| run.path("pull_requests").isEmpty()) {
+		if (!"completed".equals(payload.path("action").asString("")) || !WORKFLOW.equals(run.path("name").asString(""))) {
 			return;
 		}
 		String repository = payload.path("repository").path("full_name").asString("");
-		int number = run.path("pull_requests").get(0).path("number").asInt();
-		String token = tokens.forInstallation(payload.path("installation").path("id").asLong());
-		contexts.build(token, repository, number, run.path("head_sha").asString("")).ifPresent(context -> {
+		long installationId = payload.path("installation").path("id").asLong();
+		String headSha = run.path("head_sha").asString("");
+		boolean hasPullRequest = !run.path("pull_requests").isEmpty();
+		Integer number = hasPullRequest ? run.path("pull_requests").get(0).path("number").asInt() : null;
+		String headBranch = run.path("head_branch").asString("");
+		boolean onDefaultBranch = !headBranch.isEmpty()
+				&& headBranch.equals(payload.path("repository").path("default_branch").asString(""));
+		String headRepository = run.path("head_repository").path("full_name").asString("");
+		boolean ownRepository = !headRepository.isEmpty() && headRepository.equalsIgnoreCase(repository);
+		if (ownRepository && (hasPullRequest || onDefaultBranch)) {
+			recordProgress(repository, number, installationId, headSha);
+		}
+		if (!hasPullRequest) {
+			return;
+		}
+		String token = tokens.forInstallation(installationId);
+		contexts.build(token, repository, number, headSha).ifPresent(context -> {
 			log.info("Reviewing {}#{}", repository, number);
 			reviewer.review(context);
 		});
+	}
+
+	/** Tells the classroom what the tests said. Whatever goes wrong here must not stop the review. */
+	private void recordProgress(String repository, Integer number, long installationId, String headSha) {
+		try {
+			if (!events.tracks(repository)) {
+				return;
+			}
+			String token = tokens.forInstallation(installationId);
+			failedTests.report(token, repository, headSha)
+				.ifPresentOrElse(report -> events.testsRan(repository, number, report),
+						() -> events.activity(repository));
+		}
+		catch (RuntimeException e) {
+			log.warn("Could not read the test report of {} for the classroom ({})", repository,
+					e.getClass().getSimpleName());
+		}
 	}
 
 	private void issueComment(JsonNode payload) {
@@ -99,6 +135,7 @@ class WebhookDispatcher {
 		String repository = payload.path("repository").path("full_name").asString("");
 		int number = payload.path("issue").path("number").asInt();
 		String token = tokens.forInstallation(payload.path("installation").path("id").asLong());
+		events.activity(repository);
 		GitHubPullRequest pullRequest = github.pullRequest(token, repository, number);
 		String request = text.substring(HINT_COMMAND.length()).strip();
 		contexts.build(token, repository, number, pullRequest.headSha()).ifPresent(context -> {
