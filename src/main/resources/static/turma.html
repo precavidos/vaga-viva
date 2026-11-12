@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Vaga Viva — Convite da turma</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/vv.css">
+</head>
+<body>
+<main>
+  <div class="wrap narrow stack lg">
+    <p id="status" class="sr" role="status" aria-live="polite"></p>
+
+    <!-- Loading the invite -->
+    <section class="board" id="loading" aria-busy="true">
+      <div class="skeleton" aria-hidden="true"><i class="tall"></i><i></i><i></i><i class="tall"></i></div>
+    </section>
+
+    <!-- The invite could not be loaded -->
+    <section class="board" id="failed" hidden>
+      <div class="banner error" role="alert"><span data-icon="warning"></span><div><b>Não deu para abrir o convite.</b><span id="failed-text">Sem conexão com o Vaga Viva. Tente de novo.</span> <button type="button" class="link" id="retry">Tentar de novo</button></div></div>
+    </section>
+
+    <!-- Unknown code -->
+    <section class="board empty" id="unknown" hidden>
+      <div class="art" id="unknown-art"></div>
+      <h1 id="unknown-title" tabindex="-1" style="font-size:28px;line-height:1.1;letter-spacing:-.025em">Este convite não existe.</h1>
+      <p class="muted">Confira o link com quem convidou você. Ele termina com 10 letras e números.</p>
+    </section>
+
+    <!-- Invite -->
+    <section class="board stack lg" id="invite" hidden aria-labelledby="invite-title">
+      <div class="stack">
+        <span class="eyebrow">Convite</span>
+        <h1 id="invite-title" tabindex="-1">Você foi convidado(a) para a <mark id="class-name"></mark>.</h1>
+        <p class="row"><span id="teacher-avatar"></span><span>com <b class="mono" id="teacher"></b></span></p>
+      </div>
+
+      <div class="stack">
+        <div class="chips"><span class="chip dark"><span data-icon="stack"></span><span id="stack"></span></span><span class="chip yellow"><span data-icon="mission"></span><span id="count"></span></span></div>
+        <p class="muted">Todos da turma recebem o mesmo projeto, cada um no seu repositório do GitHub. São estas missões, nesta ordem:</p>
+        <ol class="trail stagger" id="trail"></ol>
+      </div>
+
+      <div class="stack" role="group" aria-labelledby="sees-title">
+        <h2 id="sees-title">O que o professor vê</h2>
+        <div class="sees">
+          <div>
+            <h3><span style="color:var(--green-ink)" data-icon="eye"></span>Vê</h3>
+            <ul><li>O nome que você escrever aqui</li><li>Em qual missão você está</li><li>Os testes que falham</li><li>As perguntas do revisor</li><li>Quantas dicas você pediu</li></ul>
+          </div>
+          <div>
+            <h3><span style="color:var(--coral-ink)" data-icon="eyeOff"></span>Não vê</h3>
+            <ul><li>O seu código</li><li>Os seus comentários</li><li>Nada fora deste projeto</li></ul>
+          </div>
+        </div>
+      </div>
+
+      <form id="join" class="stack lg" novalidate>
+        <div class="field">
+          <label for="display-name">Como você quer ser chamado(a)?</label>
+          <span class="help">Pode ser só o primeiro nome. É assim que você aparece para o professor.</span>
+          <input id="display-name" class="input" maxlength="40" autocomplete="given-name" aria-describedby="name-error">
+          <div class="foot"><span id="name-error" class="error-text" hidden>Escreva como quer ser chamado(a).</span><span></span><span class="count" id="name-count">0 / 40</span></div>
+        </div>
+        <label class="check"><input type="checkbox" id="consent" aria-describedby="consent-error">
+          <span id="consent-text"></span></label>
+        <span id="consent-error" class="error-text" hidden>Para entrar na turma, marque a caixa acima.</span>
+        <div class="banner error" id="join-error" role="alert" hidden><span data-icon="warning"></span><div id="join-error-text"></div></div>
+        <div class="row between">
+          <span class="muted small" id="why" aria-live="polite">Falta o seu nome e o aceite.</span>
+          <button type="submit" class="btn brand-btn" id="b-join" aria-disabled="true" aria-describedby="why"><span data-icon="github"></span>Entrar com o GitHub e criar meu repositório</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- Creating and done -->
+    <section class="board stack lg" id="result" hidden aria-labelledby="creating-title">
+      <div id="creating" class="stack lg">
+        <h2 id="creating-title">Criando o seu repositório…</h2>
+        <ol class="progress" id="progress">
+          <li><span class="dot"></span>Copiando o repositório-modelo</li>
+          <li><span class="dot"></span>Gravando o plano da turma</li>
+          <li><span class="dot"></span>Abrindo as missões</li>
+          <li><span class="dot"></span>Colocando você na turma</li>
+        </ol>
+      </div>
+      <div id="done" class="stack lg" hidden>
+        <svg class="zig" viewBox="0 0 460 260" aria-hidden="true"><path d="M20 230 L110 60 L170 200 L260 40 L320 180 L440 50" stroke="var(--green)"/></svg>
+        <div class="stack">
+          <span class="big-check" data-icon="check"></span>
+          <h1 id="done-title" tabindex="-1"></h1>
+          <p class="lead">Comece pela Missão 1. Ao abrir um PR, o revisor responde com perguntas, e você pode pedir uma dica comentando <span class="mono">/dica</span>.</p>
+        </div>
+        <div id="repo-panel"></div>
+        <div class="row"><a class="btn" id="open-missions" href="#" rel="noopener">Abrir as missões <span class="arrow" data-icon="arrow"></span></a><a class="btn ghost" id="open-repo" href="#" rel="noopener">Ver o repositório</a></div>
+      </div>
+    </section>
+  </div>
+</main>
+
+<script src="/vv.js"></script>
+<script>
+  const { $, ICON, esc } = VV;
+  document.querySelectorAll('[data-icon]').forEach((el) => { el.innerHTML = ICON[el.dataset.icon]; });
+  $('#unknown-art').innerHTML = VV.ic('link', 'coral', 'lg');
+  VV.chrome();
+
+  const say = (text) => { $('#status').textContent = text; };
+  const show = (id) => { ['loading', 'failed', 'unknown', 'invite', 'result'].forEach((p) => { $(`#${p}`).hidden = p !== id; }); };
+
+  const code = (location.pathname.match(/^\/turma\/([^/]+)\/?$/) ?? [])[1] ?? '';
+  const name = $('#display-name'), consent = $('#consent'), button = $('#b-join');
+  let classroom = null;
+
+  // ---- The invite ----
+  async function load() {
+    show('loading');
+    if (!/^[a-z0-9]{10}$/.test(code)) { showUnknown(); return; }
+    let response;
+    try {
+      response = await fetch(`/api/classrooms/${encodeURIComponent(code)}`);
+    } catch {
+      $('#failed-text').textContent = 'Sem conexão com o Vaga Viva. Tente de novo.';
+      show('failed'); say('Sem conexão com o Vaga Viva.');
+      return;
+    }
+    if (response.status === 404) { showUnknown(); return; }
+    if (!response.ok) {
+      $('#failed-text').textContent = 'O Vaga Viva não respondeu como esperado. Tente de novo em instantes.';
+      show('failed'); say('Não deu para abrir o convite.');
+      return;
+    }
+    classroom = await response.json();
+    render(classroom);
+  }
+
+  function showUnknown() {
+    show('unknown'); say('Este convite não existe.');
+    $('#unknown-title').focus();
+  }
+
+  function render(c) {
+    const missions = Array.isArray(c.missions) ? c.missions : [];
+    $('#class-name').textContent = c.name;
+    $('#teacher').textContent = '@' + c.teacherLogin;
+    $('#teacher-avatar').innerHTML = VV.avatar(c.teacherLogin, 'sm');
+    $('#stack').textContent = c.archetypeName;
+    $('#count').textContent = `${missions.length} ${missions.length === 1 ? 'missão' : 'missões'}`;
+    $('#trail').innerHTML = missions.map((m) => `<li><span class="num">${String(Number(m.order) || 0).padStart(2, '0')}</span>${esc(m.title)}</li>`).join('');
+    // The exact consent sentence from the design document, with the teacher's login.
+    $('#consent-text').textContent = `Ao entrar, @${c.teacherLogin} vai ver o nome que você escreveu, em qual missão você está, os testes que falham, as perguntas do revisor e quantas dicas você pediu. Seu código não aparece no painel.`;
+    show('invite');
+    refresh();
+    say(`Convite para a turma ${c.name}.`);
+  }
+  $('#retry').addEventListener('click', load);
+
+  // ---- The form ----
+  function refresh() {
+    const hasName = name.value.trim().length > 0;
+    $('#name-count').textContent = `${name.value.length} / 40`;
+    const ok = hasName && consent.checked;
+    button.setAttribute('aria-disabled', String(!ok));
+    $('#why').textContent = ok ? 'Tudo certo.' : !hasName && !consent.checked ? 'Falta o seu nome e o aceite.' : !hasName ? 'Falta o seu nome.' : 'Falta o aceite.';
+    if (hasName) { $('#name-error').hidden = true; name.removeAttribute('aria-invalid'); }
+    if (consent.checked) { $('#consent-error').hidden = true; consent.removeAttribute('aria-invalid'); }
+  }
+  name.addEventListener('input', refresh);
+  consent.addEventListener('change', refresh);
+
+  $('#join').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const hasName = name.value.trim().length > 0;
+    $('#name-error').hidden = hasName; name.toggleAttribute('aria-invalid', !hasName);
+    $('#consent-error').hidden = consent.checked; consent.toggleAttribute('aria-invalid', !consent.checked);
+    if (!hasName) { name.focus(); return; }
+    if (!consent.checked) { consent.focus(); return; }
+    join();
+  });
+
+  // ---- Joining: one request; the progress list is shown only if GitHub takes a while ----
+  const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+  function send(displayName) {
+    return fetch(`/api/classrooms/${encodeURIComponent(code)}/enrollments`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-XSRF-TOKEN': VV.csrfToken() },
+      body: JSON.stringify({ displayName, consent: true }),
+    }).then(async (response) => ({ status: response.status, body: await VV.problemDetail(response) }),
+            () => ({ status: 0, body: {} }));
+  }
+
+  async function join() {
+    const displayName = name.value.trim();
+    $('#join-error').hidden = true;
+    VV.busy(button, 'Criando o repositório');
+    say('Criando o seu repositório no GitHub.');
+    const request = send(displayName);
+    const early = await Promise.race([request, sleep(500).then(() => null)]);
+    if (early) { VV.idle(button); settle(early, displayName); return; }
+
+    // New students wait for GitHub to copy the template: show the sequence while it happens.
+    VV.idle(button);
+    $('#creating').hidden = false; $('#done').hidden = true;
+    show('result');
+    $('#progress').querySelectorAll('li').forEach((li) => li.classList.remove('now', 'ok'));
+    try {
+      await VV.runProgress($('#progress'), request.then((outcome) => { if (outcome.status !== 201 && outcome.status !== 200) throw outcome; }));
+    } catch (outcome) {
+      show('invite');
+      settle(outcome, displayName);
+      return;
+    }
+    settle(await request, displayName);
+  }
+
+  function settle(outcome, displayName) {
+    const { status, body } = outcome;
+    if (status === 201 || status === 200) { finish(body, displayName, status === 200); return; }
+    if (status === 401) {
+      say('Levando você para entrar com o GitHub…');
+      VV.signIn();
+      return;
+    }
+    if (status === 409 && typeof body.installUrl === 'string' && body.installUrl.startsWith('https://github.com/')) {
+      say('Levando você para instalar o app do Vaga Viva no GitHub…');
+      VV.rememberReturn();
+      location.assign(body.installUrl);
+      return;
+    }
+    const message = status === 0 ? 'Sem conexão com o Vaga Viva. Tente de novo.'
+      : status === 404 ? 'Este convite não existe mais.'
+      : body.detail ?? 'Não foi possível criar o repositório. Tente de novo em instantes.';
+    $('#join-error-text').textContent = message;
+    $('#join-error').hidden = false;
+    say(message);
+  }
+
+  function finish(joined, displayName, already) {
+    const title = $('#done-title');
+    if (already) {
+      title.replaceChildren('Você já está nesta ', Object.assign(document.createElement('mark'), { textContent: 'turma' }), '.');
+    } else {
+      title.replaceChildren('Bem-vindo(a) à turma, ', Object.assign(document.createElement('mark'), { textContent: displayName }), '.');
+    }
+    const url = typeof joined.htmlUrl === 'string' && joined.htmlUrl.startsWith('https://github.com/') ? joined.htmlUrl : '#';
+    $('#repo-panel').innerHTML = VV.repoPanel(joined.fullName, url, classroom.missions ?? []);
+    $('#open-repo').href = url;
+    $('#open-missions').href = url === '#' ? '#' : `${url}/issues`;
+    $('#creating').hidden = true; $('#done').hidden = false;
+    show('result');
+    say(already ? 'Você já está nesta turma. Seu repositório está pronto.' : 'Seu repositório está pronto.');
+    title.focus();
+  }
+
+  load();
+</script>
+</body>
+</html>
