@@ -70,7 +70,7 @@ const VV = (() => {
 
   // The repository card of the invite's last step. The name, the link and the missions come from the server.
   const repoPanel = (fullName, htmlUrl, missions) => `<div class="night-panel rise">
-      <div class="panel-tag"><span>Seu repositório</span><b>${missions.length} missões abertas</b></div>
+      <div class="panel-tag"><span>Seu repositório</span><b>${missions.length} ${missions.length === 1 ? 'missão aberta' : 'missões abertas'}</b></div>
       <div class="repo-name">${ICON.github}<a href="${esc(htmlUrl)}" rel="noopener">${esc(fullName)}</a></div>
       <ul class="issues stagger">${missions.map((m) => `<li><span class="dot"></span>Missão ${Number(m.order) || ''}: ${esc(m.title)}</li>`).join('')}</ul>
       <p class="muted small" style="margin-top:14px">Os testes ficam vermelhos até você implementar cada missão.</p>

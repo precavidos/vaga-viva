@@ -208,8 +208,9 @@
     } catch { return null; }
   }
   const comingBack = params.has('entrou') || params.has('instalado');
-  const returnTo = comingBack ? takeReturnPath() : null;
-  if (returnTo && !pending) {
+  // A pending student posting wins, and then the key stays for the invite page's return.
+  const returnTo = comingBack && !pending ? takeReturnPath() : null;
+  if (returnTo) {
     window.location.replace(returnTo);
   } else if (pending && comingBack) {
     history.replaceState(null, '', '/');

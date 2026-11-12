@@ -179,6 +179,30 @@ class EnrollmentApiTests {
 		assertThat(response).hasStatus(HttpStatus.UNAUTHORIZED);
 	}
 
+	/**
+	 * CsrfFilter runs before authorization: an anonymous POST without the token is refused with 403, and only
+	 * one that carries it reaches the 401. This is why the invite page asks /api/me first and signs a visitor
+	 * in instead of posting the enrollment.
+	 */
+	@Test
+	void anAnonymousJoinIsRefusedForCsrfBeforeItIsUnauthorized() {
+		String body = "{\"displayName\":\"Maria\",\"consent\":true}";
+
+		var withoutToken = mvc.post()
+			.uri("/api/classrooms/abcdefghij/enrollments")
+			.contentType(MediaType.APPLICATION_JSON)
+			.content(body);
+		var withToken = mvc.post()
+			.uri("/api/classrooms/abcdefghij/enrollments")
+			.with(csrf())
+			.contentType(MediaType.APPLICATION_JSON)
+			.content(body);
+
+		assertThat(withoutToken).hasStatus(HttpStatus.FORBIDDEN);
+		assertThat(withToken).hasStatus(HttpStatus.UNAUTHORIZED);
+		assertThat(mvc.get().uri("/api/me")).hasStatus(HttpStatus.UNAUTHORIZED);
+	}
+
 	private String newClassroom() {
 		var response = mvc.post()
 			.uri("/api/classrooms")

@@ -69,10 +69,10 @@
         <label class="check"><input type="checkbox" id="consent" aria-describedby="consent-error">
           <span id="consent-text"></span></label>
         <span id="consent-error" class="error-text" hidden>Para entrar na turma, marque a caixa acima.</span>
-        <div class="banner error" id="join-error" role="alert" hidden><span data-icon="warning"></span><div id="join-error-text"></div></div>
+        <div class="banner error" id="join-error" role="alert" tabindex="-1" hidden><span data-icon="warning"></span><div id="join-error-text"></div></div>
         <div class="row between">
           <span class="muted small" id="why" aria-live="polite">Falta o seu nome e o aceite.</span>
-          <button type="submit" class="btn brand-btn" id="b-join" aria-disabled="true" aria-describedby="why"><span data-icon="github"></span>Entrar com o GitHub e criar meu repositório</button>
+          <button type="submit" class="btn brand-btn" id="b-join" aria-disabled="true" aria-describedby="why"><span data-icon="github"></span><span id="join-label">Entrar com o GitHub e criar meu repositório</span></button>
         </div>
       </form>
     </section>
@@ -115,6 +115,16 @@
   const code = (location.pathname.match(/^\/turma\/([^/]+)\/?$/) ?? [])[1] ?? '';
   const name = $('#display-name'), consent = $('#consent'), button = $('#b-join');
   let classroom = null;
+  let signedIn = false;
+
+  // Anonymous visitors sign in first (the enrollment answers 403 for a missing CSRF token before it can say 401).
+  // Name and consent do not survive the round trip, so signing in needs neither; the enrollment needs both.
+  async function refreshMe() {
+    try { signedIn = (await fetch('/api/me')).ok; } catch { signedIn = false; }
+    $('#join-label').textContent = signedIn ? 'Criar meu repositório' : 'Entrar com o GitHub e criar meu repositório';
+    refresh();
+    return signedIn;
+  }
 
   // ---- The invite ----
   async function load() {
@@ -135,6 +145,7 @@
       return;
     }
     classroom = await response.json();
+    await refreshMe();
     render(classroom);
   }
 
@@ -164,8 +175,8 @@
     const hasName = name.value.trim().length > 0;
     $('#name-count').textContent = `${name.value.length} / 40`;
     const ok = hasName && consent.checked;
-    button.setAttribute('aria-disabled', String(!ok));
-    $('#why').textContent = ok ? 'Tudo certo.' : !hasName && !consent.checked ? 'Falta o seu nome e o aceite.' : !hasName ? 'Falta o seu nome.' : 'Falta o aceite.';
+    button.setAttribute('aria-disabled', String(signedIn && !ok));
+    $('#why').textContent = !signedIn ? 'Primeiro você entra com o GitHub. Depois volta aqui para escolher o nome e aceitar.' : ok ? 'Tudo certo.' : !hasName && !consent.checked ? 'Falta o seu nome e o aceite.' : !hasName ? 'Falta o seu nome.' : 'Falta o aceite.';
     if (hasName) { $('#name-error').hidden = true; name.removeAttribute('aria-invalid'); }
     if (consent.checked) { $('#consent-error').hidden = true; consent.removeAttribute('aria-invalid'); }
   }
@@ -174,6 +185,7 @@
 
   $('#join').addEventListener('submit', (e) => {
     e.preventDefault();
+    if (!signedIn) { say('Levando você para entrar com o GitHub…'); VV.signIn(); return; }
     const hasName = name.value.trim().length > 0;
     $('#name-error').hidden = hasName; name.toggleAttribute('aria-invalid', !hasName);
     $('#consent-error').hidden = consent.checked; consent.toggleAttribute('aria-invalid', !consent.checked);
@@ -185,13 +197,22 @@
   // ---- Joining: one request; the progress list is shown only if GitHub takes a while ----
   const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-  function send(displayName) {
+  function post(displayName) {
     return fetch(`/api/classrooms/${encodeURIComponent(code)}/enrollments`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-XSRF-TOKEN': VV.csrfToken() },
       body: JSON.stringify({ displayName, consent: true }),
     }).then(async (response) => ({ status: response.status, body: await VV.problemDetail(response) }),
             () => ({ status: 0, body: {} }));
+  }
+
+  // A 403 here is usually a missing or stale CSRF token (the answer carries a fresh cookie): check who is
+  // signed in, then sign in or try once more.
+  async function send(displayName) {
+    const first = await post(displayName);
+    if (first.status !== 403) return first;
+    if (!(await refreshMe())) return { status: 401, body: {} };
+    return post(displayName);
   }
 
   async function join() {
@@ -208,8 +229,10 @@
     $('#creating').hidden = false; $('#done').hidden = true;
     show('result');
     $('#progress').querySelectorAll('li').forEach((li) => li.classList.remove('now', 'ok'));
+    const succeeded = request.then((outcome) => { if (outcome.status !== 201 && outcome.status !== 200) throw outcome; });
+    succeeded.catch(() => {}); // handled below; keeps an early failure from logging as unhandled
     try {
-      await VV.runProgress($('#progress'), request.then((outcome) => { if (outcome.status !== 201 && outcome.status !== 200) throw outcome; }));
+      await VV.runProgress($('#progress'), succeeded);
     } catch (outcome) {
       show('invite');
       settle(outcome, displayName);
@@ -238,6 +261,7 @@
     $('#join-error-text').textContent = message;
     $('#join-error').hidden = false;
     say(message);
+    $('#join-error').focus();
   }
 
   function finish(joined, displayName, already) {
