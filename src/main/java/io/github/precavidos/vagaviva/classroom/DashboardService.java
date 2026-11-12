@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import io.github.precavidos.vagaviva.archetype.ArchetypeCatalog;
 import io.github.precavidos.vagaviva.plan.Mission;
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.json.JsonMapper;
@@ -44,15 +45,18 @@ class DashboardService {
 
 	private final Clock clock;
 
+	private final ArchetypeCatalog archetypes;
+
 	DashboardService(ClassroomRepository classrooms, EnrollmentRepository enrollments,
 			EnrollmentProgressRepository progresses, ClassroomService classroomService,
-			ClassroomProperties properties, Clock clock) {
+			ClassroomProperties properties, Clock clock, ArchetypeCatalog archetypes) {
 		this.classrooms = classrooms;
 		this.enrollments = enrollments;
 		this.progresses = progresses;
 		this.classroomService = classroomService;
 		this.properties = properties;
 		this.clock = clock;
+		this.archetypes = archetypes;
 	}
 
 	/** The dashboard of a classroom of this teacher; empty when it does not exist or belongs to someone else. */
@@ -94,9 +98,10 @@ class DashboardService {
 			if (card.status() == StudentStatus.COMPLETED) {
 				completed.add(card);
 			}
-			else {
+			else if (card.missionOrder() >= 1) {
 				byMission.get(card.missionOrder() - 1).add(card);
 			}
+			// Without any mission in the catalog nobody can be placed on a column: they are only counted.
 		}
 
 		List<Column> columns = new ArrayList<>();
@@ -104,7 +109,8 @@ class DashboardService {
 			columns.add(new Column(i + 1, missions.get(i).id(), missions.get(i).title(), byMission.get(i)));
 		}
 		columns.add(new Column(null, null, "Concluído", completed));
-		return new Dashboard(classroom.getId(), classroom.getName(), "/turma/" + classroom.getJoinCode(),
+		return new Dashboard(classroom.getId(), classroom.getName(), archetypes.archetype(plan.archetype()).name(),
+				"/turma/" + classroom.getJoinCode(),
 				new Counts(counts.getOrDefault(StudentStatus.STUCK, 0), counts.getOrDefault(StudentStatus.IDLE, 0),
 						counts.getOrDefault(StudentStatus.ADVANCING, 0),
 						counts.getOrDefault(StudentStatus.COMPLETED, 0)),
@@ -149,8 +155,11 @@ class DashboardService {
 		StudentStatus status = StudentStatus.of(completed, since, lastActivity, now, properties.stuckAfter(),
 				properties.idleAfter());
 
-		int index = 0;
+		// Without missions there is no column and no order: 0 means "not on any mission".
+		int index = missions.isEmpty() ? -1 : 0;
 		if (progress != null && progress.getCurrentMissionId() != null) {
+			// A current mission that the plan no longer has leaves the student on the first one, which is also
+			// the column they are placed in, so the card and the reason agree.
 			for (int i = 0; i < missions.size(); i++) {
 				if (missions.get(i).id().equals(progress.getCurrentMissionId())) {
 					index = i;
@@ -158,13 +167,13 @@ class DashboardService {
 			}
 		}
 		if (completed) {
-			index = missions.size() - 1;
+			index = missions.size() - 1; // -1 when there are no missions
 		}
 		int daysOnMission = completed ? 0 : days(since, now);
 		int missionOrder = index + 1;
-		String missionTitle = completed ? "Projeto concluído" : missions.get(index).title();
+		String missionTitle = completed ? "Projeto concluído" : index < 0 ? "" : missions.get(index).title();
 		String reason = switch (status) {
-			case STUCK -> dayCount(daysOnMission) + " na missão " + missionOrder + ", "
+			case STUCK -> dayCount(daysOnMission) + (missionOrder < 1 ? " sem avançar" : " na missão " + missionOrder) + ", "
 					+ pullRequests(progress == null ? null : progress.getPullRequestsOnMission())
 					+ " nesse período";
 			case IDLE -> "sem atividade há " + dayCount(days(lastActivity, now));
@@ -212,7 +221,7 @@ class DashboardService {
 			String reason) {
 	}
 
-	record Dashboard(UUID id, String name, String inviteUrl, Counts counts, List<Column> columns) {
+	record Dashboard(UUID id, String name, String archetypeName, String inviteUrl, Counts counts, List<Column> columns) {
 	}
 
 	record Counts(int stuck, int idle, int advancing, int completed) {

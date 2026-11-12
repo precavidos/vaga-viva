@@ -19,7 +19,7 @@
         <a class="link small" href="/professor" style="justify-self:start">← Suas turmas</a>
         <div class="stack" id="head" hidden>
           <h1 id="class-name" tabindex="-1" style="overflow-wrap:anywhere"></h1>
-          <div class="chips"><span class="chip"><span data-icon="users"></span><span id="students-count"></span></span><span class="chip"><span data-icon="clock"></span><span id="updated"></span></span></div>
+          <div class="chips"><span class="chip dark"><span data-icon="stack"></span><span id="stack"></span></span><span class="chip"><span data-icon="users"></span><span id="students-count"></span></span><span class="chip"><span data-icon="clock"></span><span id="updated"></span></span></div>
         </div>
       </div>
       <div class="stack" id="invite-head" style="gap:6px;min-width:0;max-width:100%" hidden>
@@ -202,6 +202,7 @@
     const inviteUrl = /^\/turma\/[A-Za-z0-9]+$/.test(data.inviteUrl ?? '') ? location.origin + data.inviteUrl : '';
 
     $('#class-name').textContent = String(data.name ?? '');
+    $('#stack').textContent = String(data.archetypeName ?? '');
     $('#students-count').textContent = `${everyone.length} ${everyone.length === 1 ? 'aluno' : 'alunos'}`;
     $('#updated').textContent = ago();
     $('#invite').innerHTML = inviteUrl ? VV.copyField(inviteUrl) : '';
@@ -365,6 +366,17 @@
   drawer.addEventListener('cancel', (e) => { e.preventDefault(); closeDrawer(); });
   drawer.addEventListener('click', (e) => { if (e.target === drawer) closeDrawer(); });
 
+  drawer.addEventListener('close', () => drawer.classList.remove('in'));
+
+  // Who is signed in, for the top bar; the dashboard call decides about access, so a failure here is silent.
+  async function identify() {
+    try {
+      const response = await fetch('/api/me', { headers: { Accept: 'application/json' } });
+      if (response.ok) VV.setUser((await response.json()).login);
+    } catch { /* the top bar stays empty */ }
+  }
+
+  identify();
   load();
 </script>
 </body>

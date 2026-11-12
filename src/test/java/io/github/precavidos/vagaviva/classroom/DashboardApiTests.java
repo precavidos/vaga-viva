@@ -26,6 +26,7 @@ import org.springframework.test.web.servlet.assertj.MockMvcTester;
 import org.springframework.test.web.servlet.assertj.MvcTestResult;
 
 import io.github.precavidos.vagaviva.TestcontainersConfiguration;
+import io.github.precavidos.vagaviva.archetype.ArchetypeCatalog;
 
 /**
  * The teacher's dashboard and the student's card, seeded straight into the database with a fixed clock.
@@ -61,6 +62,12 @@ class DashboardApiTests {
 	ClassroomService classrooms;
 
 	@Autowired
+	ArchetypeCatalog archetypes;
+
+	@Autowired
+	ClassroomRepository classroomRepository;
+
+	@Autowired
 	EnrollmentRepository enrollments;
 
 	@Autowired
@@ -83,6 +90,8 @@ class DashboardApiTests {
 		var json = assertThat(response).bodyJson();
 		json.extractingPath("$.name").isEqualTo("Turma");
 		json.extractingPath("$.inviteUrl").isEqualTo("/turma/" + classroom.getJoinCode());
+		json.extractingPath("$.archetypeName")
+			.isEqualTo(archetypes.archetype(StoredPlan.fromJson(classroom.getPlan()).archetype()).name());
 		json.extractingPath("$.counts.stuck").isEqualTo(1);
 		json.extractingPath("$.counts.idle").isEqualTo(1);
 		json.extractingPath("$.counts.advancing").isEqualTo(0);
@@ -270,6 +279,38 @@ class DashboardApiTests {
 		assertThat(ana).bodyJson().extractingPath("$.failingTests.length()").isEqualTo(0);
 		assertThat(bia).hasStatusOk();
 		assertThat(bia).bodyJson().extractingPath("$.failingTests.length()").isEqualTo(0);
+	}
+
+	@Test
+	void aPlanWithoutCatalogMissionsNeverBreaksTheDashboardOrTheCard() {
+		Classroom base = newClassroom("david");
+		StoredPlan stored = StoredPlan.fromJson(base.getPlan());
+		var gone = new StoredPlan(stored.archetype(), stored.archetypeFit(), stored.seniorityLevel(),
+				stored.difficultyCap(),
+				List.of(new StoredPlan.StoredMission("mission-the-catalog-lost", stored.missions().get(0).reason(),
+						List.of())),
+				stored.postingSkills(), stored.postingTechnologies());
+		Classroom classroom = classroomRepository.save(new Classroom(UUID.randomUUID(), base.getJoinCode() + "x",
+				"Sem missões", "david", null, null, gone.toJson(), NOW));
+		enroll(classroom, "ana", "Ana", "mission-the-catalog-lost", NOW.minus(Duration.ofDays(4)),
+				NOW.minus(Duration.ofDays(1)), "[]", "[]", false);
+		enroll(classroom, "caio", "Caio", "mission-the-catalog-lost", NOW.minus(Duration.ofDays(4)), NOW, "[]", "[]",
+				true);
+
+		var dashboard = get("/api/classrooms/" + classroom.getId() + "/dashboard", "david");
+		var ana = get("/api/classrooms/" + classroom.getId() + "/students/ana", "david");
+		var caio = get("/api/classrooms/" + classroom.getId() + "/students/caio", "david");
+
+		assertThat(dashboard).hasStatusOk();
+		var json = assertThat(dashboard).bodyJson();
+		json.extractingPath("$.counts.stuck").isEqualTo(1);
+		json.extractingPath("$.counts.completed").isEqualTo(1);
+		json.extractingPath("$.columns.length()").isEqualTo(1);
+		json.extractingPath("$.columns[0].title").isEqualTo("Concluído");
+		json.extractingPath("$.columns[0].students[0].login").isEqualTo("caio");
+		assertThat(ana).hasStatusOk();
+		assertThat(ana).bodyJson().extractingPath("$.reason").isEqualTo("4 dias sem avançar, 0 PRs nesse período");
+		assertThat(caio).hasStatusOk();
 	}
 
 	private Classroom newClassroom(String teacherLogin) {
