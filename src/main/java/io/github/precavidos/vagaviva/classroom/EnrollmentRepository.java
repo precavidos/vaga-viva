@@ -14,4 +14,6 @@ interface EnrollmentRepository extends JpaRepository<Enrollment, UUID> {
 
 	List<Enrollment> findByClassroomOrderByEnrolledAt(Classroom classroom);
 
+	long countByClassroom(Classroom classroom);
+
 }
