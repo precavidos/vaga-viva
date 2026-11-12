@@ -75,10 +75,7 @@ class StudentRepositoryController {
 		String token = client.getAccessToken().getTokenValue();
 		String login = login(user);
 		if (!github.isAppInstalledOn(token, login)) {
-			ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT,
-					"Instale o app do Vaga Viva na sua conta do GitHub para criarmos o seu repositório.");
-			problem.setProperty("installUrl", installUrl);
-			return ResponseEntity.status(HttpStatus.CONFLICT).body(problem);
+			return ResponseEntity.status(HttpStatus.CONFLICT).body(InstallAppProblem.of(installUrl));
 		}
 		var plan = planner.plan(extractor.extract(request.text()));
 		ProvisionedRepository repository = provisioner.provision(token, login, plan);
