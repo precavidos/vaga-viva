@@ -57,7 +57,7 @@ class ProgressRecorder implements ReviewEvents {
 			return enrollments.findByRepositoryFullName(repositoryFullName).isPresent();
 		}
 		catch (RuntimeException e) {
-			log.warn("Could not check whether {} is in a classroom", repositoryFullName);
+			log.warn("Could not check whether {} is in a classroom ({})", repositoryFullName, e.getClass().getSimpleName());
 			return false;
 		}
 	}
@@ -133,14 +133,14 @@ class ProgressRecorder implements ReviewEvents {
 				if (enrollment.isEmpty()) {
 					return;
 				}
-				progresses.findById(enrollment.get().getId()).ifPresent(progress -> {
+				progresses.findForUpdate(enrollment.get().getId()).ifPresent(progress -> {
 					change.apply(progress, enrollment.get());
 					progresses.save(progress);
 				});
 			});
 		}
 		catch (RuntimeException e) {
-			log.warn("Could not record the progress of {}", repositoryFullName);
+			log.warn("Could not record the progress of {} ({})", repositoryFullName, e.getClass().getSimpleName());
 		}
 	}
 
@@ -153,7 +153,16 @@ class ProgressRecorder implements ReviewEvents {
 	}
 
 	private static <T> T read(String json, TypeReference<T> type, T empty) {
-		return json == null || json.isBlank() ? empty : JSON.readValue(json, type);
+		if (json == null || json.isBlank()) {
+			return empty;
+		}
+		try {
+			T value = JSON.readValue(json, type);
+			return value == null ? empty : value;
+		}
+		catch (RuntimeException e) {
+			return empty;
+		}
 	}
 
 	private record StoredFailingTest(String name, String message) {

@@ -241,6 +241,37 @@ class WebhookRoutingTests {
 	}
 
 	@Test
+	void ignoresRunsFromAForkEvenOnABranchCalledMain() {
+		dispatch("workflow_run", workflowRun("completed", "Vaga Viva", "[]", "main", "stranger/vaga-viva-clinic-scheduling"));
+
+		assertThat(calls).isEmpty();
+		assertThat(reportReads).isZero();
+
+		dispatch("workflow_run", workflowRun("completed", "Vaga Viva", "[{\"number\": 3}]", "main", "stranger/x"));
+
+		assertThat(calls).isEmpty();
+	}
+
+	@Test
+	void ignoresRunsWithoutAHeadRepository() {
+		dispatch("workflow_run", """
+				{ "action": "completed", "installation": { "id": 99 },
+				  "repository": { "full_name": "%s", "default_branch": "main" },
+				  "workflow_run": { "name": "Vaga Viva", "head_sha": "abc123", "head_branch": "main",
+				                    "pull_requests": [] } }""".formatted(REPO));
+
+		assertThat(calls).isEmpty();
+		assertThat(reportReads).isZero();
+	}
+
+	@Test
+	void comparesTheHeadRepositoryIgnoringCase() {
+		dispatch("workflow_run", workflowRun("completed", "Vaga Viva", "[]", "main", REPO.toUpperCase()));
+
+		assertThat(calls).containsExactly("testsRan " + REPO + " null [patients-api]");
+	}
+
+	@Test
 	void doesNotReadTheReportForUntrackedRepositories() {
 		tracked = false;
 
@@ -278,12 +309,17 @@ class WebhookRoutingTests {
 	}
 
 	private static String workflowRun(String action, String name, String pullRequests, String headBranch) {
+		return workflowRun(action, name, pullRequests, headBranch, REPO);
+	}
+
+	private static String workflowRun(String action, String name, String pullRequests, String headBranch,
+			String headRepository) {
 		return """
 				{ "action": "%s", "installation": { "id": 99 },
 				  "repository": { "full_name": "%s", "default_branch": "main" },
 				  "workflow_run": { "id": 5, "name": "%s", "head_sha": "abc123", "head_branch": "%s",
-				                    "pull_requests": %s } }"""
-			.formatted(action, REPO, name, headBranch, pullRequests);
+				                    "head_repository": { "full_name": "%s" }, "pull_requests": %s } }"""
+			.formatted(action, REPO, name, headBranch, headRepository, pullRequests);
 	}
 
 	private static String issueComment(String action, String body, String userType, boolean onPullRequest) {

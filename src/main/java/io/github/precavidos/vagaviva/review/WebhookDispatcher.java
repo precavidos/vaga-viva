@@ -91,7 +91,9 @@ class WebhookDispatcher {
 		String headBranch = run.path("head_branch").asString("");
 		boolean onDefaultBranch = !headBranch.isEmpty()
 				&& headBranch.equals(payload.path("repository").path("default_branch").asString(""));
-		if (hasPullRequest || onDefaultBranch) {
+		String headRepository = run.path("head_repository").path("full_name").asString("");
+		boolean ownRepository = !headRepository.isEmpty() && headRepository.equalsIgnoreCase(repository);
+		if (ownRepository && (hasPullRequest || onDefaultBranch)) {
 			recordProgress(repository, number, installationId, headSha);
 		}
 		if (!hasPullRequest) {
@@ -116,7 +118,8 @@ class WebhookDispatcher {
 						() -> events.activity(repository));
 		}
 		catch (RuntimeException e) {
-			log.warn("Could not read the test report of {} for the classroom", repository);
+			log.warn("Could not read the test report of {} for the classroom ({})", repository,
+					e.getClass().getSimpleName());
 		}
 	}
 

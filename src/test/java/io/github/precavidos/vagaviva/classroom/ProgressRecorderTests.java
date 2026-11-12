@@ -200,6 +200,39 @@ class ProgressRecorderTests {
 		assertThat(progress.getCurrentMissionId()).isEqualTo("patients-api");
 	}
 
+	@Test
+	void storedJsonOfTheWrongShapeDoesNotBlockRecordingForever() {
+		EnrollmentProgress stored = entityManager.find(EnrollmentProgress.class, enrollmentId);
+		stored.setHintsByMission("[1]");
+		stored.setPullRequestsOnMission("{}");
+		entityManager.flush();
+		entityManager.clear();
+
+		recorder.hintGiven(REPO, "patients-api");
+		recorder.testsRan(REPO, 5, report(BOTH, failed("patients-api", "createsIt", "expected 201")));
+
+		EnrollmentProgress progress = reload();
+		assertThat(progress.getHintsByMission()).isEqualTo("{\"patients-api\": 1}");
+		assertThat(progress.getPullRequestsOnMission()).isEqualTo("[5]");
+	}
+
+	@Test
+	void aFailureInsideAnEventIsSwallowed() {
+		String broken = "{\"archetype\":\"java-spring\",\"missions\":[\"not-an-object\"]}";
+		Classroom classroom = classrooms
+			.saveAndFlush(new Classroom(UUID.randomUUID(), "BROKEN", "Turma 2", "profa", null, null, broken, START));
+		Enrollment enrollment = enrollments.saveAndFlush(
+				new Enrollment(UUID.randomUUID(), classroom, "joao", "Joao", "joao/broken-repository", START, START));
+		EnrollmentProgress progress = new EnrollmentProgress(enrollment);
+		progress.setLastActivityAt(START);
+		entityManager.persist(progress);
+		entityManager.flush();
+
+		recorder.testsRan("joao/broken-repository", 1, report(BOTH));
+
+		assertThat(recorder.tracks("joao/broken-repository")).isTrue();
+	}
+
 	private EnrollmentProgress reload() {
 		entityManager.flush();
 		entityManager.clear();
