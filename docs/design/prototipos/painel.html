@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Vaga Viva — Painel da turma</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="vv.css?v=3">
+</head>
+<body>
+<main>
+  <div class="wrap wide stack lg">
+    <p id="status" class="sr" role="status" aria-live="polite"></p>
+
+    <div class="row between" style="align-items:flex-end">
+      <div class="stack">
+        <a class="link small" href="professor.html?estado=turmas" style="justify-self:start">← Suas turmas</a>
+        <h1 id="class-name"></h1>
+        <div class="chips"><span class="chip dark"><span id="i-stack"></span><span id="stack"></span></span><span class="chip"><span id="i-users"></span><span id="students-count"></span></span><span class="chip"><span id="i-clock"></span><span id="updated"></span></span></div>
+      </div>
+      <div class="stack" style="gap:6px;min-width:0;max-width:100%">
+        <span class="label small">Link do convite</span>
+        <div id="invite"></div>
+      </div>
+    </div>
+
+    <!-- Loading -->
+    <div id="loading" class="stack" hidden aria-hidden="true">
+      <div class="skeleton"><i class="tall" style="height:110px"></i></div>
+      <div class="skeleton"><i class="tall" style="height:260px"></i></div>
+    </div>
+
+    <!-- Error -->
+    <div class="banner error" id="error" hidden><span id="info"></span><div><b>Não foi possível carregar a turma.</b>Confira a sua conexão. <a href="painel.html">Tentar de novo</a></div></div>
+
+    <!-- Empty -->
+    <section class="board empty" id="empty" hidden>
+      <div class="art" id="empty-art"></div>
+      <h2>Ninguém entrou ainda.</h2>
+      <p class="muted" style="max-width:30em">Mande o link do convite para a turma. Cada aluno aparece aqui assim que criar o repositório.</p>
+      <div id="invite-big" style="max-width:100%"></div>
+    </section>
+
+    <!-- Dashboard -->
+    <div id="dashboard" class="stack lg" hidden>
+      <section class="card summary" aria-label="Resumo da turma">
+        <div class="meter" id="meter"></div>
+        <div class="stats" id="stats" role="group" aria-label="Filtrar por situação"></div>
+      </section>
+      <div class="row between">
+        <h2>Onde cada um está</h2>
+        <p class="muted small" id="filter-note">Clique num aluno para ver o que está segurando ele.</p>
+      </div>
+      <div class="kanban" id="kanban" tabindex="0" role="region" aria-label="Alunos por missão"></div>
+      <div id="done-band"></div>
+    </div>
+  </div>
+</main>
+
+<dialog class="drawer" id="drawer" aria-labelledby="drawer-name">
+  <div class="drawer-head">
+    <span id="drawer-avatar"></span>
+    <div style="min-width:0"><h2 id="drawer-name" style="font-size:24px"></h2><span class="mono muted" id="drawer-login"></span></div>
+    <button type="button" class="close" id="drawer-close" aria-label="Fechar a ficha"></button>
+  </div>
+  <div class="drawer-body" id="drawer-body"></div>
+  <div class="drawer-foot" id="drawer-foot"></div>
+</dialog>
+
+<script src="vv.js?v=3"></script>
+<script>
+  const { $, $$, ICON, STATUS, PLAN, STUDENTS, CLASSROOM, esc, wait } = VV;
+  window.PROTO_STATES = [['Com alunos', ''], ['Sem alunos', 'vazio'], ['Carregando', 'carregando'], ['Erro', 'erro']];
+  const mode = VV.state();
+  VV.chrome({ area: 'Professor', user: 'helena' });
+  $('#info').innerHTML = ICON.warning; $('#drawer-close').innerHTML = ICON.close;
+  $('#empty-art').innerHTML = VV.ic('link', 'yellow', 'lg') + VV.ic('users', 'plain', 'lg');
+
+  const students = mode === 'vazio' ? [] : STUDENTS;
+  $('#i-stack').innerHTML = ICON.stack; $('#i-users').innerHTML = ICON.users; $('#i-clock').innerHTML = ICON.clock;
+  $('#class-name').textContent = CLASSROOM.name;
+  $('#stack').textContent = PLAN.archetypeName;
+  $('#students-count').textContent = `${students.length} ${students.length === 1 ? 'aluno' : 'alunos'}`;
+  $('#updated').textContent = 'Atualizado há 2 min';
+  $('#invite').innerHTML = VV.copyField(CLASSROOM.inviteUrl);
+  $('#invite-big').innerHTML = VV.copyField(CLASSROOM.inviteUrl);
+  const say = (text) => { $('#status').textContent = text; };
+
+  // Columns: one per mission of the plan, plus "Concluído".
+  const columns = [
+    ...PLAN.missions.map((m) => ({ order: m.order, title: m.title, students: students.filter((s) => s.status !== 'COMPLETED' && s.missionOrder === m.order) })),
+    { order: null, title: 'Concluído', students: students.filter((s) => s.status === 'COMPLETED') },
+  ];
+  const genderless = (s) => STATUS[s.status].label;
+
+  function card(s) {
+    return `<button type="button" class="student" data-status="${s.status}" data-login="${esc(s.login)}">
+      ${VV.avatar(s.displayName, s.login)}
+      <span class="name">${esc(s.displayName)} ${VV.statusBadge(s.status, genderless(s))}</span>
+      <span class="reason">${esc(s.reason)}</span></button>`;
+  }
+
+  function render() {
+    const order = ['STUCK', 'IDLE', 'ADVANCING', 'COMPLETED'];
+    const TILE = { STUCK: 'coral', IDLE: 'idle', ADVANCING: 'green', COMPLETED: 'purple' };
+    const count = (status) => students.filter((s) => s.status === status).length;
+    // One bar for the whole class, then a counter per situation that also filters the board.
+    $('#meter').setAttribute('role', 'img');
+    $('#meter').setAttribute('aria-label', order.map((s) => `${count(s)} ${STATUS[s].plural.toLowerCase()}`).join(', '));
+    $('#meter').innerHTML = order.filter(count).map((s) => `<i data-status="${s}" style="flex:${count(s)}"></i>`).join('');
+    $('#stats').innerHTML = order.map((status) => `<button type="button" class="stat" data-status="${status}" aria-pressed="false">
+      ${VV.ic(status, TILE[status])}<span class="value" data-to="${count(status)}">0</span>
+      <span class="name">${STATUS[status].plural}</span></button>`).join('');
+    $$('#stats .value').forEach((el) => VV.countUp(el, Number(el.dataset.to)));
+
+    const column = (c) => `<section class="column ${c.order === null ? 'done band' : ''} ${c.students.length ? '' : 'is-empty'}" aria-label="${esc(c.title)}${c.students.length ? '' : ', ninguém nesta missão'}">
+        <div class="column-head">${c.order === null ? `<span class="num" style="background:var(--purple);color:#fff">${ICON.check}</span>` : `<span class="num">${String(c.order).padStart(2, '0')}</span>`}
+          <h3>${esc(c.title)}</h3><span class="count">${c.students.length}</span></div>
+        ${c.students.length ? `<div class="cards stagger">${c.students.map(card).join('')}</div>` : '<span class="none" aria-hidden="true"></span>'}
+      </section>`;
+    $('#kanban').innerHTML = columns.filter((c) => c.order !== null).map(column).join('');
+    const done = columns.find((c) => c.order === null);
+    $('#done-band').innerHTML = done.students.length ? column(done) : '';
+  }
+
+  // Counters filter the board; pressing the active one again clears it.
+  $('#stats').addEventListener('click', (e) => {
+    const stat = e.target.closest('.stat');
+    if (!stat) return;
+    const on = stat.getAttribute('aria-pressed') !== 'true';
+    $$('.stat').forEach((s) => s.setAttribute('aria-pressed', String(on && s === stat)));
+    $$('.student').forEach((s) => s.classList.toggle('dim', on && s.dataset.status !== stat.dataset.status));
+    const label = STATUS[stat.dataset.status].plural.toLowerCase();
+    $('#filter-note').textContent = on ? `Mostrando só: ${label}. Clique de novo para limpar.` : 'Clique num aluno para ver o que está segurando ele.';
+    say(on ? `Filtro: ${label}.` : 'Filtro removido.');
+  });
+
+  // Student card drawer.
+  const drawer = $('#drawer');
+  let opener = null;
+  function openDrawer(s, from) {
+    opener = from;
+    const mission = PLAN.missions.find((m) => m.order === s.missionOrder);
+    $('#drawer-avatar').innerHTML = VV.avatar(s.displayName, s.login, 'lg');
+    $('#drawer-name').textContent = s.displayName;
+    $('#drawer-login').textContent = '@' + s.login;
+    const tests = s.failingTests.length
+      ? `<ul class="tests">${s.failingTests.map((t) => `<li><span class="dot"></span><div><code>${esc(t.name)}</code>${t.message ? `<span>${esc(t.message)}</span>` : ''}</div></li>`).join('')}</ul>`
+      : `<p class="muted">${s.status === 'COMPLETED' ? 'Nenhum. Todos os testes do plano passam.' : 'Ainda não há um relatório de testes desta missão.'}</p>`;
+    const question = s.lastReviewerQuestion
+      ? `<div class="question"><span class="avatar bot" aria-hidden="true">?</span><p class="bubble">${esc(s.lastReviewerQuestion)}</p></div>`
+      : '<p class="muted">O revisor ainda não comentou nesta missão.</p>';
+    const hints = [1, 2, 3].map((n) => `<span class="dot ${n <= s.hintsOnMission ? '' : 'off'}"></span>`).join('');
+    $('#drawer-body').innerHTML = `
+      <div class="block rise">
+        <div class="row">${VV.statusBadge(s.status)}<span class="chip">${s.status === 'COMPLETED' ? 'Todas as missões' : `Missão ${mission.order} de ${PLAN.missions.length}`}</span></div>
+        <p style="font-size:18px;font-weight:600">${s.status === 'COMPLETED' ? 'Projeto concluído' : esc(mission.title)}</p>
+        <p class="muted">${esc(s.reason[0].toUpperCase() + s.reason.slice(1))}.</p>
+      </div>
+      <div class="block rise" style="animation-delay:60ms"><h3>${ICON.tests}Testes que falham</h3>${tests}</div>
+      <div class="block rise" style="animation-delay:120ms"><h3>${ICON.question}Última pergunta do revisor</h3>${question}</div>
+      <div class="block rise" style="animation-delay:180ms"><h3>${ICON.hint}Dicas pedidas</h3>
+        <div class="hints" role="img" aria-label="${s.hintsOnMission} de 3 dicas">${hints}<span>${s.hintsOnMission} de 3 nesta missão</span></div></div>`;
+    $('#drawer-foot').innerHTML = `${s.lastPullRequestUrl ? `<a class="btn sm" href="#">${ICON.github}Abrir o PR no GitHub</a>` : ''}<a class="btn sm ghost" href="#">Abrir o repositório</a>`;
+    drawer.showModal();
+    requestAnimationFrame(() => drawer.classList.add('in'));
+    $('#drawer-close').focus();
+  }
+  function closeDrawer() {
+    drawer.classList.remove('in');
+    const finish = () => { drawer.close(); opener?.focus(); };
+    matchMedia('(prefers-reduced-motion: reduce)').matches ? finish() : setTimeout(finish, 320);
+  }
+  $('#dashboard').addEventListener('click', (e) => {
+    const button = e.target.closest('.student');
+    if (button) openDrawer(students.find((s) => s.login === button.dataset.login), button);
+  });
+  $('#drawer-close').addEventListener('click', closeDrawer);
+  drawer.addEventListener('cancel', (e) => { e.preventDefault(); closeDrawer(); });
+  drawer.addEventListener('click', (e) => { if (e.target === drawer) closeDrawer(); });
+
+  (async () => {
+    if (mode === 'erro') { $('#error').hidden = false; return; }
+    if (mode === 'vazio') { $('#empty').hidden = false; return; }
+    $('#loading').hidden = false;
+    if (mode === 'carregando') return;
+    await wait(700);
+    $('#loading').hidden = true; $('#dashboard').hidden = false;
+    render();
+    say('Painel carregado: 2 travados, 1 parado, 2 avançando e 1 concluído.');
+  })();
+</script>
+</body>
+</html>

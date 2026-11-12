@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Vaga Viva — Professor</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="vv.css?v=3">
+</head>
+<body>
+<main>
+  <p id="status" class="sr" role="status" aria-live="polite"></p>
+
+  <!-- Signed out -->
+  <div class="wrap narrow" id="signed-out" hidden>
+    <section class="board stack lg" aria-labelledby="out-title">
+      <div class="stack">
+        <h1 id="out-title">Sua turma,<br>de <mark>relance</mark>.</h1>
+        <p class="lead">Escolha uma vaga real, mande um link para a turma e veja em qual missão cada aluno está e o que está segurando quem travou.</p>
+      </div>
+      <ul class="benefits">
+        <li><span id="b1"></span>Todos recebem o mesmo projeto, a partir de uma vaga-base.</li>
+        <li><span id="b2"></span>O painel mostra a missão de cada aluno e quem vale uma conversa.</li>
+        <li><span id="b3"></span>Toda segunda, um resumo chega no seu e-mail.</li>
+      </ul>
+      <div class="row"><a class="btn" href="professor.html?estado=novo"><span id="gh"></span>Entrar com o GitHub</a></div>
+    </section>
+  </div>
+
+  <!-- Signed in -->
+  <div class="wrap stack lg" id="signed-in" hidden>
+    <h1>Suas turmas.</h1>
+    <div class="banner" id="forbidden" hidden><span id="info"></span><div><b>Só professores do piloto podem criar turmas.</b>Se você faz parte do piloto, fale com a equipe do Vaga Viva para liberar o seu usuário.</div></div>
+
+    <div class="two" id="workspace">
+      <!-- New classroom -->
+      <section class="board stack lg" aria-labelledby="new-title">
+        <div class="row between">
+          <h2 id="new-title">Nova turma</h2>
+          <ol class="steps" aria-label="Etapas">
+            <li aria-current="step"><span class="n">1</span><span class="t">Vaga-base</span></li>
+            <li><span class="n">2</span><span class="t">Plano</span></li>
+            <li><span class="n">3</span><span class="t">Turma</span></li>
+          </ol>
+        </div>
+
+        <form id="f-posting" class="stack" novalidate>
+          <div class="field">
+            <label for="posting">Vaga-base</label>
+            <span class="help">É a vaga que define o projeto de toda a turma. Escolha uma do nível dos seus alunos.</span>
+            <textarea id="posting" class="textarea" style="min-height:160px" maxlength="20000" placeholder="Cole aqui a descrição da vaga…"></textarea>
+          </div>
+          <div class="row between">
+            <p class="privacy"><span id="lock"></span><span>A vaga não fica guardada. A turma guarda só o plano.</span></p>
+            <button class="btn" id="b-plan">Ver o plano <span class="arrow" id="arrow"></span></button>
+          </div>
+        </form>
+
+        <div id="f-plan" class="stack" hidden>
+          <div class="chips pops" id="plan-chips"></div>
+          <ol class="missions stagger" id="missions"></ol>
+          <div class="row between">
+            <button type="button" class="link" id="back">Trocar a vaga-base</button>
+            <button type="button" class="btn" id="b-next">Usar este plano <span class="arrow" id="arrow2"></span></button>
+          </div>
+        </div>
+
+        <form id="f-details" class="stack lg" hidden novalidate>
+          <div class="field">
+            <label for="name">Nome da turma</label>
+            <input id="name" class="input" maxlength="80" placeholder="Ex.: Back-end 2026.2" aria-describedby="name-error">
+            <span id="name-error" class="error-text" hidden>Dê um nome para a turma.</span>
+          </div>
+          <div class="field">
+            <label for="email">Seu e-mail <span class="muted" style="font-weight:400">(opcional)</span></label>
+            <span class="help">Para receber o resumo da turma toda segunda de manhã.</span>
+            <input id="email" class="input" type="email" autocomplete="email" placeholder="voce@escola.edu.br" aria-describedby="consent-error">
+          </div>
+          <label class="check"><input type="checkbox" id="consent"><span>Quero receber o resumo semanal neste e-mail. <span class="muted">Guardamos o endereço só para isso.</span></span></label>
+          <span id="consent-error" class="error-text" hidden>Marque a caixa para recebermos a sua autorização, ou apague o e-mail.</span>
+          <div class="row" style="justify-content:flex-end"><button class="btn brand-btn" id="b-create">Criar a turma</button></div>
+        </form>
+
+        <div id="f-done" class="stack lg" hidden>
+          <div class="stack">
+            <span class="big-check" id="big-check"></span>
+            <h2 id="done-title" tabindex="-1">Turma criada. Agora, <mark>convide</mark>.</h2>
+            <p class="muted">Mande este link para os alunos. Cada um entra com o GitHub e recebe o projeto no próprio repositório.</p>
+          </div>
+          <div id="invite"></div>
+          <div class="row"><a class="btn" href="painel.html?estado=vazio">Abrir o painel <span class="arrow" id="arrow3"></span></a><button type="button" class="btn ghost" id="again">Criar outra turma</button></div>
+        </div>
+      </section>
+
+      <!-- Classrooms -->
+      <section class="stack" aria-labelledby="list-title">
+        <h2 id="list-title" class="sr">Turmas criadas</h2>
+        <div id="classrooms" class="stack stagger"></div>
+      </section>
+    </div>
+  </div>
+</main>
+
+<script src="vv.js?v=3"></script>
+<script>
+  const { $, ICON, PLAN, LEVELS, STATUS, wait, esc } = VV;
+  window.PROTO_STATES = [['Sem login', ''], ['Com login, sem turmas', 'novo'], ['Com turmas', 'turmas'], ['Sem permissão (403)', 'negado']];
+  const mode = VV.state();
+  VV.chrome({ area: 'Professor', user: mode ? 'helena' : null });
+  ['gh'].forEach((id) => { $('#' + id).innerHTML = ICON.github; });
+  ['arrow', 'arrow2', 'arrow3'].forEach((id) => { $('#' + id).innerHTML = ICON.arrow; });
+  $('#lock').innerHTML = ICON.lock; $('#info').innerHTML = ICON.info;
+  $('#b1').innerHTML = VV.ic('users', 'yellow'); $('#b2').innerHTML = VV.ic('board', 'green'); $('#b3').innerHTML = VV.ic('mail', 'lilac');
+  $('#big-check').innerHTML = ICON.check;
+
+  $('#signed-out').hidden = mode !== '';
+  $('#signed-in').hidden = mode === '';
+  $('#forbidden').hidden = mode !== 'negado';
+  $('#workspace').hidden = mode === 'negado';
+
+  const say = (text) => { $('#status').textContent = text; };
+  const parts = ['f-posting', 'f-plan', 'f-details', 'f-done'];
+  const go = (id, step) => { parts.forEach((p) => { $('#' + p).hidden = p !== id; }); VV.setStep(step); };
+
+  const CLASSROOMS = mode === 'turmas' ? [
+    { name: 'Turma piloto', students: 6, counts: { STUCK: 2, IDLE: 1, ADVANCING: 2, COMPLETED: 1 }, href: 'painel.html' },
+    { name: 'Back-end noturno', students: 0, counts: {}, href: 'painel.html?estado=vazio' },
+  ] : [];
+
+  const counted = (s, n) => `${n} ${(n === 1 ? STATUS[s].label : STATUS[s].plural).toLowerCase()}`;
+
+  function renderClassrooms() {
+    if (!CLASSROOMS.length) {
+      $('#classrooms').innerHTML = `<div class="card empty"><div class="art">${VV.ic('users', 'plain', 'lg')}</div>
+        <h3>Nenhuma turma ainda</h3><p class="muted small">A primeira aparece aqui assim que você criar.</p></div>`;
+      return;
+    }
+    $('#classrooms').innerHTML = CLASSROOMS.map((c) => {
+      const entries = Object.entries(c.counts).filter(([, n]) => n > 0);
+      const meter = entries.length
+        ? `<div class="meter" role="img" aria-label="${entries.map(([s, n]) => counted(s, n)).join(', ')}">${entries.map(([s, n]) => `<i data-status="${s}" style="flex:${n}"></i>`).join('')}</div>
+           <div class="legend">${entries.map(([s, n]) => `<span data-status="${s}"><i></i>${counted(s, n)}</span>`).join('')}</div>`
+        : '<p class="muted small">Ninguém entrou ainda. Mande o link do convite.</p>';
+      return `<a class="card classroom" href="${c.href}"><div class="row between"><h3>${esc(c.name)}</h3><span class="chip">${ICON.users}${c.students} ${c.students === 1 ? 'aluno' : 'alunos'}</span></div>${meter}</a>`;
+    }).join('');
+  }
+  renderClassrooms();
+
+  $('#f-posting').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!$('#posting').value.trim()) { $('#posting').value = 'Desenvolvedor(a) Java Júnior. Requisitos: Java, Spring Boot, APIs REST, SQL e Docker.'; }
+    VV.busy($('#b-plan'), 'Lendo a vaga');
+    say('Lendo a vaga-base…');
+    await wait(1200);
+    VV.idle($('#b-plan'));
+    $('#plan-chips').innerHTML = `<span class="chip dark">${ICON.stack}${PLAN.archetypeName}</span><span class="chip purple">${ICON.level}Nível ${LEVELS[PLAN.seniorityLevel]}</span><span class="chip yellow">${ICON.mission}${PLAN.missions.length} missões</span>`;
+    $('#missions').innerHTML = PLAN.missions.map(VV.missionItem).join('');
+    go('f-plan', 2); say('Plano pronto, com 6 missões.');
+  });
+  $('#back').addEventListener('click', () => go('f-posting', 1));
+  $('#b-next').addEventListener('click', () => { go('f-details', 3); $('#name').focus(); });
+
+  $('#f-details').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const noName = !$('#name').value.trim();
+    const noConsent = $('#email').value.trim() !== '' && !$('#consent').checked;
+    $('#name-error').hidden = !noName; $('#name').toggleAttribute('aria-invalid', noName);
+    $('#consent-error').hidden = !noConsent;
+    if (noName) { $('#name').focus(); return; }
+    if (noConsent) { $('#consent').focus(); return; }
+    VV.busy($('#b-create'), 'Criando a turma');
+    await wait(1100);
+    VV.idle($('#b-create'));
+    $('#invite').innerHTML = VV.copyField(VV.CLASSROOM.inviteUrl);
+    CLASSROOMS.unshift({ name: $('#name').value.trim(), students: 0, counts: {}, href: 'painel.html?estado=vazio' });
+    renderClassrooms();
+    go('f-done', 4); say('Turma criada.'); $('#done-title').focus();
+  });
+  $('#again').addEventListener('click', () => { $('#f-details').reset(); $('#posting').value = ''; go('f-posting', 1); });
+</script>
+</body>
+</html>

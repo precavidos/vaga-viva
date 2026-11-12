@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Vaga Viva — Protótipos</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="vv.css?v=3">
+  <style>
+    .screens { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
+    .screen { display: grid; gap: 10px; text-decoration: none; min-height: 190px; align-content: start; transition: transform var(--t-fast) ease, box-shadow var(--t-fast) ease; }
+    .screen:hover { transform: translateY(-2px); box-shadow: 0 6px 0 var(--c, var(--purple)); }
+    .screen .states { display: flex; flex-wrap: wrap; gap: 6px; margin-top: auto; }
+  </style>
+</head>
+<body>
+<main>
+  <div class="wrap stack lg">
+    <div class="stack">
+      <h1>As telas do <mark>Vaga Viva</mark>.</h1>
+      <p class="lead">Dados fictícios, sem servidor. As regras estão no <span class="mono">DESIGN.md</span>, na raiz do repositório. O botão "Protótipo", no canto de cada tela, troca de tela e de estado.</p>
+    </div>
+    <div class="screens stagger">
+      <a class="card screen" href="aluno.html" style="--c:var(--yellow)"><span data-ic="posting yellow"></span><h2>Aluno</h2><p class="muted">Da vaga ao repositório, em três passos.</p>
+        <span class="states"><span class="chip">início</span><span class="chip">plano</span><span class="chip">repositório</span></span></a>
+      <a class="card screen" href="professor.html" style="--c:var(--purple)"><span data-ic="users lilac"></span><h2>Professor</h2><p class="muted">Entrar, criar a turma e copiar o convite.</p>
+        <span class="states"><span class="chip">sem login</span><span class="chip">nova turma</span><span class="chip">turmas</span><span class="chip">403</span></span></a>
+      <a class="card screen" href="turma.html" style="--c:var(--green)"><span data-ic="link green"></span><h2>Convite</h2><p class="muted">O aluno vê o que será acompanhado e entra.</p>
+        <span class="states"><span class="chip">convite</span><span class="chip">já na turma</span><span class="chip">inválido</span></span></a>
+      <a class="card screen" href="painel.html" style="--c:var(--coral)"><span data-ic="board coral"></span><h2>Painel da turma</h2><p class="muted">Contadores, colunas por missão e a ficha do aluno.</p>
+        <span class="states"><span class="chip">com alunos</span><span class="chip">vazio</span><span class="chip">carregando</span><span class="chip">erro</span></span></a>
+      <a class="card screen" href="email.html" style="--c:var(--ink)"><span data-ic="mail ink"></span><h2>E-mail semanal</h2><p class="muted">O resumo de segunda de manhã para o professor.</p></a>
+    </div>
+  </div>
+</main>
+<script src="vv.js?v=3"></script>
+<script>
+  VV.chrome({ area: 'Protótipos' });
+  VV.$$('[data-ic]').forEach((el) => { const [name, color] = el.dataset.ic.split(' '); el.innerHTML = VV.ic(name, color, 'lg'); });
+</script>
+</body>
+</html>

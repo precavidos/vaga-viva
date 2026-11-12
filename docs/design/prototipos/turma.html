@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Vaga Viva — Convite da turma</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="vv.css?v=3">
+</head>
+<body>
+<main>
+  <div class="wrap narrow stack lg">
+    <p id="status" class="sr" role="status" aria-live="polite"></p>
+
+    <!-- Unknown code -->
+    <section class="board empty" id="unknown" hidden>
+      <div class="art" id="unknown-art"></div>
+      <h2>Este convite não existe.</h2>
+      <p class="muted">Confira o link com quem convidou você. Ele termina com 10 letras e números.</p>
+    </section>
+
+    <!-- Invite -->
+    <section class="board stack lg" id="invite" aria-labelledby="invite-title">
+      <div class="stack">
+        <span class="eyebrow">Convite</span>
+        <h1 id="invite-title">Você foi convidado(a) para a <mark id="class-name"></mark>.</h1>
+        <p class="row"><span id="teacher-avatar"></span><span>com <b class="mono" id="teacher"></b></span></p>
+      </div>
+
+      <div class="stack">
+        <div class="chips"><span class="chip dark"><span id="i-stack"></span><span id="stack"></span></span><span class="chip yellow"><span id="i-mission"></span><span id="count"></span></span><span class="chip"><span id="i-domain"></span>Agendamento de clínica</span></div>
+        <p class="muted">Todos da turma recebem o mesmo projeto, cada um no seu repositório do GitHub. São estas missões, nesta ordem:</p>
+        <ol class="trail stagger" id="trail"></ol>
+      </div>
+
+      <div class="stack" role="group" aria-labelledby="sees-title">
+        <h2 id="sees-title">O que o professor vê</h2>
+        <div class="sees">
+          <div>
+            <h3><span style="color:var(--green-ink)" id="eye"></span>Vê</h3>
+            <ul><li>O nome que você escrever aqui</li><li>Em qual missão você está</li><li>Os testes que falham</li><li>As perguntas do revisor</li><li>Quantas dicas você pediu</li></ul>
+          </div>
+          <div>
+            <h3><span style="color:var(--coral-ink)" id="eye-off"></span>Não vê</h3>
+            <ul><li>O seu código</li><li>Os seus comentários</li><li>Nada fora deste projeto</li></ul>
+          </div>
+        </div>
+      </div>
+
+      <form id="join" class="stack lg" novalidate>
+        <div class="field">
+          <label for="display-name">Como você quer ser chamado(a)?</label>
+          <span class="help">Pode ser só o primeiro nome. É assim que você aparece para o professor.</span>
+          <input id="display-name" class="input" maxlength="40" autocomplete="given-name" aria-describedby="name-error">
+          <div class="foot"><span id="name-error" class="error-text" hidden>Escreva como quer ser chamado(a).</span><span></span><span class="count" id="name-count">0 / 40</span></div>
+        </div>
+        <label class="check"><input type="checkbox" id="consent" aria-describedby="consent-error">
+          <span id="consent-text"></span></label>
+        <span id="consent-error" class="error-text" hidden>Para entrar na turma, marque a caixa acima.</span>
+        <div class="row between">
+          <span class="muted small" id="why" aria-live="polite">Falta o seu nome e o aceite.</span>
+          <button class="btn brand-btn" id="b-join" aria-disabled="true"><span id="gh"></span>Entrar com o GitHub e criar meu repositório</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- Creating and done -->
+    <section class="board stack lg" id="result" hidden aria-labelledby="done-title">
+      <div id="creating" class="stack lg">
+        <h2>Criando o seu repositório…</h2>
+        <ol class="progress" id="progress">
+          <li><span class="dot"></span>Copiando o repositório-modelo</li>
+          <li><span class="dot"></span>Gravando o plano da turma</li>
+          <li><span class="dot"></span>Abrindo as missões</li>
+          <li><span class="dot"></span>Colocando você na turma</li>
+        </ol>
+      </div>
+      <div id="done" class="stack lg" hidden>
+        <svg class="zig" viewBox="0 0 460 260" aria-hidden="true"><path d="M20 230 L110 60 L170 200 L260 40 L320 180 L440 50" stroke="var(--green)"/></svg>
+        <div class="stack">
+          <span class="big-check" id="big-check"></span>
+          <h1 id="done-title" tabindex="-1"></h1>
+          <p class="lead">Comece pela Missão 1. Ao abrir um PR, o revisor responde com perguntas, e você pode pedir uma dica comentando <span class="mono">/dica</span>.</p>
+        </div>
+        <div id="repo-panel"></div>
+        <div class="row"><a class="btn" href="#">Abrir a Missão 1 <span class="arrow" id="arrow"></span></a><a class="btn ghost" href="#">Ver o repositório</a></div>
+      </div>
+    </section>
+  </div>
+</main>
+
+<script src="vv.js?v=3"></script>
+<script>
+  const { $, ICON, PLAN, CLASSROOM, wait } = VV;
+  window.PROTO_STATES = [['Convite', ''], ['Já está na turma', 'matriculado'], ['Código inválido', 'invalido']];
+  const mode = VV.state();
+  VV.chrome({ user: mode === 'matriculado' ? 'maria' : null });
+  $('#gh').innerHTML = ICON.github; $('#eye').innerHTML = ICON.eye; $('#eye-off').innerHTML = ICON.eyeOff; $('#arrow').innerHTML = ICON.arrow;
+  $('#big-check').innerHTML = ICON.check; $('#unknown-art').innerHTML = VV.ic('link', 'coral', 'lg');
+  $('#i-stack').innerHTML = ICON.stack; $('#i-mission').innerHTML = ICON.mission; $('#i-domain').innerHTML = ICON.domain;
+
+  $('#class-name').textContent = CLASSROOM.name;
+  $('#teacher').textContent = '@' + CLASSROOM.teacherLogin;
+  $('#teacher-avatar').innerHTML = VV.avatar(CLASSROOM.teacherLogin, CLASSROOM.teacherLogin, 'sm');
+  $('#stack').textContent = PLAN.archetypeName;
+  $('#count').textContent = `${PLAN.missions.length} missões`;
+  $('#trail').innerHTML = PLAN.missions.map((m) => `<li><span class="num">${String(m.order).padStart(2, '0')}</span>${VV.esc(m.title)}</li>`).join('');
+  // The exact consent sentence from the design document.
+  $('#consent-text').textContent = `Ao entrar, @${CLASSROOM.teacherLogin} vai ver o nome que você escreveu, em qual missão você está, os testes que falham, as perguntas do revisor e quantas dicas você pediu. Seu código não aparece no painel.`;
+
+  const say = (text) => { $('#status').textContent = text; };
+  const name = $('#display-name'), consent = $('#consent'), button = $('#b-join');
+
+  function refresh() {
+    const hasName = name.value.trim().length > 0;
+    $('#name-count').textContent = `${name.value.length} / 40`;
+    const ok = hasName && consent.checked;
+    button.setAttribute('aria-disabled', String(!ok));
+    $('#why').textContent = ok ? 'Tudo certo.' : !hasName && !consent.checked ? 'Falta o seu nome e o aceite.' : !hasName ? 'Falta o seu nome.' : 'Falta o aceite.';
+    if (hasName) { $('#name-error').hidden = true; name.removeAttribute('aria-invalid'); }
+    if (consent.checked) $('#consent-error').hidden = true;
+  }
+  name.addEventListener('input', refresh); consent.addEventListener('change', refresh);
+
+  function finish(title) {
+    $('#invite').hidden = true; $('#result').hidden = false;
+    $('#creating').hidden = true; $('#done').hidden = false;
+    $('#done-title').innerHTML = title;
+    $('#repo-panel').innerHTML = VV.repoPanel('maria/vaga-viva-clinic-scheduling', PLAN.missions);
+    $('#done-title').focus();
+  }
+
+  $('#join').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const hasName = name.value.trim().length > 0;
+    $('#name-error').hidden = hasName; name.toggleAttribute('aria-invalid', !hasName);
+    $('#consent-error').hidden = consent.checked;
+    if (!hasName) { name.focus(); return; }
+    if (!consent.checked) { consent.focus(); return; }
+    $('#invite').hidden = true; $('#result').hidden = false;
+    say('Criando o seu repositório no GitHub.');
+    await VV.runProgress($('#progress'), wait(2600));
+    finish(`Bem-vindo(a) à turma, <mark>${VV.esc(name.value.trim())}</mark>.`);
+    say('Seu repositório está pronto.');
+  });
+
+  if (mode === 'matriculado') finish('Você já está nesta <mark>turma</mark>.');
+  if (mode === 'invalido') { $('#invite').hidden = true; $('#unknown').hidden = false; }
+</script>
+</body>
+</html>
