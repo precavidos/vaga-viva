@@ -92,6 +92,21 @@ class HintTextsTests {
 	}
 
 	@Test
+	void markerCountsOnlyAtTheStartOfTheComment() {
+		var review = new PreviousComment(1,
+				ReviewTexts.MARKER + "\nrevisão que cita " + HintTexts.marker("persistence", 1));
+
+		assertThat(HintTexts.hintsGiven(List.of(review), "persistence")).isZero();
+	}
+
+	@Test
+	void levelThreeWithoutAnAssertionMessageNamesTheTestInstead() {
+		var silent = List.of(new FailedTest("persistence", "gravaNoBanco", "  "));
+
+		assertThat(HintTexts.fallback(3, PERSISTENCE, silent)).contains("gravaNoBanco").doesNotContain("> ");
+	}
+
+	@Test
 	void noReportSaysTheReportMayStillBeOnItsWay() {
 		assertThat(HintTexts.noReport()).contains("ainda").contains("`/dica`").doesNotContain("não compila");
 		assertThat(ReviewTextFilter.isSafe(HintTexts.noReport())).isTrue();

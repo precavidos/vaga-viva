@@ -19,6 +19,10 @@ import io.github.precavidos.vagaviva.review.ReviewContext.FailedTest;
  * failing tests (ADR 0002: the report says which, not the LLM). The level is
  * counted from the app's own earlier hint comments on the pull request, so
  * nothing is stored; each hint is a new comment for the same reason.
+ * <p>
+ * Without a store, two {@code /dica} comments handled at the same time read
+ * the same earlier comments and may both post the same level. That is the
+ * price of ADR 0003; the next {@code /dica} counts both and moves on.
  */
 @Component
 class ThreeLevelHints implements HintResponder {

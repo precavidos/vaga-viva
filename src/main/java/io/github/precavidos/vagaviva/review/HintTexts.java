@@ -37,7 +37,7 @@ final class HintTexts {
 		int count = 0;
 		for (PreviousComment comment : comments) {
 			Matcher marker = MARKER.matcher(comment.body());
-			if (marker.find() && marker.group(1).equals(missionId)) {
+			if (marker.lookingAt() && marker.group(1).equals(missionId)) {
 				int level = Integer.parseInt(marker.group(2));
 				if (level >= 1 && level <= LAST_LEVEL) {
 					count++;
@@ -56,7 +56,7 @@ final class HintTexts {
 	static String text(PreviousComment comment) {
 		String body = comment.body();
 		Matcher marker = MARKER.matcher(body);
-		if (marker.find()) {
+		if (marker.lookingAt()) {
 			body = body.substring(marker.end());
 		}
 		int footer = body.indexOf(FOOTER_START);
@@ -90,13 +90,23 @@ final class HintTexts {
 							: " Depois, compare essa lista com o teste **" + ReviewTextFilter.neutralize(failing.getFirst().testName())
 									+ "**: qual item da lista ele verifica?")
 					+ "\n\nQue passos, em ordem, levam do que entra ao que o contrato espera que saia?";
-			case 3 -> failing.isEmpty()
-					? "Quase lá na missão **" + mission.title() + "**. Rode só os testes desta missão e leia a primeira asserção que falha: o que ela esperava e o que recebeu? A diferença entre os dois é o ponto a corrigir."
-					: "Quase lá na missão **" + mission.title() + "**. O teste **" + ReviewTextFilter.neutralize(failing.getFirst().testName())
-							+ "** falha com esta mensagem:\n\n> " + quote(failing.getFirst().message()) + "\n\n"
-							+ "O que essa mensagem diz que era esperado, e o que a sua implementação devolve nesse caso? A diferença entre os dois é o ponto a corrigir.";
+			case 3 -> almostThere(mission, failing);
 			default -> throw new IllegalArgumentException("no hint of level " + level);
 		};
+	}
+
+	private static String almostThere(Mission mission, List<FailedTest> failing) {
+		String start = "Quase lá na missão **" + mission.title() + "**. ";
+		if (failing.isEmpty()) {
+			return start + "Rode só os testes desta missão e leia a primeira asserção que falha: o que ela esperava e o que recebeu? A diferença entre os dois é o ponto a corrigir.";
+		}
+		FailedTest first = failing.getFirst();
+		String test = "O teste **" + ReviewTextFilter.neutralize(first.testName()) + "**";
+		if (first.message().isBlank()) {
+			return start + test + " falha sem mensagem de asserção. Abra o teste e leia o que ele verifica por último: o que ele esperava receber, e o que a sua implementação devolve nesse caso?";
+		}
+		return start + test + " falha com esta mensagem:\n\n> " + quote(first.message()) + "\n\n"
+				+ "O que essa mensagem diz que era esperado, e o que a sua implementação devolve nesse caso? A diferença entre os dois é o ponto a corrigir.";
 	}
 
 	/** After the last level: no more hints, back to the test and the contract. */

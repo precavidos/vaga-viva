@@ -46,11 +46,15 @@ public final class ReviewTextFilter {
 	 * reviewer's or the hints' hidden markers.
 	 */
 	public static String neutralize(String text) {
-		return text.replace("@", "@​").replace("#", "#​").replace("<!--", "&lt;!--");
+		return text.replace("@", "@\u200B").replace("#", "#\u200B").replace("<!--", "&lt;!--");
 	}
 
 	public static boolean isSafe(String text) {
 		if (text == null || text.isBlank() || text.length() > MAX_LENGTH) {
+			return false;
+		}
+		if (text.contains("<!--")) {
+			// Only the app writes hidden markers; one in a text could pass for the reviewer's or a hint's.
 			return false;
 		}
 		if (text.contains("```") || text.contains("~~~") || INDENTED_BLOCK.matcher(text).find()) {

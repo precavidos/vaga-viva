@@ -5,6 +5,7 @@ import java.util.stream.Collectors;
 
 import io.github.precavidos.vagaviva.plan.Mission;
 import io.github.precavidos.vagaviva.review.ReviewContext.FailedTest;
+import io.github.precavidos.vagaviva.review.ReviewContext.PreviousComment;
 
 /**
  * The reviewer's fixed texts, in Portuguese: for when there is nothing for
@@ -20,6 +21,11 @@ final class ReviewTexts {
 	static final String FOOTER = "\n\n---\n<sub>Revisor do Vaga Viva. Travou? Comente `/dica` neste PR para receber uma dica, uma de cada vez.</sub>";
 
 	private ReviewTexts() {
+	}
+
+	/** Whether {@code comment} is the reviewer's: its marker opens the body, as {@link #comment} writes it. */
+	static boolean isReview(PreviousComment comment) {
+		return comment.body().startsWith(MARKER);
 	}
 
 	static String comment(String text) {
@@ -44,7 +50,10 @@ final class ReviewTexts {
 	static String fallback(Mission mission, List<FailedTest> failing) {
 		FailedTest first = failing.getFirst();
 		String count = failing.size() == 1 ? "1 teste ainda falha" : failing.size() + " testes ainda falham";
-		return "Na missão **" + mission.title() + "**, " + count + ". O primeiro diz:\n\n> " + ReviewTextFilter.neutralize(first.message()) + "\n\n"
+		String says = first.message().isBlank()
+				? "O primeiro, **" + ReviewTextFilter.neutralize(first.testName()) + "**, falha sem mensagem de asserção.\n\n"
+				: "O primeiro diz:\n\n> " + ReviewTextFilter.neutralize(first.message()) + "\n\n";
+		return "Na missão **" + mission.title() + "**, " + count + ". " + says
 				+ "O que esse teste espera receber, e o que a sua implementação devolve hoje nesse caso? "
 				+ "Releia o contrato da missão em `missoes/" + mission.id() + ".md` e compare com o que o teste pede.";
 	}

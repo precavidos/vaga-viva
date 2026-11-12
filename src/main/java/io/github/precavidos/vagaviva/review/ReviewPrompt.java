@@ -79,7 +79,7 @@ final class ReviewPrompt {
 	private static PreviousComment lastReview(List<PreviousComment> comments) {
 		PreviousComment last = null;
 		for (PreviousComment comment : comments) {
-			if (comment.body().contains(ReviewTexts.MARKER)) {
+			if (ReviewTexts.isReview(comment)) {
 				last = comment;
 			}
 		}

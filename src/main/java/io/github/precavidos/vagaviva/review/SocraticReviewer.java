@@ -68,7 +68,7 @@ class SocraticReviewer implements PullRequestReviewer {
 	private void post(ReviewContext context, String body) {
 		Optional<PreviousComment> previous = context.reviewerComments()
 			.stream()
-			.filter(comment -> comment.body().contains(ReviewTexts.MARKER))
+			.filter(ReviewTexts::isReview)
 			.reduce((first, second) -> second);
 		if (previous.isPresent()) {
 			github.updateIssueComment(context.token(), context.repositoryFullName(), previous.get().id(), body);
