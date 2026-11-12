@@ -86,7 +86,7 @@ final class ReviewPrompt {
 		return last;
 	}
 
-	private static String cap(String text, int max) {
+	static String cap(String text, int max) {
 		String value = text == null ? "" : text.strip();
 		return value.length() <= max ? value : value.substring(0, max) + "\n[... cortado ...]";
 	}

@@ -45,4 +45,18 @@ class ReviewConfig {
 		return new ClaudeReviewWriter(client, llm.model());
 	}
 
+	/** Without an API key, the hints are the fixed texts of each level. */
+	@Bean
+	HintWriter hintWriter(LlmProperties llm) {
+		if (llm.apiKey().isBlank()) {
+			return (context, mission, level, failing, contract, earlierHints) -> Optional.empty();
+		}
+		var client = AnthropicOkHttpClient.builder()
+			.apiKey(llm.apiKey())
+			.timeout(llm.timeout())
+			.maxRetries(llm.maxRetries())
+			.build();
+		return new ClaudeHintWriter(client, llm.model());
+	}
+
 }
