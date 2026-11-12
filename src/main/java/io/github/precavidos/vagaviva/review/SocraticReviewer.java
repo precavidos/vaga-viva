@@ -8,7 +8,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import io.github.precavidos.vagaviva.github.GitHubApi;
-import io.github.precavidos.vagaviva.github.GitHubFile;
 import io.github.precavidos.vagaviva.plan.Mission;
 import io.github.precavidos.vagaviva.review.ReviewContext.FailedTest;
 import io.github.precavidos.vagaviva.review.ReviewContext.PreviousComment;
@@ -56,9 +55,7 @@ class SocraticReviewer implements PullRequestReviewer {
 		String focusId = context.failedTests().getFirst().missionId();
 		Mission focus = context.plan().missions().stream().filter(m -> m.id().equals(focusId)).findFirst().orElseThrow();
 		List<FailedTest> failing = context.failedTests().stream().filter(t -> t.missionId().equals(focusId)).toList();
-		String contract = github.readFile(context.token(), context.repositoryFullName(), "missoes/" + focusId + ".md")
-			.map(GitHubFile::content)
-			.orElse(focus.summary());
+		String contract = MissionContract.read(github, context, focus);
 		Optional<String> written = writer.write(context, focus, failing, contract);
 		if (written.isPresent() && !ReviewTextFilter.isSafe(written.get())) {
 			log.warn("Review text refused by the filter for {}#{}", context.repositoryFullName(),
@@ -71,7 +68,7 @@ class SocraticReviewer implements PullRequestReviewer {
 	private void post(ReviewContext context, String body) {
 		Optional<PreviousComment> previous = context.reviewerComments()
 			.stream()
-			.filter(comment -> comment.body().contains(ReviewTexts.MARKER))
+			.filter(ReviewTexts::isReview)
 			.reduce((first, second) -> second);
 		if (previous.isPresent()) {
 			github.updateIssueComment(context.token(), context.repositoryFullName(), previous.get().id(), body);

@@ -122,6 +122,36 @@ class SocraticReviewerTests {
 	}
 
 	@Test
+	void fallbackNeverMentionsAnyoneFromTheReport() {
+		llmText = Optional.empty();
+
+		reviewer.review(context(true, List.of(new FailedTest("persistence", "gravaNoBanco", "veio @maria e #3")),
+				List.of()));
+
+		assertThat(postedBody()).doesNotContain("@maria").doesNotContain("#3").contains("maria");
+	}
+
+	@Test
+	void editsItsOwnReviewNotAHintThatQuotesItsMarker() {
+		var earlier = List.of(new PreviousComment(41, ReviewTexts.MARKER + "\nRevisão antiga"),
+				new PreviousComment(42, HintTexts.marker("persistence", 1) + "\nUma dica " + ReviewTexts.MARKER));
+
+		reviewer.review(context(true, List.of(failed("persistence", "gravaNoBanco")), earlier));
+
+		verify(github).updateIssueComment(eq("token"), eq(REPO), eq(41L), anyString());
+		verify(github, never()).updateIssueComment(anyString(), anyString(), eq(42L), anyString());
+	}
+
+	@Test
+	void fallbackWithoutAnAssertionMessageNamesTheTestInstead() {
+		llmText = Optional.empty();
+
+		reviewer.review(context(true, List.of(new FailedTest("persistence", "gravaNoBanco", "")), List.of()));
+
+		assertThat(postedBody()).contains("gravaNoBanco").doesNotContain("> ");
+	}
+
+	@Test
 	void usesTheMissionSummaryWhenTheContractFileIsMissing() {
 		when(github.readFile("token", REPO, "missoes/patients-api.md")).thenReturn(Optional.empty());
 

@@ -281,7 +281,7 @@ class GitHubClientTests {
 
 	@Test
 	void readsTheCommentsAndTellsBotsApart() {
-		github.expect(requestTo(API + "/repos/maria/vaga-viva-clinica/issues/3/comments?per_page=100"))
+		github.expect(requestTo(API + "/repos/maria/vaga-viva-clinica/issues/3/comments?per_page=100&page=1"))
 			.andRespond(withSuccess("""
 					[ { "id": 1, "body": "/dica", "user": { "login": "maria", "type": "User" } },
 					  { "id": 2, "body": "Pergunta", "user": { "login": "vaga-viva[bot]", "type": "Bot" } } ]""",
@@ -289,6 +289,25 @@ class GitHubClientTests {
 
 		assertThat(client.issueComments(TOKEN, "maria/vaga-viva-clinica", 3)).containsExactly(
 				new GitHubComment(1, "maria", false, "/dica"), new GitHubComment(2, "vaga-viva[bot]", true, "Pergunta"));
+	}
+
+	@Test
+	void readsEveryPageOfComments() {
+		String fullPage = java.util.stream.IntStream.rangeClosed(1, 100)
+			.mapToObj(id -> "{ \"id\": " + id + ", \"body\": \"c\", \"user\": { \"login\": \"maria\", \"type\": \"User\" } }")
+			.collect(java.util.stream.Collectors.joining(",", "[", "]"));
+		github.expect(requestTo(API + "/repos/maria/vaga-viva-clinica/issues/3/comments?per_page=100&page=1"))
+			.andRespond(withSuccess(fullPage, MediaType.APPLICATION_JSON));
+		github.expect(requestTo(API + "/repos/maria/vaga-viva-clinica/issues/3/comments?per_page=100&page=2"))
+			.andRespond(withSuccess("""
+					[ { "id": 101, "body": "dica", "user": { "login": "vaga-viva[bot]", "type": "Bot" } } ]""",
+					MediaType.APPLICATION_JSON));
+
+		var comments = client.issueComments(TOKEN, "maria/vaga-viva-clinica", 3);
+
+		assertThat(comments).hasSize(101);
+		assertThat(comments.getLast()).isEqualTo(new GitHubComment(101, "vaga-viva[bot]", true, "dica"));
+		github.verify();
 	}
 
 	@Test

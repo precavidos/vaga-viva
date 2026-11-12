@@ -79,14 +79,14 @@ final class ReviewPrompt {
 	private static PreviousComment lastReview(List<PreviousComment> comments) {
 		PreviousComment last = null;
 		for (PreviousComment comment : comments) {
-			if (comment.body().contains(ReviewTexts.MARKER)) {
+			if (ReviewTexts.isReview(comment)) {
 				last = comment;
 			}
 		}
 		return last;
 	}
 
-	private static String cap(String text, int max) {
+	static String cap(String text, int max) {
 		String value = text == null ? "" : text.strip();
 		return value.length() <= max ? value : value.substring(0, max) + "\n[... cortado ...]";
 	}
