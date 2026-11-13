@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import io.github.precavidos.vagaviva.review.MissionTally;
 import io.github.precavidos.vagaviva.review.ReviewEvents;
 import io.github.precavidos.vagaviva.review.ReviewTextFilter;
 import io.github.precavidos.vagaviva.review.TestReport;
@@ -72,6 +73,10 @@ class ProgressRecorder implements ReviewEvents {
 		update(repositoryFullName, (progress, enrollment) -> {
 			Instant now = clock.instant();
 			StoredPlan plan = StoredPlan.fromJson(enrollment.getClassroom().getPlan());
+			Map<String, MissionTally> tallies = read(progress.getTestTallies(), new TypeReference<>() {
+			}, new LinkedHashMap<String, MissionTally>());
+			tallies.putAll(report.tallies());
+			progress.setTestTallies(JSON.writeValueAsString(tallies));
 			switch (MissionProgress.from(plan.missionIds(), report)) {
 				case MissionProgress.Unknown unknown -> {
 					// A partial report says nothing about where the student is.
