@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="vv.css?v=3">
-  <link rel="stylesheet" href="vv-motion.css?v=2">
+  <link rel="stylesheet" href="vv-motion.css?v=3">
   <style>
     .demo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
     .demo { display: grid; gap: 14px; align-content: start; }
@@ -148,7 +148,7 @@
 
     <section class="stack" aria-labelledby="t-decrypt">
       <h2 id="t-decrypt">Termo vira competência</h2>
-      <p class="muted">O nome devolvido pela API se resolve da esquerda para a direita em até 600 ms. O leitor de tela recebe o nome pronto em <span class="mono">aria-label</span>.</p>
+      <p class="muted">O nome devolvido pela API se resolve da esquerda para a direita em até 600 ms. O leitor de tela recebe o nome pronto, nunca os símbolos.</p>
       <div class="card demo">
         <ul class="competences" id="competences">
           <li><span data-decrypt>Programação em Java</span><span class="from">por "Java"</span></li>
@@ -171,7 +171,7 @@
   </div>
 </main>
 <script src="vv.js?v=3"></script>
-<script src="vv-motion.js?v=7"></script>
+<script src="vv-motion.js?v=9"></script>
 <script>
   VV.chrome({ area: 'Movimento' });
 
@@ -184,6 +184,7 @@
   swapBlock.dataset.view = 'plano';
   swapBlock.innerHTML = SWAP_VIEWS.plano;
 
+  const DECRYPT_NAMES = new Map([...document.querySelectorAll('#competences [data-decrypt]')].map((el) => [el, el.dataset.decrypt || el.textContent.trim()]));
   VVMotion.init();
 
   // Status lines: each demo starts waiting on load; the buttons call the returned handle.
@@ -219,14 +220,16 @@
     document.querySelectorAll('#counts [data-count-up]').forEach((el) => VVMotion.countUp(el, el.dataset.countUp));
   });
 
-  // Decrypt: replay every name from its aria-label; the last one also shows a name that arrives later.
+  // Decrypt: replay every name (kept here, read before init); the last one also shows a name that arrives later.
   document.getElementById('decrypt-again').addEventListener('click', () => {
-    document.querySelectorAll('#competences [data-decrypt]').forEach((el) => VVMotion.decrypt(el, el.getAttribute('aria-label')));
+    DECRYPT_NAMES.forEach((name, el) => VVMotion.decrypt(el, name));
   });
   const LATE = ['Controle de versão com Git', 'Integração contínua com GitHub Actions'];
   document.getElementById('decrypt-late').addEventListener('click', () => {
     const el = document.getElementById('late-name');
-    VVMotion.decrypt(el, LATE[(LATE.indexOf(el.getAttribute('aria-label')) + 1) % LATE.length]);
+    const name = LATE[(LATE.indexOf(DECRYPT_NAMES.get(el)) + 1) % LATE.length];
+    DECRYPT_NAMES.set(el, name);
+    VVMotion.decrypt(el, name);
   });
 
   const swapStatus = document.getElementById('swap-status');

@@ -293,8 +293,9 @@
   register('[data-dot-field]', bindDotField);
 
   // ---------- Decrypt ----------
-  // The name resolves left to right from symbols in up to 600 ms. aria-label gets the final text before the
-  // first frame, and a visually hidden copy carries it in the content too, so a screen reader never meets the noise.
+  // The name resolves left to right from symbols in up to 600 ms. The final text in the DOM is the source of truth:
+  // during the run the noise is aria-hidden and a visually hidden copy holds the final text; at the end the element
+  // holds the plain final text. No aria-label, which screen readers ignore or double-read on a generic span.
   const GLYPHS = '·:•+×#%&/<>=*';
   const decrypting = new WeakMap(); // element -> { raf, resolve }
   const noise = () => GLYPHS[Math.floor(Math.random() * GLYPHS.length)];
@@ -303,7 +304,6 @@
     const final = String(text ?? '');
     const prev = decrypting.get(el);
     if (prev) { cancelAnimationFrame(prev.raf); prev.resolve(); decrypting.delete(el); }
-    el.setAttribute('aria-label', final);
     el.classList.remove('is-decrypting');
     if (reduced() || !final.trim()) { el.textContent = final; return Promise.resolve(); }
 
@@ -311,8 +311,9 @@
     el.innerHTML = '<span class="dc-ghost" aria-hidden="true"></span><span class="dc-run" aria-hidden="true"><span class="dc-done"></span><span class="dc-noise"></span></span><span class="dc-sr"></span>';
     const [ghost, , sr] = el.children;
     const done = el.querySelector('.dc-done'), rest = el.querySelector('.dc-noise');
-    ghost.textContent = final; sr.textContent = final; // the ghost holds the final width, so the line does not jitter
+    ghost.textContent = final; sr.textContent = final; // the ghost alone sizes the box; the run layer sits over it
     const chars = [...final];
+    rest.textContent = chars.map((c) => (c.trim() ? noise() : c)).join(''); // all noise from the first paint, never a blank
     const duration = Math.min(580, 180 + chars.length * 22); // 580 leaves a frame of slack inside the 600 ms
     const t0 = performance.now();
     let shown = -1, tick = -1;

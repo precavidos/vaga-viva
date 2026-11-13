@@ -77,10 +77,12 @@
 .dot-field-canvas { position: absolute; inset: 0; z-index: -1; width: 100%; height: 100%; border-radius: inherit; pointer-events: none; }
 
 /* ---------- Decrypt: [data-decrypt] ---------- */
-/* While it runs, the final text sits invisible under the noise to hold the width; the noise is a muted mono. */
-[data-decrypt].is-decrypting { display: inline-grid; white-space: nowrap; }
-[data-decrypt].is-decrypting > .dc-ghost, [data-decrypt].is-decrypting > .dc-run { grid-area: 1 / 1; }
+/* While it runs, the invisible final text (the ghost) is the only thing in the flow, so it alone sizes the box and
+   wraps like the final text. The run layer is laid over it and clipped to it: the wider mono noise never pushes
+   the line or its neighbours. */
+[data-decrypt].is-decrypting { position: relative; }
 .dc-ghost { visibility: hidden; }
+.dc-run { position: absolute; inset: 0; overflow: hidden; overflow-wrap: anywhere; }
 .dc-noise { color: var(--ink-2); font-family: var(--mono); font-weight: 600; }
 .dc-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
