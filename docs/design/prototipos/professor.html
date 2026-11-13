@@ -6,8 +6,9 @@
   <title>Vaga Viva — Professor</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="vv.css?v=3">
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="vv.css?v=4">
+  <link rel="stylesheet" href="vv-motion.css?v=4">
 </head>
 <body>
 <main>
@@ -80,7 +81,7 @@
           </div>
           <label class="check"><input type="checkbox" id="consent"><span>Quero receber o resumo semanal neste e-mail. <span class="muted">Guardamos o endereço só para isso.</span></span></label>
           <span id="consent-error" class="error-text" hidden>Marque a caixa para recebermos a sua autorização, ou apague o e-mail.</span>
-          <div class="row" style="justify-content:flex-end"><button class="btn brand-btn" id="b-create">Criar a turma</button></div>
+          <div class="row" style="justify-content:flex-end"><button class="btn" id="b-create">Criar a turma</button></div>
         </form>
 
         <div id="f-done" class="stack lg" hidden>
@@ -103,7 +104,8 @@
   </div>
 </main>
 
-<script src="vv.js?v=3"></script>
+<script src="vv.js?v=4"></script>
+<script src="vv-motion.js?v=11"></script>
 <script>
   const { $, ICON, PLAN, LEVELS, STATUS, wait, esc } = VV;
   window.PROTO_STATES = [['Sem login', ''], ['Com login, sem turmas', 'novo'], ['Com turmas', 'turmas'], ['Sem permissão (403)', 'negado']];
@@ -112,7 +114,7 @@
   ['gh'].forEach((id) => { $('#' + id).innerHTML = ICON.github; });
   ['arrow', 'arrow2', 'arrow3'].forEach((id) => { $('#' + id).innerHTML = ICON.arrow; });
   $('#lock').innerHTML = ICON.lock; $('#info').innerHTML = ICON.info;
-  $('#b1').innerHTML = VV.ic('users', 'yellow'); $('#b2').innerHTML = VV.ic('board', 'green'); $('#b3').innerHTML = VV.ic('mail', 'lilac');
+  $('#b1').innerHTML = VV.ic('users'); $('#b2').innerHTML = VV.ic('board'); $('#b3').innerHTML = VV.ic('mail');
   $('#big-check').innerHTML = ICON.check;
 
   $('#signed-out').hidden = mode !== '';
@@ -133,7 +135,7 @@
 
   function renderClassrooms() {
     if (!CLASSROOMS.length) {
-      $('#classrooms').innerHTML = `<div class="card empty"><div class="art">${VV.ic('users', 'plain', 'lg')}</div>
+      $('#classrooms').innerHTML = `<div class="card empty"><div class="art">${VV.ic('users', '', 'lg')}</div>
         <h3>Nenhuma turma ainda</h3><p class="muted small">A primeira aparece aqui assim que você criar.</p></div>`;
       return;
     }
@@ -147,15 +149,16 @@
     }).join('');
   }
   renderClassrooms();
+  VVMotion.init();
 
   $('#f-posting').addEventListener('submit', async (e) => {
     e.preventDefault();
     if (!$('#posting').value.trim()) { $('#posting').value = 'Desenvolvedor(a) Java Júnior. Requisitos: Java, Spring Boot, APIs REST, SQL e Docker.'; }
-    VV.busy($('#b-plan'), 'Lendo a vaga');
-    say('Lendo a vaga-base…');
-    await wait(1200);
+    // While the plan endpoint answers (mocked), the button shows the wave status line.
+    VV.busy($('#b-plan'), 'Montando o plano', 'wave');
+    await wait(1400);
     VV.idle($('#b-plan'));
-    $('#plan-chips').innerHTML = `<span class="chip dark">${ICON.stack}${PLAN.archetypeName}</span><span class="chip purple">${ICON.level}Nível ${LEVELS[PLAN.seniorityLevel]}</span><span class="chip yellow">${ICON.mission}${PLAN.missions.length} missões</span>`;
+    $('#plan-chips').innerHTML = `<span class="chip dark">${ICON.stack}${PLAN.archetypeName}</span><span class="chip">${ICON.level}Nível ${LEVELS[PLAN.seniorityLevel]}</span><span class="chip">${ICON.mission}${PLAN.missions.length} missões</span>`;
     $('#missions').innerHTML = PLAN.missions.map(VV.missionItem).join('');
     go('f-plan', 2); say('Plano pronto, com 6 missões.');
   });
@@ -170,12 +173,13 @@
     $('#consent-error').hidden = !noConsent;
     if (noName) { $('#name').focus(); return; }
     if (noConsent) { $('#consent').focus(); return; }
-    VV.busy($('#b-create'), 'Criando a turma');
+    VV.busy($('#b-create'), 'Criando a turma', 'wave');
     await wait(1100);
     VV.idle($('#b-create'));
     $('#invite').innerHTML = VV.copyField(VV.CLASSROOM.inviteUrl);
     CLASSROOMS.unshift({ name: $('#name').value.trim(), students: 0, counts: {}, href: 'painel.html?estado=vazio' });
     renderClassrooms();
+  VVMotion.init();
     go('f-done', 4); say('Turma criada.'); $('#done-title').focus();
   });
   $('#again').addEventListener('click', () => { $('#f-details').reset(); $('#posting').value = ''; go('f-posting', 1); });

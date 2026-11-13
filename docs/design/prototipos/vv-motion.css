@@ -3,8 +3,7 @@
    its still state, so reduced motion (the media query, or .is-still set by the JS) only has to remove the
    animation. Prefix for keyframes: vvm-. */
 
-:root { --dot-empty: #8f8a7c; }
-@media (prefers-color-scheme: dark) { :root { --dot-empty: #767166; } }
+/* --dot-empty and the other colour tokens come from vv.css. */
 
 /* ---------- Dot matrix: [data-dot-matrix="scan|wave|flip"] ---------- */
 /* 4×4 round dots, injected by the JS with --r (row) and --c (column). One cycle is 1.6 s. */
@@ -22,6 +21,7 @@
 [data-dot-matrix="wave"] { --dm-color: var(--purple); }
 [data-dot-matrix="scan"].is-running i { animation: vvm-dot-pulse var(--dm-cycle) var(--ease-out) infinite both; animation-delay: calc(var(--r) * var(--dm-cycle) / 4); }
 [data-dot-matrix="wave"].is-running i { animation: vvm-dot-pulse var(--dm-cycle) var(--ease-out) infinite both; animation-delay: calc((var(--r) + var(--c)) * var(--dm-cycle) / 10); }
+[data-dot-matrix].is-offscreen i { animation-play-state: paused; }
 @keyframes vvm-dot-pulse {
   0% { opacity: .22; transform: scale(.7); }
   12% { opacity: 1; transform: scale(1); }

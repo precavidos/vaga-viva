@@ -37,6 +37,16 @@
     el.innerHTML = Array.from({ length: 16 }, (_, i) => `<i style="--r:${Math.floor(i / 4)};--c:${i % 4}"></i>`).join('');
     const dots = [...el.children];
     let timer = 0;
+    // Off screen the loop pauses: the CSS animations through .is-offscreen, the flip steps through `visible`.
+    let visible = true;
+    if ('IntersectionObserver' in window) {
+      const watcher = new IntersectionObserver(([entry]) => {
+        if (!el.isConnected) { watcher.disconnect(); return; } // replaced, as a busy button's content is
+        visible = entry.isIntersecting;
+        el.classList.toggle('is-offscreen', !visible);
+      });
+      watcher.observe(el);
+    }
 
     const clear = () => { clearInterval(timer); timer = 0; };
     const ctrl = {
@@ -52,6 +62,7 @@
         let lit = 0;
         let cycle = 0;
         timer = setInterval(() => {
+          if (!visible) return;
           const elapsed = performance.now() - t0;
           const t = elapsed % CYCLE;
           const want = t >= CYCLE - FLIP_STEP ? 0 : Math.min(16, Math.floor(t / FLIP_STEP) + 1);
