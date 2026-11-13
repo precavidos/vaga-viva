@@ -179,7 +179,7 @@ Regras:
 
 ### 3.3 Componentes de movimento
 
-Os seis componentes vivem em `vv-motion.css` e `vv-motion.js`. Cada um é ativado por um atributo ou uma classe no HTML, sem build e sem configuração em JavaScript.
+Os seis componentes vivem em `vv-motion.css` e `vv-motion.js`. Cada um é ativado por um atributo ou uma classe no HTML, sem build. Os que dependem de um momento da tela (a espera que começa, a troca de etapa) têm também uma chamada curta em `VVMotion`, sem opções de configuração.
 
 | # | Componente | Onde aparece | Regra |
 | --- | --- | --- | --- |
@@ -189,6 +189,17 @@ Os seis componentes vivem em `vv-motion.css` e `vv-motion.js`. Cada um é ativad
 | 4 | **Marca de etapa** (`.step-mark`, item 4.15) | criação do repositório, entrada na turma | Anel parado (futuro), arco girando (atual), visto verde desenhado (feito). A regra do item 3.2 continua: a última etapa só fica verde quando o servidor responde. |
 | 5 | **Troca em pontos** (`data-dot-swap`) | da etapa Plano para a etapa Repositório (aluno e convite), e na demo da landing | Uma malha de pontos roxos cobre o bloco em ordem aleatória, o conteúdo troca por baixo e a malha some. Cerca de 500 ms no total. Uma única vez por fluxo. |
 | 6 | **Contagem** (`data-count-up`) | resumo do painel | O número sobe de 0 ao valor em 600 ms, em Bricolage 600, com o ponto da situação ao lado do rótulo. Uma vez por carregamento. |
+
+Contrato de marcação, o que o HTML escreve e o que `vv-motion.js` faz:
+
+- **`VVMotion.init(root?)`** liga todo atributo `data-` acima dentro de `root` (o documento, se omitido). Pode ser chamada de novo depois de inserir HTML: o que já está ligado não é ligado duas vezes.
+- **`data-dot-field`** vai num elemento que envolve o conteúdo do topo. O JS insere o `<canvas>` atrás desse conteúdo; o HTML não escreve o `<canvas>`.
+- **`data-dot-matrix="scan|wave|flip"`** é um elemento vazio. O JS injeta os 16 pontos; o valor do atributo escolhe o padrão.
+- **`.status-line`** é escrita no HTML com a matriz, `.status-label` e `.status-timer` vazio. Quem atualiza o cronômetro é o JS: `VVMotion.statusLine(el, label)` mostra a linha com o rótulo, começa a contar e devolve `{done(), stop()}`; `done()` fecha a espera com sucesso e `stop()` a interrompe (erro ou cancelamento). As duas param o cronômetro e o laço da matriz.
+- **`data-decrypt`** resolve para o valor do atributo, ou para o texto do elemento quando o atributo está vazio. Antes de animar, o JS põe o texto final em `aria-label`. Para um nome que chega depois, `VVMotion.decrypt(el, text)`.
+- **`data-dot-swap`** marca o bloco que vai trocar: o próprio elemento é coberto pela malha. A troca não dispara sozinha; ela acontece em `VVMotion.dotSwap(el, swap)`, em que `swap` é a função que troca o conteúdo por baixo da malha.
+- **`data-count-up`** lê o número final do valor do atributo (`data-count-up="18"`). O texto do elemento já traz esse número, para quem não roda o JS e para movimento reduzido.
+- **`.step-mark`** não tem atributo: o estado é a classe (item 4.15), trocada pela página.
 
 ## 4. Componentes
 
@@ -287,7 +298,7 @@ Uma linha só, em mono, que mostra que o sistema está trabalhando e há quanto 
 2. o rótulo (`.status-label`), no gerúndio: "Lendo a vaga", "Montando o plano", "Criando o repositório", "Carregando a turma";
 3. o cronômetro (`.status-timer`), em segundos com uma casa e vírgula: "2,3 s".
 
-Juntas, leem "Montando o plano · 2,3 s". A linha existe só durante espera real e some quando a resposta chega. A matriz e o cronômetro ficam fora da árvore de acessibilidade; uma região `role="status"` anuncia o rótulo uma vez. Sobre painel escuro, a linha usa texto `--paper` e os pontos mantêm a cor do padrão.
+Juntas, leem "Montando o plano · 2,3 s". A linha existe só durante espera real e some quando a resposta chega. A matriz e o cronômetro ficam fora da árvore de acessibilidade; uma região `role="status"` anuncia o rótulo uma vez. Sobre painel escuro, a linha usa texto `#f4f1ea` nos dois modos e os pontos mantêm a cor do padrão.
 
 ### 4.15 Marca de etapa (`.step-mark`)
 
@@ -295,7 +306,7 @@ Juntas, leem "Montando o plano · 2,3 s". A linha existe só durante espera real
 
 | Estado | Desenho | Quando |
 | --- | --- | --- |
-| `is-todo` | anel parado em `--line` | etapa futura |
+| `is-todo` | anel parado em `--dot-empty` | etapa futura |
 | `is-current` | arco girando em `--purple` | etapa em andamento |
 | `is-done` | visto verde desenhado | etapa feita |
 
