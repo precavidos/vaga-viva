@@ -2,6 +2,7 @@ package io.github.precavidos.vagaviva.email;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -104,6 +105,9 @@ class WeeklyEmailUnsubscribeApiTests {
 
 		assertThat(response).hasStatus(HttpStatus.OK).hasForwardedUrl("/descadastrar.html");
 		assertThat(mvc.get().uri("/descadastrar.html")).hasStatusOk().bodyText().contains("Parar de receber");
+		assertThat(new String(mvc.get().uri("/descadastrar.html").exchange().getResponse().getContentAsByteArray(),
+				StandardCharsets.UTF_8))
+			.contains("Este link de descadastro está incompleto. Use o link do último e-mail que você recebeu.");
 		assertThat(subscriptions.findByUnsubscribeToken("tok")).isPresent();
 	}
 

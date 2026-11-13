@@ -50,7 +50,9 @@ class WeeklyEmailController {
 		}
 		WeeklyEmailSubscription subscription = subscriptions.findById(login)
 			.orElseGet(() -> new WeeklyEmailSubscription(login));
-		subscription.consent(request.email(), request.repositoryFullName(), newToken(), clock.instant());
+		// An old unsubscribe link keeps working after a new consent.
+		String token = subscription.getUnsubscribeToken() != null ? subscription.getUnsubscribeToken() : newToken();
+		subscription.consent(request.email(), request.repositoryFullName(), token, clock.instant());
 		subscriptions.save(subscription);
 		return ResponseEntity.noContent().build();
 	}
@@ -88,8 +90,8 @@ class WeeklyEmailController {
 	record UnsubscribeRequest(String token) {
 	}
 
-	record ConsentRequest(@NotBlank @Email @Size(max = 254) String email,
-			@NotBlank @Pattern(regexp = "[A-Za-z0-9-]+/[A-Za-z0-9._-]+") String repositoryFullName) {
+	record ConsentRequest(@NotBlank @Email @Pattern(regexp = ".+@.+\\..+") @Size(max = 254) String email,
+			@NotBlank @Pattern(regexp = "[A-Za-z0-9-]+/(?!\\.{1,2}$)[A-Za-z0-9._-]+") String repositoryFullName) {
 	}
 
 }

@@ -27,6 +27,10 @@
 <script>
   const token = new URLSearchParams(location.search).get('t') || '';
   const stop = document.getElementById('stop');
+  if (token.trim() === '') {
+    document.getElementById('lead').textContent = 'Este link de descadastro está incompleto. Use o link do último e-mail que você recebeu.';
+    stop.parentElement.hidden = true;
+  }
   stop.addEventListener('click', async () => {
     stop.disabled = true;
     document.getElementById('error').hidden = true;

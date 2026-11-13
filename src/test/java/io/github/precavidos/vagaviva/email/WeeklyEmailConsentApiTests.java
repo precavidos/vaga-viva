@@ -6,8 +6,11 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.system.CapturedOutput;
+import org.springframework.boot.test.system.OutputCaptureExtension;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
@@ -21,6 +24,7 @@ import io.github.precavidos.vagaviva.TestcontainersConfiguration;
 @Import(TestcontainersConfiguration.class)
 @SpringBootTest
 @AutoConfigureMockMvc
+@ExtendWith(OutputCaptureExtension.class)
 class WeeklyEmailConsentApiTests {
 
 	@Autowired
@@ -56,7 +60,8 @@ class WeeklyEmailConsentApiTests {
 	}
 
 	@Test
-	void consentingAgainKeepsOneRowAndRenewsTheToken() {
+	void consentingAgainKeepsOneRowAndTheUnsubscribeToken() {
+		String firstToken = null;
 		for (String repository : new String[] { "maria/vaga-viva-x", "maria/vaga-viva-y" }) {
 			assertThat(mvc.post()
 				.uri("/api/weekly-email")
@@ -65,11 +70,22 @@ class WeeklyEmailConsentApiTests {
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(body("maria@example.com", repository))
 				.exchange()).hasStatus(HttpStatus.NO_CONTENT);
+			if (firstToken == null) {
+				firstToken = subscriptions.findById("maria").orElseThrow().getUnsubscribeToken();
+			}
 		}
 
 		assertThat(subscriptions.findAll()).hasSize(1);
-		assertThat(subscriptions.findById("maria").orElseThrow().getRepositoryFullName())
-			.isEqualTo("maria/vaga-viva-y");
+		WeeklyEmailSubscription row = subscriptions.findById("maria").orElseThrow();
+		assertThat(row.getRepositoryFullName()).isEqualTo("maria/vaga-viva-y");
+		assertThat(row.getUnsubscribeToken()).isEqualTo(firstToken);
+
+		assertThat(mvc.post()
+			.uri("/api/weekly-email/unsubscribe")
+			.contentType(MediaType.APPLICATION_JSON)
+			.content("{\"token\":\"" + firstToken + "\"}")
+			.exchange()).hasStatus(HttpStatus.NO_CONTENT);
+		assertThat(subscriptions.findAll()).isEmpty();
 	}
 
 	@Test
@@ -98,6 +114,51 @@ class WeeklyEmailConsentApiTests {
 
 		assertThat(response).hasStatus(HttpStatus.BAD_REQUEST);
 		assertThat(subscriptions.count()).isZero();
+	}
+
+	@Test
+	void refusesDotsAsTheRepositoryName() {
+		for (String repository : new String[] { "maria/..", "maria/." }) {
+			var response = mvc.post()
+				.uri("/api/weekly-email")
+				.with(student("maria"))
+				.with(csrf())
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(body("maria@example.com", repository))
+				.exchange();
+
+			assertThat(response).hasStatus(HttpStatus.BAD_REQUEST);
+		}
+		assertThat(subscriptions.count()).isZero();
+	}
+
+	@Test
+	void doesNotEchoOrLogARejectedEmail(CapturedOutput output) {
+		var response = mvc.post()
+			.uri("/api/weekly-email")
+			.with(student("maria"))
+			.with(csrf())
+			.contentType(MediaType.APPLICATION_JSON)
+			.content(body("maria@x", "maria/vaga-viva-x"))
+			.exchange();
+
+		assertThat(response).hasStatus(HttpStatus.BAD_REQUEST).bodyText().contains("Confira o e-mail e tente de novo.")
+			.doesNotContain("maria@x");
+		assertThat(output.getAll()).doesNotContain("maria@x");
+	}
+
+	@Test
+	void doesNotLogAnEmailInMalformedJson(CapturedOutput output) {
+		var response = mvc.post()
+			.uri("/api/weekly-email")
+			.with(student("maria"))
+			.with(csrf())
+			.contentType(MediaType.APPLICATION_JSON)
+			.content("{\"email\":\"maria@example.com\", oops")
+			.exchange();
+
+		assertThat(response).hasStatus(HttpStatus.BAD_REQUEST).bodyText().doesNotContain("maria@example.com");
+		assertThat(output.getAll()).doesNotContain("maria@example.com");
 	}
 
 	@Test

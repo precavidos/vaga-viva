@@ -192,7 +192,7 @@
     }
     $('create-button').disabled = true;
     setStatus('Criando o seu repositório no GitHub. Isso leva alguns segundos...');
-    remember(text, email, consent);
+    remember(text, consent ? email : '', consent);
     try {
       const response = await fetch('/api/student-repositories', {
         method: 'POST',
