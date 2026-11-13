@@ -12,12 +12,14 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -53,6 +55,25 @@ class WeeklyEmailController {
 		return ResponseEntity.noContent().build();
 	}
 
+	/** The token is the credential; the answer never reveals whether it matched. */
+	@PostMapping(path = "/unsubscribe", consumes = MediaType.APPLICATION_JSON_VALUE)
+	ResponseEntity<Void> unsubscribe(@RequestBody(required = false) UnsubscribeRequest request) {
+		return unsubscribeWith(request == null ? null : request.token());
+	}
+
+	/** RFC 8058 one-click: {@code ?t=<token>} with the body {@code List-Unsubscribe=One-Click}. */
+	@PostMapping(path = "/unsubscribe")
+	ResponseEntity<Void> unsubscribeOneClick(@RequestParam(name = "t", required = false) String token) {
+		return unsubscribeWith(token);
+	}
+
+	private ResponseEntity<Void> unsubscribeWith(String token) {
+		if (token != null && !token.isBlank()) {
+			subscriptions.findByUnsubscribeToken(token).ifPresent(subscriptions::delete);
+		}
+		return ResponseEntity.noContent().build();
+	}
+
 	private static String newToken() {
 		byte[] bytes = new byte[32];
 		RANDOM.nextBytes(bytes);
@@ -62,6 +83,9 @@ class WeeklyEmailController {
 	private static String login(OAuth2User user) {
 		Object login = user.getAttribute("login");
 		return login == null ? user.getName() : login.toString();
+	}
+
+	record UnsubscribeRequest(String token) {
 	}
 
 	record ConsentRequest(@NotBlank @Email @Size(max = 254) String email,
