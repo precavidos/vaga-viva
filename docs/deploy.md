@@ -78,6 +78,21 @@ docker build -t vaga-viva:local .
 docker run --rm --network vaga-viva_default -p 8080:8080 -e DATABASE_URL=jdbc:postgresql://postgres:5432/vagaviva vaga-viva:local
 ```
 
+## E-mail (Resend)
+
+O aluno pode encaminhar uma vaga por e-mail e receber o plano de volta. Quem recebe e responde é o Resend; sem as variáveis abaixo, o endpoint responde 503 e o resto da API segue normal.
+
+1. No Resend, verifique o domínio de envio e ative o recebimento (*Receiving*) nesse domínio. Se preferir não mexer no DNS, use o endereço de recebimento que o próprio Resend dá à conta.
+2. Em *Webhooks*, crie um webhook para o evento `email.received` apontando para `https://<app>/api/inbound-email`. Copie o segredo de assinatura (`whsec_…`).
+3. No Render, em *Environment*, cadastre:
+   - `RESEND_API_KEY`: a chave de API do Resend;
+   - `RESEND_WEBHOOK_SECRET`: o `whsec_…` do webhook;
+   - `RESEND_FROM`: o remetente das respostas, num domínio verificado (por exemplo, `Vaga Viva <vaga@seu-dominio.com>`);
+   - `VAGAVIVA_PUBLIC_URL`: a URL pública da API (por exemplo, `https://vaga-viva.onrender.com`), usada para montar o link `#vaga=` das respostas.
+4. Para testar, encaminhe uma vaga fictícia (com mais de 200 caracteres) para o endereço de recebimento. A resposta com o plano deve chegar em alguns segundos, e o link dela abre a página já com a vaga preenchida.
+
+Tudo o que chega por e-mail (remetente, assunto, corpo e link) fica só em memória e não vai para o log (ADR 0003).
+
 ## Depois
 
 Para o login com GitHub, cadastre também `GITHUB_CLIENT_ID` e `GITHUB_CLIENT_SECRET` no Render (e `GITHUB_APP_SLUG`, se o app não se chamar `vaga-viva`). A Callback URL e a Setup URL do GitHub App estão em `docs/github-app.md`. A API já confia nos cabeçalhos `X-Forwarded-*` do Render, então os redirecionamentos do login saem com `https`.
