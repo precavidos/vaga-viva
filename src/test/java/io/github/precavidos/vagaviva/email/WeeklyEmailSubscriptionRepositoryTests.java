@@ -33,6 +33,26 @@ class WeeklyEmailSubscriptionRepositoryTests {
 	EntityManager entityManager;
 
 	@Test
+	void markSentAndRemoveNeverBringBackADeletedRow() {
+		subscriptions.saveAndFlush(subscription("maria", "maria/vaga-viva-a", "t1"));
+		subscriptions.saveAndFlush(subscription("joao", "joao/vaga-viva-a", "t2"));
+		entityManager.clear();
+
+		assertThat(subscriptions.markSent("maria", NOW)).isEqualTo(1);
+		entityManager.clear();
+		assertThat(subscriptions.findById("maria").orElseThrow().getLastSentAt()).isEqualTo(NOW);
+
+		subscriptions.removeByLogin("maria");
+		subscriptions.removeByLogin("joao");
+		entityManager.clear();
+
+		assertThat(subscriptions.markSent("maria", NOW)).isZero();
+		assertThat(subscriptions.removeByLogin("joao")).isZero();
+		assertThat(subscriptions.findById("maria")).isEmpty();
+		assertThat(subscriptions.findById("joao")).isEmpty();
+	}
+
+	@Test
 	void reconsentingSwitchesTheRepositoryAndClearsLastSent() {
 		WeeklyEmailSubscription row = subscription("maria", "maria/vaga-viva-a", "t1");
 		row.sentAt(NOW);

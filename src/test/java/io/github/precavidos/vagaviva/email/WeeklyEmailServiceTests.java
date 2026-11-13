@@ -55,6 +55,8 @@ class WeeklyEmailServiceTests {
 
 	private final List<Duration> pauses = new ArrayList<>();
 
+	private final java.util.Map<String, WeeklyEmailSubscription> rows = new java.util.HashMap<>();
+
 	private WeeklyEmailService service;
 
 	@BeforeEach
@@ -64,11 +66,14 @@ class WeeklyEmailServiceTests {
 		service = new WeeklyEmailService(subscriptions, snapshots, standings, resend, properties,
 				Clock.fixed(NOW, ZoneOffset.UTC), pauses::add);
 		when(standings.forRepository(any())).thenReturn(Optional.empty());
+		when(subscriptions.findById(any()))
+			.thenAnswer(call -> Optional.ofNullable(rows.get(call.<String>getArgument(0))));
 	}
 
-	private static WeeklyEmailSubscription subscription(String login) {
+	private WeeklyEmailSubscription subscription(String login) {
 		var subscription = new WeeklyEmailSubscription(login);
 		subscription.consent(login + "@example.com", login + "/vaga-viva-x", "tok", Instant.parse("2026-11-01T00:00:00Z"));
+		rows.put(login, subscription);
 		return subscription;
 	}
 
@@ -101,8 +106,20 @@ class WeeklyEmailServiceTests {
 				"<https://vagaviva.dev/api/weekly-email/unsubscribe?t=tok>")
 			.containsEntry("List-Unsubscribe-Post", "List-Unsubscribe=One-Click");
 		assertThat(email.idempotencyKey()).isEqualTo("weekly/maria/2026-11-16");
-		assertThat(maria.getLastSentAt()).isEqualTo(NOW);
-		verify(subscriptions).save(maria);
+		verify(subscriptions).markSent("maria", NOW);
+		verify(subscriptions, never()).save(any());
+	}
+
+	@Test
+	void skipsAStudentWhoUnsubscribedAfterTheListing() {
+		var maria = subscription("maria");
+		when(subscriptions.findDue(any())).thenReturn(List.of(maria));
+		rows.remove("maria");
+
+		assertThat(service.sendDue()).isEqualTo(new WeeklyEmailService.Summary(0, 1, 0));
+		verify(resend, never()).send(any());
+		verify(subscriptions, never()).markSent(any(), any());
+		verify(subscriptions, never()).save(any());
 	}
 
 	@Test
@@ -130,7 +147,7 @@ class WeeklyEmailServiceTests {
 
 		assertThat(service.sendDue()).isEqualTo(new WeeklyEmailService.Summary(0, 1, 0));
 		verify(resend, never()).send(any());
-		assertThat(maria.getLastSentAt()).isNull();
+		verify(subscriptions, never()).markSent(any(), any());
 	}
 
 	@Test
@@ -142,7 +159,7 @@ class WeeklyEmailServiceTests {
 
 		assertThat(service.sendDue()).isEqualTo(new WeeklyEmailService.Summary(1, 0, 0));
 		assertThat(sentEmail().subject()).isEqualTo("Você concluiu o projeto!");
-		verify(subscriptions).delete(maria);
+		verify(subscriptions).removeByLogin("maria");
 	}
 
 	@Test
@@ -167,7 +184,7 @@ class WeeklyEmailServiceTests {
 		service.sendDue();
 
 		assertThat(sentEmail().subject()).isEqualTo("Você concluiu o projeto!");
-		verify(subscriptions).delete(maria);
+		verify(subscriptions).removeByLogin("maria");
 	}
 
 	@Test
@@ -196,8 +213,8 @@ class WeeklyEmailServiceTests {
 			.send(any());
 
 		assertThat(service.sendDue()).isEqualTo(new WeeklyEmailService.Summary(1, 0, 1));
-		assertThat(maria.getLastSentAt()).isNull();
-		assertThat(joao.getLastSentAt()).isEqualTo(NOW);
+		verify(subscriptions, never()).markSent("maria", NOW);
+		verify(subscriptions).markSent("joao", NOW);
 		assertThat(pauses).containsExactly(Duration.ofMillis(600));
 	}
 

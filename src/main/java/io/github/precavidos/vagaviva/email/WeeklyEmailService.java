@@ -84,9 +84,17 @@ public class WeeklyEmailService {
 		int skipped = 0;
 		int failed = 0;
 		boolean attempted = false;
-		for (var subscription : due) {
-			var login = subscription.getStudentLogin();
+		for (var listed : due) {
+			var login = listed.getStudentLogin();
 			try {
+				// The batch takes minutes: a student may have unsubscribed since findDue.
+				var current = subscriptions.findById(login);
+				if (current.isEmpty()) {
+					skipped++;
+					log.info("Weekly e-mail skipped for {}: subscription removed", login);
+					continue;
+				}
+				var subscription = current.get();
 				var snapshot = snapshots.take(subscription.getRepositoryFullName());
 				if (snapshot.isEmpty() || snapshot.get().plan().missions().isEmpty()) {
 					skipped++;
@@ -130,11 +138,10 @@ public class WeeklyEmailService {
 				"weekly/" + subscription.getStudentLogin() + "/" + monday));
 
 		if (position.isEmpty()) {
-			subscriptions.delete(subscription);
+			subscriptions.removeByLogin(subscription.getStudentLogin());
 		}
 		else {
-			subscription.sentAt(now);
-			subscriptions.save(subscription);
+			subscriptions.markSent(subscription.getStudentLogin(), now);
 		}
 	}
 
