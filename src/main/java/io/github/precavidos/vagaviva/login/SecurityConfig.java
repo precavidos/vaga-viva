@@ -30,7 +30,7 @@ class SecurityConfig {
 				.requestMatchers(api.matcher(HttpMethod.GET, "/api/classrooms/{joinCode}"))
 				.permitAll()
 				.requestMatchers(api.matcher("/api/me"), api.matcher("/api/student-repositories/**"),
-						api.matcher("/api/classrooms/**"))
+						api.matcher("/api/classrooms/**"), api.matcher("/api/weekly-email"))
 				.authenticated()
 				.anyRequest()
 				.permitAll())
