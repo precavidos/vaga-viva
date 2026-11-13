@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import io.github.precavidos.vagaviva.archetype.ArchetypeCatalog;
 import io.github.precavidos.vagaviva.plan.Mission;
+import io.github.precavidos.vagaviva.review.MissionTally;
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.json.JsonMapper;
 
@@ -91,9 +92,11 @@ class DashboardService {
 		List<Card> completed = new ArrayList<>();
 		Map<StudentStatus, Integer> counts = new EnumMap<>(StudentStatus.class);
 		for (Enrollment enrollment : students) {
-			Standing standing = standing(enrollment, progressById.get(enrollment.getId()), missions);
+			EnrollmentProgress progress = progressById.get(enrollment.getId());
+			Standing standing = standing(enrollment, progress, missions);
 			Card card = new Card(enrollment.getStudentLogin(), enrollment.getDisplayName(), standing.status(),
-					standing.daysOnMission(), standing.missionOrder(), standing.missionTitle(), standing.reason());
+					standing.daysOnMission(), standing.missionOrder(), standing.missionTitle(), standing.reason(),
+					tests(missions, progress));
 			counts.merge(card.status(), 1, Integer::sum);
 			if (card.status() == StudentStatus.COMPLETED) {
 				completed.add(card);
@@ -130,6 +133,7 @@ class DashboardService {
 				"https://github.com/" + enrollment.getRepositoryFullName(), standing.missionOrder(),
 				standing.missionTitle(), standing.status(), standing.reason(),
 				progress == null ? List.of() : failingTests(progress.getFailingTests()),
+					tests(missions, progress),
 				progress == null ? null : progress.getLastReviewerQuestion(),
 				// The hints are counted from Task 10 on.
 				null, progress == null ? null : progress.getLastPullRequestUrl());
@@ -183,6 +187,34 @@ class DashboardService {
 		return new Standing(status, daysOnMission, missionOrder, missionTitle, reason);
 	}
 
+	/** One entry per mission of the plan, in plan order; the counts are null where there is no tally. */
+	private static List<MissionTests> tests(List<Mission> missions, EnrollmentProgress progress) {
+		Map<String, MissionTally> tallies = progress == null ? Map.of() : readTallies(progress.getTestTallies());
+		List<MissionTests> tests = new ArrayList<>();
+		for (int i = 0; i < missions.size(); i++) {
+			String id = missions.get(i).id();
+			MissionTally tally = tallies.get(id);
+			tests.add(new MissionTests(i + 1, id, tally == null ? null : tally.passed(),
+					tally == null ? null : tally.total()));
+		}
+		return List.copyOf(tests);
+	}
+
+	/** Like {@link #readList}: missing, broken or differently shaped JSON reads as an empty map. */
+	private static Map<String, MissionTally> readTallies(String json) {
+		if (json == null || json.isBlank()) {
+			return Map.of();
+		}
+		try {
+			Map<String, MissionTally> value = JSON.readValue(json, new TypeReference<Map<String, MissionTally>>() {
+			});
+			return value == null ? Map.of() : value;
+		}
+		catch (RuntimeException e) {
+			return Map.of();
+		}
+	}
+
 	/** Whole days, rounded down. */
 	private static int days(Instant from, Instant to) {
 		return (int) Math.max(0, Duration.between(from, to).toDays());
@@ -231,12 +263,15 @@ class DashboardService {
 	}
 
 	record Card(String login, String displayName, StudentStatus status, int daysOnMission, int missionOrder,
-			String missionTitle, String reason) {
+			String missionTitle, String reason, List<MissionTests> tests) {
 	}
 
 	record StudentCard(String displayName, String login, String repositoryUrl, int missionOrder, String missionTitle,
-			StudentStatus status, String reason, List<FailingTest> failingTests, String lastReviewerQuestion,
-			Integer hintsOnMission, String lastPullRequestUrl) {
+			StudentStatus status, String reason, List<FailingTest> failingTests, List<MissionTests> tests,
+			String lastReviewerQuestion, Integer hintsOnMission, String lastPullRequestUrl) {
+	}
+
+	record MissionTests(int order, String missionId, Integer passed, Integer total) {
 	}
 
 	record FailingTest(String name, String message) {

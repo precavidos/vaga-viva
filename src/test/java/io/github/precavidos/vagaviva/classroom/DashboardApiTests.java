@@ -313,6 +313,44 @@ class DashboardApiTests {
 		assertThat(caio).hasStatusOk();
 	}
 
+	@Test
+	void cardsCarryTheTestTallyOfEveryMissionInPlanOrder() {
+		Classroom classroom = newClassroom("David");
+		List<String> ids = StoredPlan.fromJson(classroom.getPlan()).missionIds();
+		Enrollment ana = enroll(classroom, "ana", "Ana Lima", ids.get(1), NOW.minus(Duration.ofDays(1)), NOW, "[]", "[]",
+				false);
+		setTallies(ana, "{\"" + ids.get(0) + "\":{\"passed\":4,\"total\":4},\"" + ids.get(1)
+				+ "\":{\"passed\":1,\"total\":3}}");
+
+		var json = assertThat(get("/api/classrooms/" + classroom.getId() + "/dashboard", "david")).bodyJson();
+		json.extractingPath("$.columns[1].students[0].tests.length()").isEqualTo(ids.size());
+		json.extractingPath("$.columns[1].students[0].tests[0].missionId").isEqualTo(ids.get(0));
+		json.extractingPath("$.columns[1].students[0].tests[0].passed").isEqualTo(4);
+		json.extractingPath("$.columns[1].students[0].tests[1].total").isEqualTo(3);
+		json.extractingPath("$.columns[1].students[0].tests[2].total").isNull();
+
+		var card = assertThat(get("/api/classrooms/" + classroom.getId() + "/students/ana", "david")).bodyJson();
+		card.extractingPath("$.tests[1].passed").isEqualTo(1);
+	}
+
+	@Test
+	void missingOrMalformedTalliesLeaveEveryMissionWithoutATotal() {
+		Classroom classroom = newClassroom("David");
+		List<String> ids = StoredPlan.fromJson(classroom.getPlan()).missionIds();
+		Enrollment ana = enroll(classroom, "ana", "Ana Lima", ids.get(0), NOW, NOW, "[]", "[]", false);
+		setTallies(ana, "[\"not a map\"]");
+
+		var response = get("/api/classrooms/" + classroom.getId() + "/students/ana", "david");
+		assertThat(response).hasStatusOk();
+		assertThat(response).bodyJson().extractingPath("$.tests[0].total").isNull();
+	}
+
+	private void setTallies(Enrollment enrollment, String json) {
+		EnrollmentProgress progress = progresses.findById(enrollment.getId()).orElseThrow();
+		progress.setTestTallies(json);
+		progresses.saveAndFlush(progress);
+	}
+
 	private Classroom newClassroom(String teacherLogin) {
 		return classrooms.create(teacherLogin, POSTING, "Turma", null, false);
 	}
