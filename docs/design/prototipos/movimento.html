@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="vv.css?v=3">
-  <link rel="stylesheet" href="vv-motion.css?v=1">
+  <link rel="stylesheet" href="vv-motion.css?v=2">
   <style>
     .demo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
     .demo { display: grid; gap: 14px; align-content: start; }
@@ -29,6 +29,14 @@
     .count [data-count-up] { font: 600 34px/1 var(--display); letter-spacing: -.025em; }
     .count .name { display: inline-flex; align-items: center; gap: 8px; font-weight: 500; font-size: 14px; color: var(--ink-2); }
     .count .name::before { content: ""; width: 10px; height: 10px; border-radius: 50%; background: var(--st); }
+    .field-demo { display: grid; align-content: center; gap: 12px; min-height: 320px; padding: 48px 32px; border: 1px solid var(--line); border-radius: 12px; background: var(--paper); }
+    .field-demo h3 { font-size: 34px; line-height: 1.08; max-width: 14em; }
+    .field-demo p { max-width: 32em; }
+    .competences { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+    .competences li { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px; font-size: 16px; }
+    .competences .from { font-size: 14px; color: var(--ink-2); }
+    .swap-block { display: grid; gap: 12px; min-height: 220px; padding: 24px; background: var(--card); border: 1px solid var(--line); border-radius: 8px; }
+    .swap-block ol { margin: 0; padding-left: 20px; display: grid; gap: 6px; }
   </style>
 </head>
 <body>
@@ -36,7 +44,7 @@
   <div class="wrap stack lg">
     <div class="stack">
       <h1>Movimento.</h1>
-      <p class="lead">Os componentes de espera e progresso do item 3.3 do <span class="mono">DESIGN.md</span>, em <span class="mono">vv-motion.css</span> e <span class="mono">vv-motion.js</span>. Com movimento reduzido, cada um aparece parado no estado final.</p>
+      <p class="lead">Os seis componentes de movimento do item 3.3 do <span class="mono">DESIGN.md</span>, em <span class="mono">vv-motion.css</span> e <span class="mono">vv-motion.js</span>. Com movimento reduzido, cada um aparece parado no estado final.</p>
     </div>
 
     <section class="stack" aria-labelledby="t-matrix">
@@ -127,12 +135,55 @@
       </div>
       <div class="row"><button class="btn ghost sm" id="count-again">Contar de novo</button><code class="spec">data-count-up="18" · VVMotion.countUp(el, 18)</code></div>
     </section>
+
+    <section class="stack" aria-labelledby="t-field">
+      <h2 id="t-field">Fundo de pontos</h2>
+      <p class="muted">Só no topo da landing. Perto do cursor, os pontos ficam verdes e se afastam alguns pixels, e voltam devagar. Em toque ou com movimento reduzido, fica parado; fora da tela, o laço para.</p>
+      <div class="field-demo" data-dot-field>
+        <h3>Da vaga ao repositório, em um projeto só.</h3>
+        <p class="muted">O JS põe o único <span class="mono">&lt;canvas&gt;</span> da página atrás deste conteúdo; o HTML escreve só o envoltório.</p>
+      </div>
+      <code class="spec">&lt;div data-dot-field&gt;…&lt;/div&gt;</code>
+    </section>
+
+    <section class="stack" aria-labelledby="t-decrypt">
+      <h2 id="t-decrypt">Termo vira competência</h2>
+      <p class="muted">O nome devolvido pela API se resolve da esquerda para a direita em até 600 ms. O leitor de tela recebe o nome pronto em <span class="mono">aria-label</span>.</p>
+      <div class="card demo">
+        <ul class="competences" id="competences">
+          <li><span data-decrypt>Programação em Java</span><span class="from">por "Java"</span></li>
+          <li><span data-decrypt="APIs REST com Spring Boot"></span><span class="from">por "Spring Boot"</span></li>
+          <li><span data-decrypt>Testes automatizados</span><span class="from">por "JUnit"</span></li>
+          <li><span id="late-name" data-decrypt="Controle de versão com Git"></span><span class="from">por "Git"</span></li>
+        </ul>
+        <div class="row"><button class="btn ghost sm" id="decrypt-again">Decifrar de novo</button><button class="btn ghost sm" id="decrypt-late">Nome que chega depois</button></div>
+      </div>
+      <code class="spec">data-decrypt · data-decrypt="Nome" · VVMotion.decrypt(el, 'Nome') → Promise</code>
+    </section>
+
+    <section class="stack" aria-labelledby="t-swap">
+      <h2 id="t-swap">Troca em pontos</h2>
+      <p class="muted">Da etapa Plano para a etapa Repositório. A malha roxa cobre o bloco em ordem aleatória, o conteúdo troca por baixo e a malha some, em cerca de 500 ms. Não dispara sozinha.</p>
+      <div class="swap-block" id="swap-block" data-dot-swap></div>
+      <div class="row"><button class="btn ghost sm" id="swap-go">Trocar</button><code class="spec">VVMotion.dotSwap(el, swap) → Promise</code></div>
+      <p class="sr" role="status" id="swap-status"></p>
+    </section>
   </div>
 </main>
 <script src="vv.js?v=3"></script>
-<script src="vv-motion.js?v=3"></script>
+<script src="vv-motion.js?v=7"></script>
 <script>
   VV.chrome({ area: 'Movimento' });
+
+  // Dot swap: the block starts on the plan; each click swaps it once to the other step.
+  const SWAP_VIEWS = {
+    plano: '<h3>Plano</h3><p class="muted">Quatro missões a partir da vaga, na ordem em que o projeto cresce.</p><ol><li>Cadastro de pacientes</li><li>Pacientes no banco de dados</li><li>Agenda de consultas</li><li>Testes de ponta a ponta</li></ol>',
+    repositorio: '<h3>Repositório</h3><p class="muted">O modelo copiado para a sua conta, com as missões escritas e os testes ligados.</p><p class="mono">vaga-viva/agendamento-clinica</p>',
+  };
+  const swapBlock = document.getElementById('swap-block');
+  swapBlock.dataset.view = 'plano';
+  swapBlock.innerHTML = SWAP_VIEWS.plano;
+
   VVMotion.init();
 
   // Status lines: each demo starts waiting on load; the buttons call the returned handle.
@@ -166,6 +217,26 @@
 
   document.getElementById('count-again').addEventListener('click', () => {
     document.querySelectorAll('#counts [data-count-up]').forEach((el) => VVMotion.countUp(el, el.dataset.countUp));
+  });
+
+  // Decrypt: replay every name from its aria-label; the last one also shows a name that arrives later.
+  document.getElementById('decrypt-again').addEventListener('click', () => {
+    document.querySelectorAll('#competences [data-decrypt]').forEach((el) => VVMotion.decrypt(el, el.getAttribute('aria-label')));
+  });
+  const LATE = ['Controle de versão com Git', 'Integração contínua com GitHub Actions'];
+  document.getElementById('decrypt-late').addEventListener('click', () => {
+    const el = document.getElementById('late-name');
+    VVMotion.decrypt(el, LATE[(LATE.indexOf(el.getAttribute('aria-label')) + 1) % LATE.length]);
+  });
+
+  const swapStatus = document.getElementById('swap-status');
+  document.getElementById('swap-go').addEventListener('click', () => {
+    VVMotion.dotSwap(swapBlock, () => {
+      const view = swapBlock.dataset.view === 'plano' ? 'repositorio' : 'plano';
+      swapBlock.dataset.view = view;
+      swapBlock.innerHTML = SWAP_VIEWS[view];
+      swapStatus.textContent = view === 'plano' ? 'Etapa: Plano' : 'Etapa: Repositório';
+    });
   });
 </script>
 </body>

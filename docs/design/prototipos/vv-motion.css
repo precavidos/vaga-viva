@@ -70,6 +70,28 @@
 /* ---------- Count-up: [data-count-up="N"] ---------- */
 [data-count-up] { font-variant-numeric: tabular-nums; }
 
+/* ---------- Dot field: [data-dot-field] ---------- */
+/* The JS prepends one <canvas> behind the wrapper's content. --df-dot is the resting dot, --df-hot the dot near
+   the cursor; the canvas draws the resting dots at half opacity. */
+[data-dot-field] { --df-dot: var(--dot-empty); --df-hot: var(--green); position: relative; isolation: isolate; }
+.dot-field-canvas { position: absolute; inset: 0; z-index: -1; width: 100%; height: 100%; border-radius: inherit; pointer-events: none; }
+
+/* ---------- Decrypt: [data-decrypt] ---------- */
+/* While it runs, the final text sits invisible under the noise to hold the width; the noise is a muted mono. */
+[data-decrypt].is-decrypting { display: inline-grid; white-space: nowrap; }
+[data-decrypt].is-decrypting > .dc-ghost, [data-decrypt].is-decrypting > .dc-run { grid-area: 1 / 1; }
+.dc-ghost { visibility: hidden; }
+.dc-noise { color: var(--ink-2); font-family: var(--mono); font-weight: 600; }
+.dc-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* ---------- Dot swap: [data-dot-swap] ---------- */
+/* The mesh is a grid of purple dots over the block; each dot pops from scale 0 to a size that closes the gaps
+   between circles (cell × 1.45 > cell × √2), with its own random delay (--d). */
+[data-dot-swap] { position: relative; }
+.ds-mesh { position: absolute; inset: 0; z-index: 2; display: grid; grid-template-columns: repeat(var(--ds-cols), var(--ds-cell)); grid-auto-rows: var(--ds-cell); overflow: hidden; border-radius: inherit; pointer-events: auto; }
+.ds-mesh i { display: block; border-radius: 50%; background: var(--purple); transform: scale(0); transition: transform 90ms var(--ease-out) var(--d, 0ms); }
+.ds-mesh.is-on i { transform: scale(1.45); }
+
 /* ---------- Reduced motion: everything still, in its final state ---------- */
 /* .is-still is set by vv-motion.js when matchMedia reports reduced motion; the media query covers the CSS on its own. */
 [data-dot-matrix].is-still i, .step-mark.is-still *,
