@@ -232,6 +232,45 @@ class GitHubClientTests {
 	}
 
 	@Test
+	void findsTheInstallationOfARepository() {
+		github.expect(requestTo(API + "/repos/maria/vaga-viva-clinica/installation"))
+			.andExpect(header("Authorization", "Bearer app.jwt"))
+			.andRespond(withSuccess("""
+					{ "id": 42 }""", MediaType.APPLICATION_JSON));
+
+		assertThat(client.repositoryInstallation("app.jwt", "maria/vaga-viva-clinica")).hasValue(42);
+		github.verify();
+	}
+
+	@Test
+	void noInstallationIsEmpty() {
+		github.expect(requestTo(API + "/repos/maria/vaga-viva-clinica/installation"))
+			.andRespond(withStatus(HttpStatus.NOT_FOUND).contentType(MediaType.APPLICATION_JSON)
+				.body("{ \"message\": \"Not Found\" }"));
+
+		assertThat(client.repositoryInstallation("app.jwt", "maria/vaga-viva-clinica")).isEmpty();
+	}
+
+	@Test
+	void readsTheLatestPullRequest() {
+		github.expect(requestTo(API + "/repos/maria/vaga-viva-clinica/pulls?state=all&sort=updated&direction=desc&per_page=1"))
+			.andExpect(header("Authorization", "Bearer " + TOKEN))
+			.andRespond(withSuccess("""
+					[ { "number": 7, "head": { "sha": "abc" } } ]""", MediaType.APPLICATION_JSON));
+
+		assertThat(client.latestPullRequest(TOKEN, "maria/vaga-viva-clinica")).hasValue(new GitHubPullRequest(7, "abc"));
+		github.verify();
+	}
+
+	@Test
+	void noPullRequestIsEmpty() {
+		github.expect(requestTo(API + "/repos/maria/vaga-viva-clinica/pulls?state=all&sort=updated&direction=desc&per_page=1"))
+			.andRespond(withSuccess("[]", MediaType.APPLICATION_JSON));
+
+		assertThat(client.latestPullRequest(TOKEN, "maria/vaga-viva-clinica")).isEmpty();
+	}
+
+	@Test
 	void listsTheWorkflowRunsOfACommitAndTheirArtifacts() {
 		github.expect(requestTo(API + "/repos/maria/vaga-viva-clinica/actions/runs?per_page=20&head_sha=abc123"))
 			.andRespond(withSuccess("""
