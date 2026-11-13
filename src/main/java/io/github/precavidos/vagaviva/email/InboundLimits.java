@@ -108,6 +108,15 @@ final class InboundLimits {
 		return true;
 	}
 
+	/** Gives back the slot {@link #tryAcquire} took for the sender. */
+	synchronized void release(String sender) {
+		var recent = senders.get(key(sender));
+		if (recent != null && recent.pollLast() != null && dayCount > 0) {
+			dayCount--;
+		}
+		senders.values().removeIf(Deque::isEmpty);
+	}
+
 	/** The address inside {@code Name <a@b>}, or the whole text, lower-cased and trimmed. */
 	static String address(String sender) {
 		var text = sender == null ? "" : sender;

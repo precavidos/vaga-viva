@@ -130,6 +130,18 @@ class ResendClientTests {
 	}
 
 	@Test
+	void aMalformedBodyBecomesStatusZeroWithoutACause() {
+		resend.expect(requestTo(API + "/emails/receiving/abc"))
+			.andRespond(withSuccess("not json maria@example.com", MediaType.APPLICATION_JSON));
+
+		assertThatThrownBy(() -> client.receivedEmail("abc")).isInstanceOfSatisfying(ResendApiException.class, e -> {
+			assertThat(e.status()).isZero();
+			assertThat(e.getCause()).isNull();
+			assertThat(e.getMessage()).doesNotContain("maria");
+		});
+	}
+
+	@Test
 	void toStringNeverShowsTheKey() {
 		assertThat(client.toString()).doesNotContain("re_test");
 	}

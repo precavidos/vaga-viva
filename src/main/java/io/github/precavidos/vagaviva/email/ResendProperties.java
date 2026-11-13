@@ -20,7 +20,11 @@ public record ResendProperties(@DefaultValue("") String apiKey, @DefaultValue(""
 		@DefaultValue("5") int inboundPerSenderPerHour, @DefaultValue("80") int inboundPerDay) {
 
 	public ResendProperties {
-		if (publicUrl != null && publicUrl.endsWith("/")) {
+		apiKey = apiKey == null ? "" : apiKey.strip();
+		webhookSecret = webhookSecret == null ? "" : webhookSecret.strip();
+		from = from == null ? "" : from.strip();
+		publicUrl = publicUrl == null ? "" : publicUrl.strip();
+		if (publicUrl.endsWith("/")) {
 			publicUrl = publicUrl.substring(0, publicUrl.length() - 1);
 		}
 	}

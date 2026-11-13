@@ -47,6 +47,31 @@ class ForwardedPostingTests {
 	}
 
 	@Test
+	void splitsHtmlDivLinesAndDropsTheForwardHeaders() {
+		String html = "<div>olha essa vaga</div><div>---------- Forwarded message ---------</div>"
+				+ "<div>From: Vagas &lt;vagas@example.com&gt;</div><div>Subject: Vaga Java</div><div></div>"
+				+ "<div>Desenvolvedora Java</div><div>Spring Boot</div>";
+
+		String result = ForwardedPosting.text(email("", html));
+
+		assertThat(result).isEqualTo("Desenvolvedora Java\nSpring Boot");
+	}
+
+	@Test
+	void neverReadsTheHtmlTitle() {
+		String result = ForwardedPosting.text(email("", "<html><head><title>Secret</title></head><body><p>Vaga Java</p></body></html>"));
+
+		assertThat(result).isEqualTo("Vaga Java").doesNotContain("Secret");
+	}
+
+	@Test
+	void dropsTheHtmlSignature() {
+		String result = ForwardedPosting.text(email("", "<div>Vaga Java</div><div>-- </div><div>Maria 99999</div>"));
+
+		assertThat(result).isEqualTo("Vaga Java").doesNotContain("99999");
+	}
+
+	@Test
 	void keepsTheWholeBodyWithoutAForwardLine() throws IOException {
 		String body = fixture("no-forward-line.txt");
 

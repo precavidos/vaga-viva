@@ -7,7 +7,7 @@ import java.util.Map;
 
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
-import org.springframework.web.client.ResourceAccessException;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestClient;
 
 import tools.jackson.databind.JsonNode;
@@ -41,7 +41,8 @@ class ResendClient implements ResendApi {
 				.retrieve()
 				.body(JsonNode.class);
 		}
-		catch (ResourceAccessException e) {
+		catch (RestClientException e) {
+			// Messages can carry the e-mail content (ADR 0003); keep only the status.
 			throw new ResendApiException(0);
 		}
 		if (json == null) {
@@ -81,7 +82,7 @@ class ResendClient implements ResendApi {
 				.retrieve()
 				.toBodilessEntity();
 		}
-		catch (ResourceAccessException e) {
+		catch (RestClientException e) {
 			throw new ResendApiException(0);
 		}
 	}

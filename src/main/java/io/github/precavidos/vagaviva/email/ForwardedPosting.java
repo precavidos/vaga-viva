@@ -39,7 +39,8 @@ final class ForwardedPosting {
 	 * {@link JobPostingExtractor#MAX_LENGTH} characters.
 	 */
 	static String text(ReceivedEmail email) {
-		String body = email.text().isBlank() ? htmlToText(email.html()) : email.text();
+		boolean fromHtml = email.text().isBlank();
+		String body = fromHtml ? htmlToText(email.html()) : email.text();
 		List<String> lines = List.of(body.replace("\r\n", "\n").replace('\r', '\n').split("\n", -1));
 
 		int start = headerBlockStart(lines);
@@ -52,7 +53,7 @@ final class ForwardedPosting {
 		start = Math.max(start, 0);
 		int end = lines.size();
 		for (int i = start; i < lines.size(); i++) {
-			if (lines.get(i).equals("-- ")) {
+			if (lines.get(i).equals("-- ") || (fromHtml && lines.get(i).equals("--"))) {
 				end = i;
 				break;
 			}
@@ -89,9 +90,10 @@ final class ForwardedPosting {
 			return "";
 		}
 		Document doc = Jsoup.parse(html);
-		doc.select("br, p").after(BREAK);
+		var root = doc.body();
+		root.select("br, p, div, li, tr, h1, h2, h3, h4, h5, h6").after(BREAK);
 		List<String> lines = new ArrayList<>();
-		for (String line : doc.text().split(BREAK, -1)) {
+		for (String line : root.text().split(BREAK, -1)) {
 			lines.add(line.strip());
 		}
 		return String.join("\n", lines);

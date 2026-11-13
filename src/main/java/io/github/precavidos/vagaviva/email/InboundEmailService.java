@@ -56,7 +56,7 @@ class InboundEmailService {
 		}
 		var email = resend.receivedEmail(emailId);
 		var sender = InboundLimits.address(email.from());
-		if (isLoop(sender, email)) {
+		if (!sender.contains("@") || isLoop(sender, email)) {
 			limits.remember(eventId);
 			return Outcome.IGNORED;
 		}
@@ -64,22 +64,28 @@ class InboundEmailService {
 			limits.remember(eventId);
 			return Outcome.RATE_LIMITED;
 		}
-		var text = ForwardedPosting.text(email);
 		Outcome outcome;
-		PlanReplyTemplate.Reply reply;
-		if (text.length() < MIN_POSTING_LENGTH) {
-			reply = PlanReplyTemplate.help(properties.publicUrl(), email.subject());
-			outcome = Outcome.NO_POSTING;
+		try {
+			var text = ForwardedPosting.text(email);
+			PlanReplyTemplate.Reply reply;
+			if (text.length() < MIN_POSTING_LENGTH) {
+				reply = PlanReplyTemplate.help(properties.publicUrl(), email.subject());
+				outcome = Outcome.NO_POSTING;
+			}
+			else {
+				var plan = planner.plan(extractor.extract(text));
+				var archetypeName = archetypes.archetype(plan.archetype()).name();
+				reply = PlanReplyTemplate.plan(plan, archetypeName, PostingLink.of(properties.publicUrl(), text),
+						properties.publicUrl(), email.subject());
+				outcome = Outcome.PLANNED;
+			}
+			resend.send(new OutgoingEmail(sender, reply.subject(), reply.text(), reply.html(), headers(email),
+					"inbound/" + eventId));
 		}
-		else {
-			var plan = planner.plan(extractor.extract(text));
-			var archetypeName = archetypes.archetype(plan.archetype()).name();
-			reply = PlanReplyTemplate.plan(plan, archetypeName, PostingLink.of(properties.publicUrl(), text),
-					properties.publicUrl(), email.subject());
-			outcome = Outcome.PLANNED;
+		catch (RuntimeException e) {
+			limits.release(sender);
+			throw e;
 		}
-		resend.send(new OutgoingEmail(sender, reply.subject(), reply.text(), reply.html(), headers(email),
-				"inbound/" + eventId));
 		limits.remember(eventId);
 		return outcome;
 	}

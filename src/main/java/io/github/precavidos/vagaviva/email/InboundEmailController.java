@@ -66,7 +66,7 @@ class InboundEmailController {
 				return ResponseEntity.ok().build();
 			}
 			var outcome = service.handle(id, emailId);
-			log.info("Inbound e-mail {}: {}", id, outcome.name().toLowerCase(Locale.ROOT));
+			log.info("Inbound e-mail {}: {}", id, outcome.name().toLowerCase(Locale.ROOT).replace('_', '-'));
 			return ResponseEntity.ok().build();
 		}
 		catch (ResendApiException e) {

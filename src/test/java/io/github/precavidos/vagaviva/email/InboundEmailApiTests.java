@@ -3,6 +3,7 @@ package io.github.precavidos.vagaviva.email;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
@@ -157,6 +158,31 @@ class InboundEmailApiTests {
 	}
 
 	@Test
+	void ignoresABlankOrMalformedSender() throws IOException {
+		assertIgnored("blank", "", Map.of());
+		assertIgnored("malformed", "not-an-address", Map.of());
+	}
+
+	@Test
+	void givesTheQuotaBackWhenSendingFails() throws IOException {
+		var body = fixture("gmail-pt.txt");
+		doThrow(new ResendApiException(500)).when(resend).send(any());
+		for (int i = 0; i < 5; i++) {
+			when(resend.receivedEmail("e-ref" + i)).thenReturn(email("refund@example.com", "Fwd: vaga", body, Map.of()));
+			assertThat(post("evt-ref" + i, event("e-ref" + i, "refund@example.com"))).hasStatus(HttpStatus.SERVICE_UNAVAILABLE);
+		}
+		doNothing().when(resend).send(any());
+		when(resend.receivedEmail("e-ref5")).thenReturn(email("refund@example.com", "Fwd: vaga", body, Map.of()));
+
+		assertThat(post("evt-ref5", event("e-ref5", "refund@example.com"))).hasStatus(HttpStatus.OK);
+
+		verify(resend, times(6)).send(any());
+		var captor = ArgumentCaptor.forClass(OutgoingEmail.class);
+		verify(resend, times(6)).send(captor.capture());
+		assertThat(captor.getAllValues().get(5).text()).contains("#vaga=");
+	}
+
+	@Test
 	void limitsTheSender() throws IOException {
 		var body = fixture("gmail-pt.txt");
 		for (int i = 0; i < 6; i++) {
@@ -187,10 +213,11 @@ class InboundEmailApiTests {
 	}
 
 	@Test
-	void answersAnUnexpectedFailureWith500() throws IOException {
+	void answersAnUnexpectedFailureWith500(CapturedOutput output) throws IOException {
 		when(resend.receivedEmail("e-boom")).thenThrow(new IllegalStateException("maria-boom@example.com"));
 
 		assertThat(post("evt-boom", event("e-boom", "boom@example.com"))).hasStatus(HttpStatus.INTERNAL_SERVER_ERROR);
+		assertThat(output.getAll()).doesNotContain("maria-boom@example.com");
 	}
 
 	@Test

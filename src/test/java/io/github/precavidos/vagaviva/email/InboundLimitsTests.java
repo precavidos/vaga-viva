@@ -34,6 +34,17 @@ class InboundLimitsTests {
 	}
 
 	@Test
+	void releaseGivesTheSlotBack() {
+		var limits = new InboundLimits(1, 1, clock);
+		assertThat(limits.tryAcquire("a@example.com")).isTrue();
+		assertThat(limits.tryAcquire("a@example.com")).isFalse();
+
+		limits.release("a@example.com");
+
+		assertThat(limits.tryAcquire("a@example.com")).isTrue();
+	}
+
+	@Test
 	void limitsTheDay() {
 		var limits = new InboundLimits(5, 3, clock);
 		assertThat(limits.tryAcquire("a@example.com")).isTrue();
