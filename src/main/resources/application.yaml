@@ -57,6 +57,9 @@ vagaviva:
     webhook-secret: ${RESEND_WEBHOOK_SECRET:}
     from: ${RESEND_FROM:}
     public-url: ${VAGAVIVA_PUBLIC_URL:}
+  webhook:
+    # Largest body the anonymous webhooks (GitHub, Resend) accept; bigger gets a 413 before it is read.
+    max-body-size: 1MB
   classroom:
     stuck-after: 3d
     idle-after: 5d
