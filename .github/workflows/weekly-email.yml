@@ -1,0 +1,14 @@
+name: Weekly e-mail
+on:
+  schedule:
+    - cron: '0 11 * * 1'
+  workflow_dispatch:
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send the weekly e-mails
+        run: |
+          curl --fail-with-body --silent --show-error --max-time 300 \
+            -X POST -H "X-Vaga-Viva-Secret: ${{ secrets.WEEKLY_EMAIL_SECRET }}" \
+            "${{ vars.VAGAVIVA_PUBLIC_URL }}/api/weekly-emails"

@@ -93,6 +93,17 @@ O aluno pode encaminhar uma vaga por e-mail e receber o plano de volta. Quem rec
 
 Tudo o que chega por e-mail (remetente, assunto, corpo e link) fica só em memória e não vai para o log (ADR 0003).
 
+### E-mail semanal
+
+Quem marca o checkbox na página recebe toda segunda a missão da semana. Quem dispara é o workflow `.github/workflows/weekly-email.yml`, que chama `POST /api/weekly-emails` com um segredo compartilhado. Sem o segredo, sem a chave do Resend ou sem o GitHub App configurado, o endpoint responde 503.
+
+1. Gere um segredo longo (por exemplo, `openssl rand -hex 32`).
+2. No Render, em *Environment*, cadastre `WEEKLY_EMAIL_SECRET` com esse valor. As variáveis `RESEND_*` da seção acima também são necessárias, além de `GITHUB_APP_ID` e `GITHUB_APP_PRIVATE_KEY`.
+3. No GitHub, em *Settings > Secrets and variables > Actions*, cadastre o *secret* `WEEKLY_EMAIL_SECRET` (o mesmo valor) e, em *Variables*, a variável `VAGAVIVA_PUBLIC_URL` (a mesma URL pública do Render, sem barra no fim).
+4. Para testar sem esperar a segunda-feira, rode o workflow *Weekly e-mail* em *Actions > Run workflow*. Uma execução verde significa que o endpoint respondeu 200 com `{"sent":n,"skipped":n,"failed":n}`.
+
+Quem já recebeu nos últimos 6 dias é pulado, então rodar duas vezes não manda e-mail em dobro. O log registra o login do GitHub e o resultado, nunca o e-mail.
+
 ## Depois
 
 Para o login com GitHub, cadastre também `GITHUB_CLIENT_ID` e `GITHUB_CLIENT_SECRET` no Render (e `GITHUB_APP_SLUG`, se o app não se chamar `vaga-viva`). A Callback URL e a Setup URL do GitHub App estão em `docs/github-app.md`. A API já confia nos cabeçalhos `X-Forwarded-*` do Render, então os redirecionamentos do login saem com `https`.

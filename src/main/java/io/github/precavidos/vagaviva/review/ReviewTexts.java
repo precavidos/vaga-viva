@@ -1,6 +1,7 @@
 package io.github.precavidos.vagaviva.review;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import io.github.precavidos.vagaviva.plan.Mission;
@@ -12,7 +13,7 @@ import io.github.precavidos.vagaviva.review.ReviewContext.FailedTest;
  * writes something the filter refuses. They name what the tests expect and
  * ask; they never show code.
  */
-final class ReviewTexts {
+public final class ReviewTexts {
 
 	/** Hidden marker that tells the reviewer's own comment apart from the hints' and the student's. */
 	static final String MARKER = "<!-- vaga-viva:review -->";
@@ -24,6 +25,18 @@ final class ReviewTexts {
 
 	static String comment(String text) {
 		return MARKER + "\n" + text.strip() + FOOTER;
+	}
+
+	/** The text of the reviewer's own comment, without marker and footer; empty for any other comment. */
+	public static Optional<String> reviewText(String body) {
+		if (body == null || !body.startsWith(MARKER)) {
+			return Optional.empty();
+		}
+		String text = body.substring(MARKER.length());
+		if (text.endsWith(FOOTER)) {
+			text = text.substring(0, text.length() - FOOTER.length());
+		}
+		return Optional.of(text.strip());
 	}
 
 	/** The workflow finished without a test report: most often the code does not compile. */

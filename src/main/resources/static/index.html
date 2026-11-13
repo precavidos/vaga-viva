@@ -36,6 +36,12 @@
     .error { color: var(--error); }
     a { color: var(--accent); }
     [hidden] { display: none !important; }
+    input[type=email] { width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px;
+      background: var(--surface); color: var(--ink); font: inherit; }
+    input[type=email]:focus-visible, .check input:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+    .weekly { margin-top: 20px; }
+    label.check { display: flex; gap: 10px; align-items: flex-start; font-weight: 400; margin: 12px 0 0; cursor: pointer; }
+    label.check input { margin: 5px 0 0; flex: none; }
   </style>
 </head>
 <body>
@@ -57,6 +63,11 @@
     <p id="fit-warning" class="warning" hidden></p>
     <p id="plan-summary" class="muted"></p>
     <ol id="missions"></ol>
+    <div class="weekly">
+      <label for="weekly-email">Seu e-mail</label>
+      <input type="email" id="weekly-email" autocomplete="email" maxlength="254">
+      <label class="check"><input type="checkbox" id="weekly-consent"><span>Quero receber toda segunda a minha missão da semana e o último retorno do revisor. Guardamos o endereço só para isso.</span></label>
+    </div>
     <button type="button" id="create-button">Criar meu repositório no GitHub</button>
   </section>
 
@@ -67,7 +78,7 @@
   </section>
 
   <p class="muted"><small>O texto da vaga não é guardado no servidor. Enquanto você entra no GitHub, ele fica só neste
-    navegador e é apagado assim que o repositório é criado.</small></p>
+    navegador e é apagado assim que o repositório é criado. O e-mail só é guardado se você marcar a caixa acima.</small></p>
 </main>
 <script>
   // The posting text waits here while the student signs in or installs the app; it is removed once the repository exists.
@@ -80,12 +91,24 @@
     $('status').className = isError ? 'error' : 'muted';
   }
 
-  function remember(text) {
-    try { sessionStorage.setItem(STORAGE_KEY, text); } catch { /* private mode: the student pastes again */ }
+  // Stored as JSON: { text, email, consent }. A value written before the e-mail existed was the bare text.
+  function remember(text, email, consent) {
+    try { sessionStorage.setItem(STORAGE_KEY, JSON.stringify({ text, email, consent })); }
+    catch { /* private mode: the student pastes again */ }
   }
 
   function recall() {
-    try { return sessionStorage.getItem(STORAGE_KEY); } catch { return null; }
+    try {
+      const raw = sessionStorage.getItem(STORAGE_KEY);
+      if (raw === null) return null;
+      try {
+        const saved = JSON.parse(raw);
+        if (saved && typeof saved === 'object' && typeof saved.text === 'string') {
+          return { text: saved.text, email: String(saved.email ?? ''), consent: saved.consent === true };
+        }
+      } catch { /* the old format: the text itself */ }
+      return { text: raw, email: '', consent: false };
+    } catch { return null; }
   }
 
   function forget() {
@@ -146,10 +169,30 @@
     }
   }
 
+  async function saveWeeklyEmail(email, repositoryFullName) {
+    try {
+      const response = await fetch('/api/weekly-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-XSRF-TOKEN': csrfToken() },
+        body: JSON.stringify({ email, repositoryFullName }),
+      });
+      return response.ok;
+    } catch {
+      return false;
+    }
+  }
+
   async function create(text) {
+    const email = $('weekly-email').value.trim();
+    const consent = $('weekly-consent').checked;
+    if (consent && (email === '' || !$('weekly-email').checkValidity())) {
+      setStatus('Informe um e-mail válido para receber o resumo semanal.', true);
+      $('weekly-email').focus();
+      return;
+    }
     $('create-button').disabled = true;
     setStatus('Criando o seu repositório no GitHub. Isso leva alguns segundos...');
-    remember(text);
+    remember(text, consent ? email : '', consent);
     try {
       const response = await fetch('/api/student-repositories', {
         method: 'POST',
@@ -177,6 +220,9 @@
       $('plan').hidden = true;
       $('created').hidden = false;
       setStatus('');
+      if (consent && !(await saveWeeklyEmail(email, body.fullName))) {
+        setStatus('Não conseguimos salvar o seu e-mail. Tente de novo mais tarde.', true);
+      }
       $('repository-link').focus();
     } catch {
       setStatus('Sem conexão com o Vaga Viva. Tente de novo.', true);
@@ -226,8 +272,10 @@
     window.location.replace(returnTo);
   } else if (pending && comingBack) {
     history.replaceState(null, '', '/');
-    $('posting').value = pending;
-    plan(pending).then(() => create(pending));
+    $('posting').value = pending.text;
+    $('weekly-email').value = pending.email;
+    $('weekly-consent').checked = pending.consent;
+    plan(pending.text).then(() => create(pending.text));
   } else {
     postingFromLink().then((text) => {
       if (text && text.trim()) {

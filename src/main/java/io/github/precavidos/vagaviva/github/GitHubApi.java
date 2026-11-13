@@ -2,6 +2,7 @@ package io.github.precavidos.vagaviva.github;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.OptionalLong;
 
 /** The GitHub operations Vaga Viva uses, each made with the student's token. */
 public interface GitHubApi {
@@ -42,6 +43,12 @@ public interface GitHubApi {
 	 * as the app on the student's repositories (webhooks, reviewer comments).
 	 */
 	InstallationToken createInstallationToken(String appJwt, long installationId);
+
+	/** The installation of the app on the repository, or nothing when the app is not installed there. */
+	OptionalLong repositoryInstallation(String appJwt, String repositoryFullName);
+
+	/** The most recently updated pull request, open or not, or nothing when there is none. */
+	Optional<GitHubPullRequest> latestPullRequest(String token, String repositoryFullName);
 
 	GitHubPullRequest pullRequest(String token, String repositoryFullName, int number);
 

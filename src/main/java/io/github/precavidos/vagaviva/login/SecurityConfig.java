@@ -30,7 +30,7 @@ class SecurityConfig {
 				.requestMatchers(api.matcher(HttpMethod.GET, "/api/classrooms/{joinCode}"))
 				.permitAll()
 				.requestMatchers(api.matcher("/api/me"), api.matcher("/api/student-repositories/**"),
-						api.matcher("/api/classrooms/**"))
+						api.matcher("/api/classrooms/**"), api.matcher("/api/weekly-email"))
 				.authenticated()
 				.anyRequest()
 				.permitAll())
@@ -42,7 +42,11 @@ class SecurityConfig {
 						// GitHub signs its webhooks instead (X-Hub-Signature-256).
 						api.matcher("/api/github/webhook"),
 						// Resend signs its webhooks instead (Svix).
-						api.matcher("/api/inbound-email")))
+						api.matcher("/api/inbound-email"),
+						// The unsubscribe token is the credential.
+						api.matcher("/api/weekly-email/unsubscribe"),
+						// The scheduled workflow sends a shared secret instead.
+						api.matcher("/api/weekly-emails")))
 			.exceptionHandling((exceptions) -> exceptions.defaultAuthenticationEntryPointFor(
 					new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED), api.matcher("/api/**")))
 			.build();

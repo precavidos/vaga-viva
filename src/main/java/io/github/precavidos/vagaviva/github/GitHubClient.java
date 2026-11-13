@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.OptionalLong;
 
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
@@ -168,6 +169,42 @@ public class GitHubClient implements GitHubApi {
 			.headers(h -> h.setBearerAuth(appJwt))
 			.retrieve()
 			.body(InstallationToken.class);
+	}
+
+	@Override
+	public OptionalLong repositoryInstallation(String appJwt, String repositoryFullName) {
+		try {
+			JsonNode response = http.get()
+				.uri("/repos/" + repositoryFullName + "/installation")
+				.headers(h -> h.setBearerAuth(appJwt))
+				.retrieve()
+				.body(JsonNode.class);
+			if (response == null || !response.hasNonNull("id")) {
+				return OptionalLong.empty();
+			}
+			return OptionalLong.of(response.get("id").asLong());
+		}
+		catch (GitHubApiException e) {
+			if (e.status() == 404) {
+				return OptionalLong.empty();
+			}
+			throw e;
+		}
+	}
+
+	@Override
+	public Optional<GitHubPullRequest> latestPullRequest(String token, String repositoryFullName) {
+		JsonNode response = http.get()
+			.uri("/repos/" + repositoryFullName + "/pulls?state=all&sort=updated&direction=desc&per_page=1")
+			.headers(h -> h.setBearerAuth(token))
+			.retrieve()
+			.body(JsonNode.class);
+		if (response == null || !response.isArray() || response.isEmpty()) {
+			return Optional.empty();
+		}
+		JsonNode pullRequest = response.get(0);
+		return Optional.of(new GitHubPullRequest(pullRequest.path("number").asInt(),
+				pullRequest.path("head").path("sha").asString()));
 	}
 
 	@Override

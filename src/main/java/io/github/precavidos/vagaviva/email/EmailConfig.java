@@ -10,8 +10,11 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestClient;
 
+import io.github.precavidos.vagaviva.classroom.ClassroomStandings;
+import io.github.precavidos.vagaviva.review.RepositorySnapshots;
+
 @Configuration(proxyBeanMethods = false)
-@EnableConfigurationProperties(ResendProperties.class)
+@EnableConfigurationProperties({ ResendProperties.class, WeeklyEmailProperties.class })
 class EmailConfig {
 
 	@Bean
@@ -26,6 +29,14 @@ class EmailConfig {
 	@Bean
 	InboundLimits inboundLimits(ResendProperties properties, Clock clock) {
 		return new InboundLimits(properties.inboundPerSenderPerHour(), properties.inboundPerDay(), clock);
+	}
+
+	@Bean
+	WeeklyEmailService weeklyEmailService(WeeklyEmailSubscriptionRepository subscriptions,
+			RepositorySnapshots snapshots, ClassroomStandings standings, ResendApi resend,
+			ResendProperties properties, Clock clock) {
+		return new WeeklyEmailService(subscriptions, snapshots, standings, resend, properties, clock,
+				WeeklyEmailService.Pause.SLEEP);
 	}
 
 }
