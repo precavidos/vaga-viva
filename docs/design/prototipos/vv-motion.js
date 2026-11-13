@@ -88,6 +88,7 @@
   // statusLine(el, label) shows the line, writes the label, counts "0,0 s" and runs the matrix.
   // done() / stop() freeze the timer and end the matrix loop.
   const lines = new WeakMap();
+  const generations = new WeakMap();
   const seconds = (ms) => `${(ms / 1000).toFixed(1).replace('.', ',')} s`;
 
   function statusLine(el, label) {
@@ -99,9 +100,16 @@
     const matrix = matrixEl && matrices.get(matrixEl);
     if (!el.hasAttribute('role')) el.setAttribute('role', 'status');
     timerEl?.setAttribute('aria-hidden', 'true');
+    // The live region is shown empty and the label is written after a rendered frame: a region that appears
+    // and fills in the same tick is often not announced. A newer call on the same line cancels the write.
+    const gen = (generations.get(el) ?? 0) + 1;
+    generations.set(el, gen);
+    if (labelEl) labelEl.textContent = '';
     el.hidden = false;
     el.classList.remove('is-done', 'is-stopped');
-    if (labelEl) labelEl.textContent = label;
+    const write = () => { if (labelEl && generations.get(el) === gen && labelEl.textContent !== label) labelEl.textContent = label; };
+    requestAnimationFrame(() => setTimeout(write, 0));
+    setTimeout(write, 100); // rAF does not run in a background tab; the timeout still does
     const t0 = performance.now();
     const tick = () => { if (timerEl) timerEl.textContent = seconds(performance.now() - t0); };
     tick();

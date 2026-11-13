@@ -20,7 +20,7 @@
     .lines { display: grid; gap: 18px; }
     .line-demo { display: grid; gap: 10px; }
     .line-demo .row { gap: 8px; }
-    .night-panel .btn.ghost { color: #f4f1ea; border-color: #4a4740; }
+    .night-panel .btn.ghost { color: #f4f1ea; border-color: var(--night-muted); }
     .steps-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
     .steps-list li { display: flex; align-items: center; gap: 12px; font-size: 15px; }
     .steps-list li.is-todo-text { color: var(--ink-2); }
@@ -130,7 +130,7 @@
   </div>
 </main>
 <script src="vv.js?v=3"></script>
-<script src="vv-motion.js?v=1"></script>
+<script src="vv-motion.js?v=3"></script>
 <script>
   VV.chrome({ area: 'Movimento' });
   VVMotion.init();
