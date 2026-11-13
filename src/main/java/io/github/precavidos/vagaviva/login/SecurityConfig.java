@@ -44,7 +44,9 @@ class SecurityConfig {
 						// Resend signs its webhooks instead (Svix).
 						api.matcher("/api/inbound-email"),
 						// The unsubscribe token is the credential.
-						api.matcher("/api/weekly-email/unsubscribe")))
+						api.matcher("/api/weekly-email/unsubscribe"),
+						// The scheduled workflow sends a shared secret instead.
+						api.matcher("/api/weekly-emails")))
 			.exceptionHandling((exceptions) -> exceptions.defaultAuthenticationEntryPointFor(
 					new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED), api.matcher("/api/**")))
 			.build();

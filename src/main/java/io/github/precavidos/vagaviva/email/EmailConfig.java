@@ -14,7 +14,7 @@ import io.github.precavidos.vagaviva.classroom.ClassroomStandings;
 import io.github.precavidos.vagaviva.review.RepositorySnapshots;
 
 @Configuration(proxyBeanMethods = false)
-@EnableConfigurationProperties(ResendProperties.class)
+@EnableConfigurationProperties({ ResendProperties.class, WeeklyEmailProperties.class })
 class EmailConfig {
 
 	@Bean

@@ -57,6 +57,8 @@ vagaviva:
     webhook-secret: ${RESEND_WEBHOOK_SECRET:}
     from: ${RESEND_FROM:}
     public-url: ${VAGAVIVA_PUBLIC_URL:}
+  weekly-email:
+    secret: ${WEEKLY_EMAIL_SECRET:}
   classroom:
     stuck-after: 3d
     idle-after: 5d
