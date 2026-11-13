@@ -43,12 +43,13 @@ final class ForwardedPosting {
 		List<String> lines = List.of(body.replace("\r\n", "\n").replace('\r', '\n').split("\n", -1));
 
 		int start = headerBlockStart(lines);
-		if (start > 0) {
+		if (start >= 0) {
 			while (start < lines.size()
 					&& (lines.get(start).isBlank() || HEADER_LINE.matcher(lines.get(start)).matches())) {
 				start++;
 			}
 		}
+		start = Math.max(start, 0);
 		int end = lines.size();
 		for (int i = start; i < lines.size(); i++) {
 			if (lines.get(i).equals("-- ")) {
@@ -63,7 +64,7 @@ final class ForwardedPosting {
 		return result;
 	}
 
-	/** Index of the line where the forwarded headers begin, or 0 when nothing was forwarded. */
+	/** Index of the line where the forwarded headers begin, or -1 when nothing was forwarded. */
 	private static int headerBlockStart(List<String> lines) {
 		for (int i = 0; i < lines.size(); i++) {
 			if (FORWARD_LINE.matcher(lines.get(i).strip()).matches()) {
@@ -80,7 +81,7 @@ final class ForwardedPosting {
 				}
 			}
 		}
-		return 0;
+		return -1;
 	}
 
 	private static String htmlToText(String html) {

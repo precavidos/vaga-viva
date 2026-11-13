@@ -27,6 +27,17 @@ class ForwardedPostingTests {
 	}
 
 	@Test
+	void skipsTheHeadersWhenTheForwardStartsTheEmail() throws IOException {
+		String body = fixture("outlook-pt.txt");
+		String withoutNote = body.substring(body.indexOf("De: "));
+
+		String result = ForwardedPosting.text(email(withoutNote, ""));
+
+		assertThat(result).startsWith("Desenvolvedora Java Júnior");
+		assertThat(result).doesNotContain("De:", "Assunto:", "vagas@example.com");
+	}
+
+	@Test
 	void usesTheHtmlWhenTextIsBlank() throws IOException {
 		String result = ForwardedPosting.text(email("", fixture("html-only.html")));
 
