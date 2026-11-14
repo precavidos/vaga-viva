@@ -64,6 +64,36 @@ const VV = (() => {
   const avatar = (name, seed = name, size = '') => `<span class="avatar ${size}" aria-hidden="true">${esc(initials(name))}</span>`;
   const statusBadge = (status, label = STATUS[status].label) => `<span class="status" data-status="${status}">${ICON[status]}${esc(label)}</span>`;
 
+  // The test grid: one row per plan mission, one square dot per test (DESIGN.md 4.16). Missions up to the current one
+  // show passing (green) and failing (coral) dots with "passed/total"; missions after it show empty dots and "—", even
+  // when the report has them failing, because the whole suite runs on every push. A mission without a tally shows only
+  // its number and "—". A completed student is all green. The dots are decorative; each row carries its sentence.
+  function testGrid(tests, missionOrder, completed = false) {
+    const row = (t) => {
+      const hasTotal = Number.isInteger(t.total);
+      const future = !completed && t.order > missionOrder;
+      const passed = completed ? t.total : Math.max(0, Math.min(t.total, t.passed ?? 0));
+      let dots = '';
+      let count = '—';
+      let text;
+      if (!hasTotal) text = future ? 'ainda não começou' : 'ainda sem contagem de testes';
+      else if (future) {
+        dots = '<i class="td is-empty"></i>'.repeat(t.total);
+        text = 'ainda não começou';
+      } else {
+        dots = '<i class="td is-pass"></i>'.repeat(passed) + '<i class="td is-fail"></i>'.repeat(t.total - passed);
+        count = `${passed}/${t.total}`;
+        text = `${passed} de ${t.total} ${t.total === 1 ? 'teste passando' : 'testes passando'}`;
+      }
+      const state = !hasTotal ? 'none' : future ? 'future' : 'counted';
+      return `<span class="test-row" data-order="${t.order}" data-state="${state}"><span class="sr">Missão ${t.order}: ${text}.</span>`
+        + `<span class="test-mission" aria-hidden="true">${String(t.order).padStart(2, '0')}</span>`
+        + `<span class="test-dots" aria-hidden="true">${dots}</span>`
+        + `<span class="test-count" aria-hidden="true">${count}</span></span>`;
+    };
+    return `<span class="test-grid">${tests.map(row).join('')}</span>`;
+  }
+
   const missionItem = (m) => {
     const [label, cls] = REASONS[m.reason];
     const chips = m.matchedSkills.length ? `<div class="chips">${m.matchedSkills.map((s) => `<span class="chip">${esc(s)}</span>`).join('')}</div>` : '';
@@ -197,19 +227,27 @@ const VV = (() => {
     ],
   };
   const student = (login, displayName, status, missionOrder, daysOnMission, reason, extra = {}) => ({ login, displayName, status, missionOrder, daysOnMission, reason, ...extra });
+  // One tally per plan mission, in plan order: [passed, total] or null when the mission has no tally (DESIGN.md 4.16).
+  const tally = (...rows) => PLAN.missions.map((m, i) => ({ order: m.order, missionId: m.id, passed: rows[i]?.[0] ?? null, total: rows[i]?.[1] ?? null }));
   const STUDENTS = [
-    student('caio-m', 'Caio', 'IDLE', 1, 6, 'sem atividade há 6 dias', { failingTests: [], lastReviewerQuestion: null, hintsOnMission: 0, lastPullRequestUrl: null }),
+    // Idle with no tally at all: every row shows "—".
+    student('caio-m', 'Caio', 'IDLE', 1, 6, 'sem atividade há 6 dias', { tests: tally(), failingTests: [], lastReviewerQuestion: null, hintsOnMission: 0, lastPullRequestUrl: null }),
     student('joaop', 'João Pedro', 'STUCK', 2, 4, '4 dias na missão 2, 3 PRs nesse período', {
+      tests: tally([4, 4], [1, 3], [0, 4], [0, 3], [0, 3], [0, 2]),
       failingTests: [{ name: 'salvaPacienteERecuperaPeloId', message: 'esperava encontrar o paciente depois de salvar' }, { name: 'rejeitaEmailDuplicado', message: 'esperava status 409 para e-mail repetido' }],
       lastReviewerQuestion: 'O que acontece com o paciente salvo quando a aplicação reinicia? Onde ele fica guardado hoje?', hintsOnMission: 2, lastPullRequestUrl: '#' }),
+    // Stuck on mission 3.
     student('bia-dev', 'Bia', 'STUCK', 3, 3, '3 dias na missão 3, 2 PRs nesse período', {
+      tests: tally([4, 4], [3, 3], [3, 4], [0, 3], [0, 3], [0, 2]),
       failingTests: [{ name: 'devolveASegundaPagina', message: 'esperava 10 consultas na página 2' }],
       lastReviewerQuestion: 'Se a página 1 tem 10 consultas, por onde a página 2 deveria começar?', hintsOnMission: 1, lastPullRequestUrl: '#' }),
-    student('rafa-s', 'Rafa', 'ADVANCING', 3, 1, 'há 1 dia na missão', { failingTests: [{ name: 'ordenaPorData', message: 'esperava a consulta mais antiga primeiro' }], lastReviewerQuestion: 'Qual campo decide a ordem quando duas consultas são no mesmo dia?', hintsOnMission: 0, lastPullRequestUrl: '#' }),
-    student('luiza-c', 'Luiza', 'ADVANCING', 4, 2, 'há 2 dias na missão', { failingTests: [{ name: 'recusaHorarioEmConflito', message: 'esperava status 409 para horário ocupado' }], lastReviewerQuestion: 'Como você sabe se dois intervalos de tempo se cruzam?', hintsOnMission: 1, lastPullRequestUrl: '#' }),
-    student('ana-lima', 'Ana', 'COMPLETED', 6, 0, 'todas as missões passando', { failingTests: [], lastReviewerQuestion: null, hintsOnMission: 0, lastPullRequestUrl: '#' }),
+    // Mission 2 did not run in the last report: that row shows "—" with no dots.
+    student('rafa-s', 'Rafa', 'ADVANCING', 3, 1, 'há 1 dia na missão', { tests: tally([4, 4], null, [3, 4], [0, 3], [0, 3], [0, 2]), failingTests: [{ name: 'ordenaPorData', message: 'esperava a consulta mais antiga primeiro' }], lastReviewerQuestion: 'Qual campo decide a ordem quando duas consultas são no mesmo dia?', hintsOnMission: 0, lastPullRequestUrl: '#' }),
+    // The future missions fail in the report (5: 0 of 3, 6: 1 of 2); the grid shows them empty with "—", never coral.
+    student('luiza-c', 'Luiza', 'ADVANCING', 4, 2, 'há 2 dias na missão', { tests: tally([4, 4], [3, 3], [4, 4], [2, 3], [0, 3], [1, 2]), failingTests: [{ name: 'recusaHorarioEmConflito', message: 'esperava status 409 para horário ocupado' }], lastReviewerQuestion: 'Como você sabe se dois intervalos de tempo se cruzam?', hintsOnMission: 1, lastPullRequestUrl: '#' }),
+    student('ana-lima', 'Ana', 'COMPLETED', 6, 0, 'todas as missões passando', { tests: tally([4, 4], [3, 3], [4, 4], [3, 3], [3, 3], [2, 2]), failingTests: [], lastReviewerQuestion: null, hintsOnMission: 0, lastPullRequestUrl: '#' }),
   ];
   const CLASSROOM = { id: '3f1c', name: 'Turma piloto', teacherLogin: 'helena', joinCode: 'k7m2x9qa4t', inviteUrl: 'vagaviva.app/turma/k7m2x9qa4t' };
 
-  return { $, $$, esc, wait, state, ICON, ic, STATUS, LEVELS, avatar, statusBadge, missionItem, repoPanel, runProgress, paintStages, countUp, toast, copyField, busy, idle, setStep, chrome, PLAN, STUDENTS, CLASSROOM };
+  return { $, $$, esc, wait, state, ICON, ic, STATUS, LEVELS, avatar, statusBadge, testGrid, missionItem, repoPanel, runProgress, paintStages, countUp, toast, copyField, busy, idle, setStep, chrome, PLAN, STUDENTS, CLASSROOM };
 })();
