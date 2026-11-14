@@ -179,7 +179,6 @@
     $('#invite').innerHTML = VV.copyField(VV.CLASSROOM.inviteUrl);
     CLASSROOMS.unshift({ name: $('#name').value.trim(), students: 0, counts: {}, href: 'painel.html?estado=vazio' });
     renderClassrooms();
-  VVMotion.init();
     go('f-done', 4); say('Turma criada.'); $('#done-title').focus();
   });
   $('#again').addEventListener('click', () => { $('#f-details').reset(); $('#posting').value = ''; go('f-posting', 1); });

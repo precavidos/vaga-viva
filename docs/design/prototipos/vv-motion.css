@@ -89,7 +89,7 @@
 /* ---------- Dot swap: [data-dot-swap] ---------- */
 /* The mesh is a grid of purple dots over the block; each dot pops from scale 0 to a size that closes the gaps
    between circles (cell × 1.45 > cell × √2), with its own random delay (--d). */
-[data-dot-swap] { position: relative; }
+[data-dot-swap] { position: relative; border-radius: var(--r-lg); } /* the board's radius, so the mesh (radius: inherit) matches it */
 .ds-mesh { position: absolute; inset: 0; z-index: 2; display: grid; grid-template-columns: repeat(var(--ds-cols), var(--ds-cell)); grid-auto-rows: var(--ds-cell); overflow: hidden; border-radius: inherit; pointer-events: auto; }
 .ds-mesh i { display: block; border-radius: 50%; background: var(--purple); transform: scale(0); transition: transform 90ms var(--ease-out) var(--d, 0ms); }
 .ds-mesh.is-on i { transform: scale(1.45); }

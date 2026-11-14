@@ -279,10 +279,10 @@ main { padding: 16px 0 96px; }
 .hints .dot { width: 14px; height: 14px; background: var(--ink); }
 .hints .dot.off { background: transparent; }
 
-/* Test grid: one row per plan mission, one square dot per test (DESIGN.md 4.16). Future missions are outlined in
+/* Test grid: one row per plan mission, one square dot per test (DESIGN.md 4.16). The count column fits "10/10". Future missions are outlined in
    --dot-empty (3:1 on card and paper); a mission without a tally has no dots. Dots are hidden from screen readers. */
 .test-grid { display: grid; gap: 6px; }
-.test-row { display: grid; grid-template-columns: 22px minmax(0, 1fr) 34px; gap: 10px; align-items: center; min-height: 12px; }
+.test-row { display: grid; grid-template-columns: 22px minmax(0, 1fr) 40px; gap: 10px; align-items: center; min-height: 12px; }
 .test-mission { font: 600 11px/1 var(--mono); color: var(--ink-2); }
 .test-dots { display: flex; flex-wrap: wrap; gap: 4px; }
 .test-count { font: 600 12px/1 var(--mono); font-variant-numeric: tabular-nums; text-align: right; color: var(--ink); }

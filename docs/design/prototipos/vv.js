@@ -68,26 +68,32 @@ const VV = (() => {
   // show passing (green) and failing (coral) dots with "passed/total"; missions after it show empty dots and "—", even
   // when the report has them failing, because the whole suite runs on every push. A mission without a tally shows only
   // its number and "—". A completed student is all green. The dots are decorative; each row carries its sentence.
+  // The data comes from test reports: a total that is not a positive integer counts as no tally, and so does a
+  // current or past mission whose `passed` is missing; `passed` is kept within 0..total.
   function testGrid(tests, missionOrder, completed = false) {
+    const current = typeof missionOrder === 'number' && Number.isFinite(missionOrder) ? missionOrder : 0;
     const row = (t) => {
-      const hasTotal = Number.isInteger(t.total);
-      const future = !completed && t.order > missionOrder;
-      const passed = completed ? t.total : Math.max(0, Math.min(t.total, t.passed ?? 0));
+      const order = esc(t.order ?? '');
+      const total = Number.isInteger(t.total) && t.total > 0 ? t.total : 0;
+      const future = !completed && Number(t.order) > current;
+      const hasPassed = typeof t.passed === 'number' && Number.isFinite(t.passed);
+      const hasTotal = total > 0 && (completed || future || hasPassed);
+      const passed = completed ? total : Math.max(0, Math.min(total, Math.floor(hasPassed ? t.passed : 0)));
       let dots = '';
       let count = '—';
       let text;
       if (!hasTotal) text = future ? 'ainda não começou' : 'ainda sem contagem de testes';
       else if (future) {
-        dots = '<i class="td is-empty"></i>'.repeat(t.total);
+        dots = '<i class="td is-empty"></i>'.repeat(total);
         text = 'ainda não começou';
       } else {
-        dots = '<i class="td is-pass"></i>'.repeat(passed) + '<i class="td is-fail"></i>'.repeat(t.total - passed);
-        count = `${passed}/${t.total}`;
-        text = `${passed} de ${t.total} ${t.total === 1 ? 'teste passando' : 'testes passando'}`;
+        dots = '<i class="td is-pass"></i>'.repeat(passed) + '<i class="td is-fail"></i>'.repeat(total - passed);
+        count = `${passed}/${total}`;
+        text = `${passed} de ${total} ${total === 1 ? 'teste passando' : 'testes passando'}`;
       }
       const state = !hasTotal ? 'none' : future ? 'future' : 'counted';
-      return `<span class="test-row" data-order="${t.order}" data-state="${state}"><span class="sr">Missão ${t.order}: ${text}.</span>`
-        + `<span class="test-mission" aria-hidden="true">${String(t.order).padStart(2, '0')}</span>`
+      return `<span class="test-row" data-order="${order}" data-state="${state}"><span class="sr">Missão ${order}: ${text}.</span>`
+        + `<span class="test-mission" aria-hidden="true">${esc(String(t.order ?? '').padStart(2, '0'))}</span>`
         + `<span class="test-dots" aria-hidden="true">${dots}</span>`
         + `<span class="test-count" aria-hidden="true">${count}</span></span>`;
     };

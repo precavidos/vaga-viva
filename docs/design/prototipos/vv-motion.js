@@ -38,20 +38,19 @@
     const dots = [...el.children];
     let timer = 0;
     // Off screen the loop pauses: the CSS animations through .is-offscreen, the flip steps through `visible`.
+    // The element is watched only while the loop runs, so a stopped matrix that leaves the page is not kept alive.
     let visible = true;
-    if ('IntersectionObserver' in window) {
-      const watcher = new IntersectionObserver(([entry]) => {
-        if (!el.isConnected) { watcher.disconnect(); return; } // replaced, as a busy button's content is
-        visible = entry.isIntersecting;
-        el.classList.toggle('is-offscreen', !visible);
-      });
-      watcher.observe(el);
-    }
+    const watcher = 'IntersectionObserver' in window ? new IntersectionObserver((entries) => {
+      if (!el.isConnected) { watcher.disconnect(); return; } // replaced, as a busy button's content is
+      visible = entries[entries.length - 1].isIntersecting; // the newest entry wins when several are queued
+      el.classList.toggle('is-offscreen', !visible);
+    }) : null;
 
-    const clear = () => { clearInterval(timer); timer = 0; };
+    const clear = () => { clearInterval(timer); timer = 0; watcher?.disconnect(); };
     const ctrl = {
       start() {
         clear();
+        watcher?.observe(el);
         el.classList.remove('is-done');
         dots.forEach((d) => d.classList.remove('is-on'));
         if (reduced()) { el.classList.add('is-still'); el.classList.remove('is-running'); return; }
@@ -97,12 +96,13 @@
 
   // ---------- Status line ----------
   // statusLine(el, label) shows the line, writes the label, counts "0,0 s" and runs the matrix.
-  // done() / stop() freeze the timer and end the matrix loop.
+  // done() / stop() freeze the timer and end the matrix loop. `since` (a performance.now() reading) is for a wait
+  // that began before its line appeared, as a request sent before the screen changed: the timer counts from it.
   const lines = new WeakMap();
   const generations = new WeakMap();
   const seconds = (ms) => `${(ms / 1000).toFixed(1).replace('.', ',')} s`;
 
-  function statusLine(el, label) {
+  function statusLine(el, label, since) {
     lines.get(el)?.stop();
     init(el);
     const labelEl = el.querySelector('.status-label');
@@ -121,7 +121,7 @@
     const write = () => { if (labelEl && generations.get(el) === gen && labelEl.textContent !== label) labelEl.textContent = label; };
     requestAnimationFrame(() => setTimeout(write, 0));
     setTimeout(write, 100); // rAF does not run in a background tab; the timeout still does
-    const t0 = performance.now();
+    const t0 = typeof since === 'number' && since <= performance.now() ? since : performance.now();
     const tick = () => { if (timerEl) timerEl.textContent = seconds(performance.now() - t0); };
     tick();
     const timer = setInterval(tick, 100);
