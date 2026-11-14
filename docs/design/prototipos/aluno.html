@@ -259,6 +259,8 @@ Modelo híbrido, em São Paulo.`;
     const mine = ++run;
     fast = reduced;
     VV.setStep(2); show('step-plan');
+    // The form that held the focus is hidden now: the focus goes to the new step's title, not to the page.
+    $('#read-title').focus();
     $('#plan-ready').hidden = true; $('#plan-wait').hidden = true; $('#skip').hidden = false;
     $('#read-title').textContent = 'Lendo a vaga';
 

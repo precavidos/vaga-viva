@@ -208,6 +208,7 @@ Modelo híbrido, em São Paulo.`;
     let html = '', last = 0;
     for (const match of text.matchAll(regex)) {
       const term = terms.find((t) => t.term.toLowerCase() === match[0].toLowerCase());
+      if (!term) continue; // the regex folds case more widely than toLowerCase (a long "ſ" matches "s"): leave it plain
       html += esc(text.slice(last, match.index)) + `<mark data-kind="${term.kind}" data-term="${esc(term.term.toLowerCase())}">${esc(match[0])}</mark>`;
       last = match.index + match[0].length;
     }
@@ -282,6 +283,8 @@ Modelo híbrido, em São Paulo.`;
     fast = reduced || fast;
     plan = null;
     VV.setStep(2); show('step-plan');
+    // The form that held the focus is hidden now: the focus goes to the new step's title, not to the page.
+    $('#read-title').focus();
     $('#plan-ready').hidden = true; $('#plan-wait').hidden = true; $('#plan-error').hidden = true; $('#create-error').hidden = true;
     $('#skip').hidden = false;
     $('#read-title').textContent = 'Lendo a vaga';
@@ -363,14 +366,15 @@ Modelo híbrido, em São Paulo.`;
     let settled = null;
     planning.then((outcome) => { settled = outcome; });
     await Promise.resolve();
+    let myLine = null; // this run's line: a stale answer must not end the line of a newer run
     if (!settled) {
       $('#plan-wait').hidden = false;
-      planLine = VVMotion.statusLine($('.status-line', $('#plan-wait')), 'Montando o plano', since);
+      myLine = planLine = VVMotion.statusLine($('.status-line', $('#plan-wait')), 'Montando o plano', since);
     }
     const outcome = await planning;
-    if (planLine) { if (outcome.ok) planLine.done(); else planLine.stop(); planLine = null; }
-    $('#plan-wait').hidden = true;
+    if (myLine) { if (outcome.ok) myLine.done(); else myLine.stop(); if (planLine === myLine) planLine = null; }
     if (mine !== run) return;
+    $('#plan-wait').hidden = true;
     if (!outcome.ok) {
       $('#plan-error-text').textContent = ` ${outcome.message}`;
       $('#plan-error').hidden = false;
@@ -381,6 +385,7 @@ Modelo híbrido, em São Paulo.`;
     showPlan(outcome.body, extraction);
     say(`${reading} Plano pronto, com ${plural(plan.missions.length, 'missão', 'missões')}.`);
     if (!fast) $('#plan-ready').scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    return true;
   }
 
   function showPlan(body, extraction) {
@@ -400,6 +405,7 @@ Modelo híbrido, em São Paulo.`;
   }
 
   // Step 1 -> 2: the button's scan line measures the extraction; the plan request goes out as soon as it answers.
+  // Resolves to true only when the plan is on screen.
   async function start(text) {
     const button = $('#plan-button');
     postingError('');
@@ -416,7 +422,7 @@ Modelo híbrido, em São Paulo.`;
     const since = performance.now();
     const planning = requestPlan(text);
     VV.idle(button);
-    await read(text, extraction.body, planning, since);
+    return read(text, extraction.body, planning, since);
   }
 
   // ---- Step 3: the repository ----
@@ -559,7 +565,8 @@ Modelo híbrido, em São Paulo.`;
     $('#posting').value = pending;
     $('#posting').dispatchEvent(new Event('input'));
     fast = true; // the student already watched the reading: go straight to the plan and the repository
-    start(pending).then(() => create(pending));
+    // Only a plan on screen goes on to the repository: a failed reading or plan keeps its own error in view.
+    start(pending).then((planned) => { if (planned) create(pending); });
   }
 </script>
 </body>
