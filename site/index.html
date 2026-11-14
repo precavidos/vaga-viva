@@ -157,7 +157,8 @@
     .demo-dots { display: flex; gap: 5px; }
     .demo-dots i { width: 10px; height: 10px; border-radius: 50%; background: var(--coral); }
     .demo-count { min-width: 3ch; text-align: right; font: 600 12px/1 var(--mono); color: var(--night-muted); }
-    .demo-note { margin: 10px 0 0; font-size: 13.5px; color: var(--night-muted); transition: opacity var(--t-base) var(--ease-out); }
+    .demo-note { margin: 0; font-size: 13.5px; color: var(--night-muted); transition: opacity var(--t-base) var(--ease-out); }
+    .hero .demo-note { margin-top: 10px; }
 
     /* Before the run (.is-armed, set only when it will play): no marks, no chips, no missions. Without JS or with
        reduced motion the panel is already in its final state. Off screen (.is-paused) the run waits. */
@@ -190,7 +191,7 @@
       .demo-skills li { padding: 6px 8px; font-size: 12px; }
       .demo-plan li { gap: 10px; padding: 7px 0; font-size: 14px; }
       .demo-plan li:nth-child(n + 3) { display: none; }
-      .demo-note { margin-top: 6px; font-size: 13px; }
+      .hero .demo-note { margin-top: 6px; font-size: 13px; }
     }
     @media (max-width: 380px) { .hero .actions { flex-wrap: wrap; } }
 
@@ -281,7 +282,6 @@
     .sec-head { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px 48px; align-items: end; margin-bottom: 40px; }
     .sec-head h2 { max-width: 17em; }
     .sec-head p { margin: 0; color: var(--ink-2); max-width: 34em; }
-    .demo-note { margin: 0; font-size: 13.5px; color: var(--night-muted); }
 
     /* How it works: four steps in order, then the plan and the repository being created (DESIGN.md 4.4, 4.15, 5.1). */
     .how-steps { list-style: none; margin: 0 0 40px; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 24px; }
@@ -589,7 +589,7 @@
 
         <div class="demo" role="group" aria-label="Exemplo de pull request com o revisor">
           <div class="pr-bar"><svg class="ico" aria-hidden="true"><use href="#i-github"/></svg><span class="pr-open">Aberto</span>Listagem paginada de consultas <span class="pr-num">#3</span></div>
-          <pre class="term" aria-label="Saída dos testes"><span class="d">$ ./mvnw test</span>
+          <pre class="term" role="group" aria-label="Saída dos testes"><span class="d">$ ./mvnw test</span>
 <span class="r">FAIL</span> devolveASegundaPagina
   esperava 10 consultas na página 2, veio 20</pre>
           <div class="thread">
@@ -1100,7 +1100,7 @@
         steps.sort(function (a, b) { return a[0] - b[0]; }); // stable: steps at the same time keep their order
         var next = 0, elapsed = 0, since = 0, timer = 0, running = false;
         var clock = { now: function () { return elapsed + (running ? performance.now() - since : 0); } };
-        var need = Math.min(ratio, Math.max(0.05, 0.5 * window.innerHeight / Math.max(1, el.offsetHeight)));
+        var need = 1, io = null;
         function tick() {
           timer = 0;
           var now = clock.now();
@@ -1125,11 +1125,23 @@
           if (hooks.pause) hooks.pause();
         }
         el.classList.add('is-armed');
-        var io = new IntersectionObserver(function (entries) {
-          var e = entries[entries.length - 1];
-          if (e.isIntersecting && e.intersectionRatio >= need) resume(); else pause();
-        }, { threshold: need });
-        io.observe(el);
+        // A tall block needs less of itself in view. The share is measured again when the window changes size
+        // (a phone turned sideways), so the block can always reach it and never stays armed.
+        function observe() {
+          if (io) io.disconnect();
+          need = Math.min(ratio, Math.max(0.05, 0.5 * window.innerHeight / Math.max(1, el.offsetHeight)));
+          io = new IntersectionObserver(function (entries) {
+            var e = entries[entries.length - 1];
+            if (e.isIntersecting && e.intersectionRatio >= need) resume(); else pause();
+          }, { threshold: need });
+          io.observe(el);
+        }
+        observe();
+        var resized = 0;
+        window.addEventListener('resize', function () {
+          clearTimeout(resized);
+          resized = setTimeout(function () { if (next < steps.length) observe(); }, 200);
+        });
         return clock;
       }
 
