@@ -7,7 +7,7 @@ Os protótipos navegáveis ficam em `docs/design/prototipos/`. Eles usam dados f
 ## 1. Princípios
 
 1. **Ferramenta de dev, não brinquedo nem template.** Cantos pequenos, títulos em peso 600, painéis escuros para tudo que é código, GitHub ou o sistema trabalhando. O que sai do infantil não pode virar template de SaaS genérico: nada de fundo escuro com degradê roxo, vidro ou brilho.
-2. **Papel, tinta e cor com função.** O fundo é papel quente e o texto é tinta quase preta. Roxo é ação e foco; amarelo é só o marca-texto e a varredura; verde e coral são só estado de teste e situação. Não há degradês, sombras coloridas nem blocos chapados grandes em amarelo, verde ou coral.
+2. **Papel, tinta e cor com função.** O fundo é papel quente e o texto é tinta quase preta. Roxo é ação e foco; amarelo é só o marca-texto e a varredura; verde e coral são só estado de teste e situação (o coral também marca erro e o que a vaga cita fora do projeto). Não há degradês, sombras coloridas nem blocos chapados grandes em amarelo, verde ou coral.
 3. **O ponto é o sistema.** Cada teste é um ponto que passa de coral para verde. Carregamentos, progresso, grade de testes e transições são feitos do mesmo ponto, e o marca-texto mostra o que foi lido na vaga.
 4. **Uma ação principal por tela.** Cada tela tem um único botão roxo. O resto é botão vazado ou link.
 5. **O sistema avisa, não avalia.** "Travado" e "parado" são avisos para o professor conversar com o aluno. Eles sempre vêm com o motivo e nunca com tom de nota, ranking ou alarme. A grade de testes mostra onde o aluno está, não quanto ele vale.
@@ -25,7 +25,7 @@ A direção B em uma tabela. Os itens abaixo detalham cada linha.
 | Botão principal | roxo `--purple`, texto branco, raio 6 px. Hover escurece 6% e sobe 1 px. Um só por tela. |
 | Botão secundário | vazado, borda 1 px `--line`, texto tinta. Hover: borda tinta. |
 | Sombra | só a sombra de repouso, no bloco principal e na gaveta. |
-| Cor por tela | roxo para ação e foco; amarelo só no marca-texto e na varredura; verde e coral só em estado de teste e situação. Nada de blocos chapados grandes em amarelo, verde ou coral. |
+| Cor por tela | roxo para ação e foco; amarelo só no marca-texto e na varredura; verde e coral só em estado de teste e situação, e o coral também em erro e no que fica fora do projeto. Nada de blocos chapados grandes em amarelo, verde ou coral. |
 | Painéis escuros | tudo que é código, GitHub, demo do produto ou sistema trabalhando (carregamentos, criação do repositório, revisor). |
 | Fichas de ícone | ícone em quadrado de 28 px, borda 1 px `--line`, raio 6 px, sem cor de fundo. O ícone só leva cor quando é situação. |
 | Avatar | círculo neutro (`--paper-2`), iniciais em mono 600. |
@@ -83,6 +83,8 @@ No cartão do aluno, a situação aparece como uma faixa de 6 px à esquerda, um
 | Título de seção (`h2`) | Bricolage Grotesque | 600 | 28 px |
 | Título de cartão (`h3`) | Bricolage Grotesque | 600 | 19 px |
 | Corpo | DM Sans | 400 e 500 | 16 px, entrelinha 1.55 |
+| Rótulo de campo, ênfase | DM Sans | 600 | 14 a 16 px |
+| Botão | DM Sans | 700 | 16 px (14 px no `.sm`) |
 | Texto de apoio | DM Sans | 400 | 14 px |
 | Rótulo, número, código, nome de teste, cronômetro | JetBrains Mono | 600 | 12 a 13 px, maiúsculas com espaçamento 0.08em nos rótulos |
 
@@ -93,7 +95,7 @@ No cartão do aluno, a situação aparece como uma faixa de 6 px à esquerda, um
 
 - **Escala de espaço:** 4, 8, 12, 16, 24, 32, 48, 72 px.
 - **Largura:** `.wrap` de 1160 px como padrão, 760 px de conteúdo (`.wrap.narrow`) para fluxos de formulário e 1440 px (`.wrap.wide`) para o painel, onde cabem as sete colunas.
-- **Raios:** 4 px (chips, selos, pontos quadrados), 6 px (botões, campos, fichas de ícone, itens de lista), 8 px (cartões, colunas, painéis), 12 px (bloco principal da tela). A pílula só existe no campo de cópia do convite.
+- **Raios:** 4 px (chips, selos, pontos quadrados), 6 px (botões, campos, fichas de ícone, itens de lista), 8 px (cartões, colunas, painéis), 12 px (bloco principal da tela). A gaveta não tem raio quando é painel lateral; no celular, vira folha de baixo com 12 px nos cantos de cima. A pílula só existe no campo de cópia do convite.
 - **Bordas:** 1 px `--line` em superfícies e no botão vazado; o foco é roxo (seção 7).
 - **Elevação tem um nível só:** a sombra de repouso, `0 30px 60px -30px rgba(20,20,20,.25)`, no bloco principal da tela e na gaveta. Nada mais tem sombra.
 
@@ -125,7 +127,7 @@ O produto tem uma família própria de ícones, desenhada para ele. A fonte é o
 - **Pontos:** o centro do sistema. **Redondos**, de 10 a 18 px, para testes e carregamentos: coral para falhando, verde para passando. **Quadrados com 4 px de raio** só nas grades densas (cartão do aluno e linhas da turma), para ler como grade.
 - **Marca-texto:** faixa que se desenha da esquerda para a direita atrás de um trecho. Amarela para tecnologias, lilás para o nível e coral claro para o que fica fora do projeto.
 - **Recorte:** a vaga aparece como um recorte de jornal: papel claro nos dois modos, borda tracejada de corte e uma tesoura no rótulo. Não inclina.
-- **Selo mono:** retângulo preto de 4 px de raio com conteúdo mono, para número de missão, código de convite e nome de repositório.
+- **Selo mono:** retângulo em `--ink` de 4 px de raio (preto no modo claro, claro no escuro, com o texto em `--paper`) com conteúdo mono, para número de missão, código de convite e nome de repositório.
 
 ## 3. Movimento
 
@@ -146,7 +148,7 @@ Padrões:
 | **Marca-texto** (`marker`) | a faixa cresce de 0 a 100% em `--t-slow` | termo reconhecido, título do sucesso |
 | **Extração** | a sequência do item 3.1 | leitura da vaga |
 | **Gaveta** | desliza 100% → 0 em `--t-slow`; o fundo escurece para 45% | ficha do aluno |
-| **Hover** | botões sobem 1 px em `--t-fast`; o primário escurece 6%, o vazado ganha borda tinta | botões e cartões clicáveis |
+| **Hover** | botões sobem 1 px em `--t-fast`; o primário escurece 6%, o vazado ganha borda tinta; cartões clicáveis não sobem, só ganham borda tinta | botões e cartões clicáveis |
 | **Pressionar** | volta ao lugar | `:active` |
 
 Os seis componentes de movimento estão no item 3.3.
@@ -196,7 +198,7 @@ Contrato de marcação, o que o HTML escreve e o que `vv-motion.js` faz:
 - **`VVMotion.init(root?)`** liga todo atributo `data-` acima dentro de `root` (o documento, se omitido). Pode ser chamada de novo depois de inserir HTML: o que já está ligado não é ligado duas vezes.
 - **`data-dot-field`** vai num elemento que envolve o conteúdo do topo. O JS insere o `<canvas>` atrás desse conteúdo; o HTML não escreve o `<canvas>`.
 - **`data-dot-matrix="scan|wave|flip"`** é um elemento vazio. O JS injeta os 16 pontos; o valor do atributo escolhe o padrão.
-- **`.status-line`** é escrita no HTML com a matriz, `.status-label` e `.status-timer` vazio. Quem atualiza o cronômetro é o JS: `VVMotion.statusLine(el, label)` mostra a linha com o rótulo, começa a contar e devolve `{done(), stop()}`; `done()` fecha a espera com sucesso e `stop()` a interrompe (erro ou cancelamento). As duas param o cronômetro e o laço da matriz.
+- **`.status-line`** é escrita no HTML com a matriz, `.status-label` e `.status-timer` vazio. Quem atualiza o cronômetro é o JS: `VVMotion.statusLine(el, label)` mostra a linha com o rótulo, começa a contar e devolve `{done(), stop()}`; `VVMotion.statusLine(el, label, since)` conta a partir de `since` (uma leitura de `performance.now()`), para uma espera que começou antes de a linha aparecer; `done()` fecha a espera com sucesso e `stop()` a interrompe (erro ou cancelamento). As duas param o cronômetro e o laço da matriz.
 - **`data-decrypt`** resolve para o valor do atributo, ou para o texto do elemento quando o atributo está vazio. O texto final real no DOM é a fonte de verdade: durante a animação, os símbolos ficam ocultos para leitores de tela e uma cópia visualmente oculta guarda o texto final; ao terminar, o elemento traz só o texto final. Leitores de tela recebem o texto final direto, sem `aria-label`. Para um nome que chega depois, `VVMotion.decrypt(el, text)`.
 - **`data-dot-swap`** marca o bloco que vai trocar: o próprio elemento é coberto pela malha. A troca não dispara sozinha; ela acontece em `VVMotion.dotSwap(el, swap)`, em que `swap` é a função que troca o conteúdo por baixo da malha.
 - **`data-count-up`** lê o número final do valor do atributo (`data-count-up="18"`). O texto do elemento já traz esse número, para quem não roda o JS e para movimento reduzido.
@@ -204,7 +206,7 @@ Contrato de marcação, o que o HTML escreve e o que `vv-motion.js` faz:
 
 ## 4. Componentes
 
-Os nomes são as classes de `vv.css` e, nos itens 4.14 a 4.16, de `vv-motion.css`.
+Os nomes são as classes de `vv.css` e, nos itens 4.14 e 4.15, de `vv-motion.css`. A grade de testes (item 4.16) fica em `vv.css`.
 
 ### 4.1 Botão (`.btn`)
 
@@ -224,7 +226,7 @@ Os nomes são as classes de `vv.css` e, nos itens 4.14 a 4.16, de `vv-motion.css
 
 ### 4.3 Passos (`.steps`)
 
-Trilho horizontal com três passos numerados em selos mono de 4 px de raio. O passo atual é preto; os feitos levam o visto; os futuros são vazados. Em telas estreitas, só o passo atual mostra o nome.
+Trilho horizontal com três passos numerados em selos mono de 4 px de raio. O passo atual é em `--ink` (preto no claro, claro no escuro); os feitos levam o visto; os futuros são vazados. Em telas estreitas, só o passo atual mostra o nome.
 
 ### 4.4 Cartão de missão (`.mission`)
 
@@ -279,7 +281,7 @@ Um único cartão com duas partes. Em cima, uma barra dividida na proporção da
 
 - **Chip (`.chip`):** mono de 12 px, raio 4 px, para stack, nível, domínio e competências.
 - **Avatar (`.avatar`):** círculo `--paper-2` com as iniciais em JetBrains Mono 600, em tinta. Não tem cor por pessoa.
-- **Aviso flutuante (`.toast`):** bloco preto de 6 px de raio que sobe do rodapé por 3 s, com `role="status"`.
+- **Aviso flutuante (`.toast`):** bloco `#141414` (preto nos dois modos) de 6 px de raio que sobe do rodapé por 3 s, com `role="status"`.
 - **Estado vazio (`.empty`):** uma ficha de ícone do que falta, um título e a próxima ação.
 - **Lista de vantagens (`.benefits`):** até três linhas, cada uma com uma ficha de ícone e uma frase.
 
@@ -308,17 +310,17 @@ Juntas, leem "Montando o plano · 2,3 s". A linha existe só durante espera real
 | Estado | Desenho | Quando |
 | --- | --- | --- |
 | `is-todo` | anel parado em `--dot-empty` | etapa futura |
-| `is-current` | arco girando em `--purple` | etapa em andamento |
+| `is-current` | arco girando em `--focus` (roxo no claro, roxo claro no escuro e sobre painel escuro, para ter 3:1) | etapa em andamento |
 | `is-done` | visto verde desenhado | etapa feita |
 
-O nome da etapa diz o estado também em texto para leitores de tela ("feito", "em andamento"). A última etapa só passa para `is-done` quando o servidor responde (item 3.2).
+O nome da etapa diz o estado também em texto para leitores de tela ("feito", "em andamento"). O disco verde fica abaixo de 3:1 sobre o branco; a cor não é o único sinal: o visto e o texto dizem o mesmo. A última etapa só passa para `is-done` quando o servidor responde (item 3.2).
 
 ### 4.16 Grade de testes (`.test-grid`)
 
 Mostra onde o aluno está no plano, um ponto por teste. Aparece no cartão do aluno, no topo da gaveta (só a missão atual), nas linhas da turma e na demo do painel da landing, com dados fictícios.
 
 - **Linha (`.test-row`):** uma por missão do plano, na ordem do plano. À esquerda, o número da missão em mono (`.test-mission`); no meio, os pontos (`.test-dots`); à direita, "passando/total" em mono (`.test-count`), como "3/4".
-- **Ponto (`.td`):** quadrado com 4 px de raio. Três estados:
+- **Ponto (`.td`):** quadrado de 12 px com 4 px de raio, 4 px entre pontos. Três estados:
 
 | Estado | Cor | Quando |
 | --- | --- | --- |
@@ -329,6 +331,7 @@ Mostra onde o aluno está no plano, um ponto por teste. Aparece no cartão do al
 Regras:
 - **Missões depois da atual** ficam com todos os pontos vazios, mesmo que os testes delas falhem no relatório, e a contagem mostra "—". A suíte inteira roda a cada push, então os testes das missões futuras sempre falham; pintá-los de coral deixaria todo cartão alarmante sem informar nada.
 - **Aluno concluído:** tudo verde.
+- **A cor não é o único sinal:** o verde e o coral cheios ficam abaixo de 3:1 sobre o branco. A contagem "3/4" ao lado dos pontos e o texto de cada linha dizem o mesmo que as cores.
 - **`total`** é a quantidade de testes da missão que rodaram no último relatório, sem os `skipped`.
 - **Missão sem contagem** (o aluno ainda não fez push depois da mudança, ou a missão não rodou): a linha mostra só o número da missão e "—", sem pontos.
 - **Acessibilidade:** os pontos ficam fora da árvore de acessibilidade, e cada linha tem o texto equivalente: "Missão 2: 3 de 4 testes passando" ou "Missão 4: ainda não começou".
