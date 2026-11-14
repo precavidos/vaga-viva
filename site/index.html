@@ -8,11 +8,12 @@
   <meta property="og:title" content="Vaga Viva">
   <meta property="og:description" content="Aprender fazendo com vagas reais, com um revisor que não dá a resposta.">
   <meta property="og:type" content="website">
-  <meta name="theme-color" content="#f4f1ea">
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='10' fill='%23141414'/%3E%3Cpath d='M8 17l5 5 11-12' stroke='%2333c47a' stroke-width='3.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+  <meta name="theme-color" content="#f4f1ea" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#161513" media="(prefers-color-scheme: dark)">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23141414'/%3E%3Cpath d='M8 17l5 5 11-12' stroke='%2333c47a' stroke-width='3.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
   <style>
     :root {
       --paper: #f4f1ea;
@@ -24,16 +25,12 @@
 
       --purple: #5b3df5;
       --purple-hover: #5639e6;
-      --purple-soft: #e6e0ff;
       --focus: #5b3df5;
       --dot-empty: #8f8a7c;
-      --on-color: #141414;
+      --logo-check: #33c47a;
       --yellow: #ffd23f;
       --green: #33c47a;
-      --green-ink: #0e6b3c;
       --coral: #ff6b4a;
-      --coral-ink: #b3341a;
-      --blue: #3d6bff;
 
       --night: #121212;
       --night-2: #1e1e1e;
@@ -45,11 +42,9 @@
       --body: "DM Sans", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
       --mono: "JetBrains Mono", ui-monospace, "Cascadia Code", Consolas, monospace;
 
-      --radius: 28px;
-      --radius-sm: 16px;
-
       /* Direction B (DESIGN.md 2.4, 3): 4 chips and seals, 6 buttons, 8 panels, 12 the screen's main block. */
       --r-xs: 4px; --r-sm: 6px; --r-md: 8px; --r-lg: 12px;
+      --rest: 0 30px 60px -30px rgba(20, 20, 20, .25);
       --t-fast: 150ms; --t-base: 280ms; --t-slow: 520ms;
       --ease-out: cubic-bezier(.2, .8, .2, 1);
     }
@@ -61,14 +56,13 @@
         --ink: #f4f1ea;
         --ink-2: #b4afa3;
         --line: #34312c;
-        --purple-soft: #2c2266;
         --focus: #8a75ff;
         --dot-empty: #767166;
-        --green-ink: #5ee39c;
-        --coral-ink: #ff9a82;
         --night: #0b0b0a;
         --night-2: #1a1917;
         --night-3: #26241f;
+        --logo-check: #0e6b3c;
+        --rest: 0 30px 60px -30px rgba(0, 0, 0, .7);
       }
     }
 
@@ -84,21 +78,18 @@
     }
     img, svg { display: block; }
     a { color: inherit; }
+    [hidden] { display: none !important; }
+    .ico { width: 1.15em; height: 1.15em; fill: currentColor; flex: none; }
     :focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
     .wrap { max-width: 1160px; margin: 0 auto; padding: 0 24px; }
     .skip { position: absolute; left: -9999px; }
     .skip:focus { left: 16px; top: 16px; background: var(--card); padding: 8px 12px; z-index: 20; }
     .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
-    h1, h2, h3 { font-family: var(--display); letter-spacing: -.025em; margin: 0; }
-    h2 { font-size: clamp(34px, 5.2vw, 60px); line-height: 1.02; font-weight: 800; }
-    h3 { font-size: 22px; line-height: 1.2; font-weight: 700; }
-    .eyebrow {
-      display: inline-flex; align-items: center; gap: 8px;
-      font: 600 13px/1 var(--mono); text-transform: uppercase; letter-spacing: .08em; color: var(--ink-2);
-      margin-bottom: 18px;
-    }
-    .eyebrow::before { content: ""; width: 10px; height: 10px; border-radius: 50%; background: var(--purple); }
+    /* DESIGN.md 2.3: Bricolage 600 in every title, h2 28 px, h3 19 px. */
+    h1, h2, h3 { font-family: var(--display); font-weight: 600; letter-spacing: -.025em; margin: 0; }
+    h2 { font-size: 28px; line-height: 1.15; }
+    h3 { font-size: 19px; line-height: 1.25; }
 
     /* Buttons */
     /* DESIGN.md 4.1: purple primary (one per screen), outlined secondary, 6 px corners, 1 px lift on hover. */
@@ -119,7 +110,11 @@
     /* Header */
     .top { position: relative; z-index: 5; }
     .top .wrap { display: flex; align-items: center; justify-content: space-between; height: 84px; gap: 16px; }
-    .brand { display: flex; align-items: center; gap: 10px; font: 800 22px/1 var(--display); letter-spacing: -.03em; text-decoration: none; }
+    .brand { display: flex; align-items: center; gap: 10px; font: 600 21px/1 var(--display); letter-spacing: -.025em; text-decoration: none; }
+    /* The mark follows the mode: an ink square with a green check on paper, a paper square with a dark green check
+       in dark mode, so it never sinks into the background. */
+    .logo rect { fill: var(--ink); }
+    .logo path { stroke: var(--logo-check); }
     .top nav { display: flex; gap: 28px; }
     .top nav a { text-decoration: none; font-weight: 500; font-size: 15px; color: var(--ink-2); }
     .top nav a:hover { color: var(--ink); text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 6px; }
@@ -136,7 +131,7 @@
     .hero .actions { display: flex; flex-wrap: wrap; gap: 12px; }
 
     .demo { margin: 0; min-width: 0; display: grid; gap: 16px; padding: 20px; background: var(--night-2); color: var(--night-text); border: 1px solid var(--night-3); border-radius: var(--r-md); }
-    .demo-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 18px; font: 600 12px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--night-muted); }
+    .demo-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 12px; min-height: 18px; font: 600 12px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--night-muted); }
     .demo-state { display: inline-flex; align-items: center; gap: 8px; font: 600 12.5px/1 var(--mono); letter-spacing: 0; text-transform: none; color: var(--night-text); }
     .demo-label { margin: 0 0 8px; font: 600 11px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--night-muted); }
 
@@ -158,7 +153,7 @@
 
     .demo-plan ol { list-style: none; margin: 0; padding: 0; }
     .demo-plan li { display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; align-items: center; gap: 12px; padding: 9px 0; border-top: 1px solid var(--night-3); font-size: 14.5px; line-height: 1.3; transition: opacity var(--t-base) var(--ease-out), transform var(--t-base) var(--ease-out); }
-    .demo-plan .num { display: inline-grid; place-items: center; min-width: 30px; height: 22px; padding: 0 6px; border-radius: var(--r-xs); border: 1px solid #4a4740; font: 600 11.5px/1 var(--mono); color: var(--night-text); }
+    .demo .num { display: inline-grid; place-items: center; min-width: 30px; height: 22px; padding: 0 6px; border-radius: var(--r-xs); border: 1px solid #4a4740; font: 600 11.5px/1 var(--mono); color: var(--night-text); }
     .demo-dots { display: flex; gap: 5px; }
     .demo-dots i { width: 10px; height: 10px; border-radius: 50%; background: var(--coral); }
     .demo-count { min-width: 3ch; text-align: right; font: 600 12px/1 var(--mono); color: var(--night-muted); }
@@ -199,11 +194,9 @@
     }
     @media (max-width: 380px) { .hero .actions { flex-wrap: wrap; } }
 
-    .zig { position: absolute; pointer-events: none; }
-    .zig path { fill: none; stroke-linecap: round; stroke-linejoin: round; }
-
     /* copied from docs/design/prototipos/vv-motion.* */
-    /* Only the components the landing uses: the dot matrix (scan and wave), the dot field and decrypt. */
+    /* Only the components the landing uses: the dot matrix (scan, wave, flip), the dot field, decrypt, the status line,
+       the step mark and, from vv.css, the test grid. */
     [data-dot-matrix] {
       --dm-dot: 4px; --dm-gap: 2px; --dm-cycle: 1.6s;
       display: inline-grid; grid-template-columns: repeat(4, var(--dm-dot)); gap: var(--dm-gap);
@@ -231,218 +224,188 @@
     @media (prefers-reduced-motion: reduce) {
       [data-dot-matrix] i { animation: none !important; transition: none !important; }
     }
+    /* flip: coral dots turn green one at a time (the JS adds .is-on in a fixed order), then the grid resets. Done: all green. */
+    [data-dot-matrix="flip"] { --dm-color: var(--coral); }
+    [data-dot-matrix="flip"] i::after { content: ""; position: absolute; inset: 0; border-radius: 50%; background: var(--green); opacity: 0; transform: scale(.4); transition: opacity var(--t-fast) var(--ease-out), transform var(--t-fast) var(--ease-out); }
+    [data-dot-matrix="flip"] i.is-on::after,
+    [data-dot-matrix="flip"].is-done i::after { opacity: 1; transform: none; }
+    [data-dot-matrix="flip"].is-reset i::after { transition: none; }
+    /* Status line (DESIGN.md 4.14): matrix, gerund label, timer with one decimal and a comma. */
+    .status-line { display: inline-flex; align-items: center; gap: 10px; margin: 0; font: 600 13px/1.2 var(--mono); color: var(--ink); }
+    .status-timer { color: var(--ink-2); font-variant-numeric: tabular-nums; min-width: 6ch; }
+    .status-timer:not(:empty)::before { content: "· "; }
+    .status-line.on-night { color: #f4f1ea; }
+    .status-line.on-night .status-timer { color: #f4f1ea; opacity: .72; }
+    /* Step mark (DESIGN.md 4.15): a ring (todo), a spinning purple arc (current), a drawn check on green (done). */
+    .step-mark { display: inline-block; width: 18px; height: 18px; flex: none; vertical-align: middle; }
+    .step-mark svg { width: 18px; height: 18px; overflow: visible; }
+    .step-mark .sm-ring, .step-mark .sm-arc { fill: none; stroke-width: 2; }
+    .step-mark .sm-ring { stroke: var(--dot-empty); }
+    .step-mark .sm-arc { stroke: var(--purple); stroke-linecap: round; stroke-dasharray: 30 100; opacity: 0; }
+    .step-mark .sm-spin { transform-box: view-box; transform-origin: 9px 9px; }
+    .step-mark .sm-disc { fill: var(--green); opacity: 0; transform-box: view-box; transform-origin: 9px 9px; }
+    .step-mark .sm-check { fill: none; stroke: #141414; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1; stroke-dashoffset: 1; }
+    .step-mark.is-current .sm-ring { stroke: var(--line); }
+    .step-mark.is-current .sm-arc { opacity: 1; }
+    .step-mark.is-current .sm-spin { animation: vvm-spin .9s linear infinite; }
+    .step-mark.is-done .sm-ring { opacity: 0; }
+    .step-mark.is-done .sm-disc { opacity: 1; animation: vvm-pop var(--t-base) var(--ease-out) both; }
+    .step-mark.is-done .sm-check { stroke-dashoffset: 0; animation: vvm-draw var(--t-base) var(--ease-out) 120ms both; }
+    @keyframes vvm-spin { to { transform: rotate(360deg); } }
+    @keyframes vvm-pop { from { opacity: 0; transform: scale(.92); } }
+    @keyframes vvm-draw { from { stroke-dashoffset: 1; } }
+    [data-dot-matrix].is-still i::after, .step-mark.is-still * { animation: none !important; transition: none !important; }
+    @media (prefers-reduced-motion: reduce) {
+      [data-dot-matrix] i::after, .step-mark * { animation: none !important; transition: none !important; }
+    }
+    /* From docs/design/prototipos/vv.css: the test grid (DESIGN.md 4.16), one row per plan mission, one square dot
+       per test. The dots pop only while a demo plays (see .is-armed below), not on their own. */
+    .test-grid { display: grid; gap: 6px; }
+    .test-row { display: grid; grid-template-columns: 22px minmax(0, 1fr) 40px; gap: 10px; align-items: center; min-height: 12px; }
+    .test-mission { font: 600 11px/1 var(--mono); color: var(--ink-2); }
+    .test-dots { display: flex; flex-wrap: wrap; gap: 4px; }
+    .test-count { font: 600 12px/1 var(--mono); font-variant-numeric: tabular-nums; text-align: right; color: var(--ink); }
+    .test-row[data-state="future"] .test-count, .test-row[data-state="none"] .test-count { color: var(--ink-2); }
+    .td { display: block; width: 12px; height: 12px; border-radius: var(--r-xs); }
+    .td.is-pass { background: var(--green); }
+    .td.is-fail { background: var(--coral); }
+    .td.is-empty { background: transparent; box-shadow: inset 0 0 0 2px var(--dot-empty); }
     /* end of the copy */
 
-    /* Showcase (dark) */
-    .night { background: var(--night); color: var(--night-text); position: relative; overflow: hidden; }
-    .night .eyebrow { color: var(--night-muted); }
-    .night .eyebrow::before { background: var(--green); }
-    .showcase { padding: 120px 0; }
-    .showcase-head { display: grid; grid-template-columns: 1.1fr .9fr; gap: 40px; align-items: end; margin-bottom: 56px; position: relative; z-index: 1; }
-    .showcase-head p { color: var(--night-muted); margin: 0; font-size: 18px; }
-    .flow { display: grid; grid-template-columns: 1fr auto 1fr auto 1fr; gap: 18px; align-items: stretch; position: relative; z-index: 1; }
-    .flow-arrow { align-self: center; color: var(--yellow); }
-    .panel { background: var(--night-2); border: 1px solid var(--night-3); border-radius: var(--radius); padding: 22px; display: flex; flex-direction: column; min-width: 0; }
-    .panel-tag { font: 600 12px/1 var(--mono); text-transform: uppercase; letter-spacing: .08em; color: var(--night-muted); margin-bottom: 16px; display: flex; justify-content: space-between; gap: 8px; }
-    .panel-tag b { color: var(--yellow); font-weight: 600; }
 
-    .classified { background: #f4f1ea; color: #141414; border-radius: var(--radius-sm); padding: 18px; font-size: 15px; line-height: 1.55; flex: 1; }
-    .classified h4 { margin: 0 0 8px; font: 800 19px/1.15 var(--display); letter-spacing: -.02em; }
-    .classified p { margin: 0; }
-    mark {
-      background: linear-gradient(transparent 12%, var(--yellow) 12%, var(--yellow) 88%, transparent 88%) no-repeat 0 0 / 100% 100%;
-      color: inherit; padding: 0 .12em; border-radius: 3px;
-      transition: background-size .45s cubic-bezier(.2, .8, .2, 1);
-    }
-    mark.lvl { background-image: linear-gradient(transparent 12%, #c9bdff 12%, #c9bdff 88%, transparent 88%); }
-    mark.out { background-image: linear-gradient(transparent 12%, #ffc2b5 12%, #ffc2b5 88%, transparent 88%); }
-    .js mark:not(.on) { background-size: 0% 100%; }
-    @media (prefers-reduced-motion: reduce) { mark { transition: none; } }
+    /* Sections below the hero (DESIGN.md 1, 2, 4.6): paper, a plain h2 with one paragraph beside it, and the product on
+       dark panels. No labels over the titles, no flat colour blocks, no shadow except the closing block's. */
+    .section { padding: 96px 0; border-top: 1px solid var(--line); }
+    .sec-head { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px 48px; align-items: end; margin-bottom: 40px; }
+    .sec-head h2 { max-width: 17em; }
+    .sec-head p { margin: 0; color: var(--ink-2); max-width: 34em; }
+    .demo-note { margin: 0; font-size: 13.5px; color: var(--night-muted); }
 
-    .classified { position: relative; border: 2px dashed #cfc9ba; }
-    .clip-label { display: flex; align-items: center; gap: 6px; margin-bottom: 10px; font: 600 11px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: #4a4740; }
-    .clip-label svg { width: 14px; height: 14px; }
-    .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; }
-    .chip { font: 600 12px/1 var(--mono); padding: 7px 10px; border-radius: 999px; background: var(--night-3); color: var(--night-text); }
-    .chip.lvl { background: var(--purple); color: #fff; }
-    .chip.out { background: transparent; box-shadow: inset 0 0 0 2px var(--coral); }
-    .chip.waiting { opacity: 0; }
-    .chip.landed { animation: pop .5s cubic-bezier(.34, 1.56, .64, 1); }
-    .flyer { position: fixed; z-index: 50; margin: 0; pointer-events: none; padding: 7px 11px; border-radius: 999px; background: var(--yellow); color: #141414; font: 600 12px/1 var(--mono); box-shadow: 0 5px 0 rgba(20, 20, 20, .7); white-space: nowrap; }
-    .flyer.lvl { background: #c9bdff; } .flyer.out { background: #ffc2b5; }
-    .replay { align-self: flex-start; margin-top: 12px; padding: 0; border: 0; background: none; color: var(--night-muted); font: 600 13px/1 var(--body); text-decoration: underline; text-underline-offset: 4px; cursor: pointer; }
-    .replay:hover { color: var(--night-text); }
+    /* How it works: four steps in order, then the plan and the repository being created (DESIGN.md 4.4, 4.15, 5.1). */
+    .how-steps { list-style: none; margin: 0 0 40px; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 24px; }
+    .how-steps li { padding-top: 16px; border-top: 1px solid var(--ink); }
+    .how-steps .n { display: block; margin-bottom: 12px; font: 600 12px/1 var(--mono); color: var(--ink-2); }
+    .how-steps h3 { margin-bottom: 6px; }
+    .how-steps p { margin: 0; font-size: 15px; color: var(--ink-2); }
+    .how-steps code, .reviewer-copy code, .roadmap code { font: 600 .88em var(--mono); padding: 1px 5px; border-radius: var(--r-xs); background: var(--paper-2); }
+    .build { display: grid; grid-template-columns: minmax(0, 1.12fr) minmax(0, .88fr); gap: 16px; align-items: start; }
 
-    .plan { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; flex: 1; }
-    .plan li { display: grid; grid-template-columns: 26px 1fr auto; align-items: center; gap: 10px; padding: 10px 12px; background: var(--night-3); border-radius: 12px; font-size: 14.5px; line-height: 1.3; }
-    .plan .n { font: 600 12px/1 var(--mono); color: var(--night-muted); }
+    .missions { list-style: none; margin: 0; padding: 0; display: grid; }
+    .missions li { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 14px; align-items: start; padding: 12px 0; border-top: 1px solid var(--night-3); }
+    .missions li:first-child { padding-top: 0; border-top: 0; }
+    .m-title { display: block; font-weight: 600; font-size: 15px; line-height: 1.3; }
+    .m-sum { display: block; margin-top: 2px; font-size: 14px; line-height: 1.4; color: var(--night-muted); }
+    .m-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+    .m-chips span { padding: 5px 8px; border-radius: var(--r-xs); background: var(--night-3); font: 600 11px/1 var(--mono); }
+    .m-side { display: grid; gap: 8px; justify-items: end; }
+    /* The reason seal (DESIGN.md 4.4) on the dark panel: central in ink-on-paper, pela vaga in soft purple, padrão outlined. */
+    .tag { padding: 5px 7px; border: 1px solid #4a4740; border-radius: var(--r-xs); font: 600 10.5px/1 var(--mono); text-transform: uppercase; letter-spacing: .06em; color: var(--night-muted); white-space: nowrap; }
+    .tag.core { background: #f4f1ea; border-color: #f4f1ea; color: #141414; }
+    .tag.match { background: #2c2266; border-color: #2c2266; color: #f4f1ea; }
     .diff { display: flex; gap: 3px; }
-    .diff i { width: 6px; height: 14px; border-radius: 3px; background: #444; }
-    .diff i.on { background: var(--yellow); }
-    .plan .core { font: 600 10px/1 var(--mono); text-transform: uppercase; letter-spacing: .06em; color: var(--green); display: block; margin-top: 3px; }
+    .diff i { width: 6px; height: 14px; border-radius: 2px; background: #4a4740; }
+    .diff i.on { background: #f4f1ea; }
 
-    .repo { flex: 1; display: flex; flex-direction: column; gap: 12px; }
-    .repo-name { font: 600 13.5px/1.3 var(--mono); overflow-wrap: anywhere; }
-    .issues { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; font-size: 14px; }
-    .issues li { display: flex; align-items: center; gap: 10px; }
-    .state { width: 18px; height: 18px; border-radius: 50%; flex: none; display: grid; place-items: center; }
-    .state.ok { background: var(--green); }
-    .state.fail { background: var(--coral); }
-    .state.todo { border: 2px solid #555; }
-    .issues .t { color: var(--night-muted); margin-left: auto; font: 500 11px/1 var(--mono); white-space: nowrap; padding-left: 8px; }
-    .term { background: #000; border-radius: 12px; padding: 12px 14px; font: 400 12.5px/1.55 var(--mono); color: #cfcabe; white-space: pre-wrap; overflow-wrap: anywhere; margin: auto 0 0; }
+    .stage-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+    .stage-list li { display: flex; align-items: center; gap: 12px; font-size: 15px; color: var(--night-muted); transition: color var(--t-base) var(--ease-out); }
+    .stage-list li.is-current, .stage-list li.is-done { color: var(--night-text); }
+    .stage-list li.is-current { font-weight: 600; }
+    .repo-result { display: grid; gap: 12px; padding-top: 16px; border-top: 1px solid var(--night-3); }
+    .repo-name { display: flex; align-items: center; gap: 8px; margin: 0; font: 600 13.5px/1.3 var(--mono); overflow-wrap: anywhere; }
+    .issues { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; font-size: 14.5px; line-height: 1.3; }
+    .issues li { display: grid; grid-template-columns: 10px auto minmax(0, 1fr); gap: 10px; align-items: center; }
+    .issues .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--coral); }
+    .issues .n { font: 600 12px/1 var(--mono); color: var(--night-muted); }
+
+    /* Reviewer: a pull request on a dark panel, the question in soft purple, hints asked for with /dica (DESIGN.md 4.10). */
+    .reviewer-grid { display: grid; grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr); gap: 16px 48px; align-items: start; }
+    .reviewer-copy { position: sticky; top: 24px; }
+    .reviewer-copy p { margin: 16px 0 0; color: var(--ink-2); max-width: 30em; }
+    .pr-bar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-weight: 600; font-size: 15px; }
+    .pr-open { padding: 5px 7px; border: 1px solid #4a4740; border-radius: var(--r-xs); font: 600 10.5px/1 var(--mono); text-transform: uppercase; letter-spacing: .06em; color: var(--night-text); }
+    .pr-num { color: var(--night-muted); font-weight: 500; }
+    .term { margin: 0; padding: 12px 14px; border-radius: var(--r-sm); background: var(--night); font: 400 12.5px/1.55 var(--mono); color: #cfcabe; white-space: pre-wrap; overflow-wrap: anywhere; }
     .term .r { color: var(--coral); }
-    .term .d { color: #7d786d; }
+    .term .d { color: var(--night-muted); }
+    .thread { display: grid; gap: 14px; }
+    .msg { display: grid; grid-template-columns: 36px minmax(0, 1fr); gap: 12px; align-items: start; }
+    .bubble { padding: 12px 16px; border-radius: var(--r-xs) var(--r-md) var(--r-md) var(--r-md); background: var(--night-3); font-size: 15px; line-height: 1.5; }
+    .bubble.bot { background: #2c2266; }
+    .bubble .meta { display: block; margin-bottom: 6px; font: 600 12px/1 var(--mono); color: var(--night-muted); }
+    .bubble.bot .meta { color: #c9bdff; }
+    .bubble code { font: 600 .9em var(--mono); padding: 1px 5px; border-radius: var(--r-xs); background: rgba(244, 241, 234, .12); }
+    .hint-pair { display: grid; gap: 14px; }
+    .hint-pair.reveal { animation: rise var(--t-base) var(--ease-out) both; }
+    @keyframes rise { from { opacity: 0; transform: translateY(10px); } }
+    .pr-foot { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding-top: 16px; border-top: 1px solid var(--night-3); }
+    .hint-dots { display: flex; gap: 6px; }
+    .hint-dots i { width: 10px; height: 10px; border-radius: 50%; box-shadow: inset 0 0 0 2px var(--night-muted); }
+    .hint-dots i.on { background: var(--night-text); box-shadow: none; }
+    .pr-foot small { margin-right: auto; font-size: 14px; color: var(--night-muted); }
+    .btn.on-night { min-height: 44px; padding: 8px 16px; font-size: 15px; background: transparent; border-color: var(--night-muted); color: var(--night-text); }
+    .btn.on-night:hover { background: transparent; border-color: var(--night-text); }
+    .btn:disabled, .btn[aria-disabled="true"] { opacity: .4; cursor: not-allowed; transform: none; }
+    .btn.on-night[aria-disabled="true"]:hover { border-color: var(--night-muted); }
 
-    .night .zig-c { right: -160px; top: -150px; width: 520px; opacity: .9; }
+    /* Teachers: the class dashboard with the test grid, fictitious data in alphabetical order (DESIGN.md 2.2, 4.8, 4.9, 4.16). */
+    [data-status="STUCK"] { --st: var(--coral); }
+    [data-status="ADVANCING"] { --st: var(--green); }
+    [data-status="COMPLETED"] { --st: var(--purple); }
+    .meter { display: flex; gap: 2px; height: 10px; border-radius: var(--r-xs); overflow: hidden; }
+    .meter i { flex: 1; background: var(--st); transform-origin: left; transition: transform var(--t-slow) var(--ease-out); }
+    .legend { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 13.5px; color: var(--night-muted); }
+    .legend li { display: inline-flex; align-items: center; gap: 8px; }
+    .legend i { width: 8px; height: 8px; border-radius: 50%; background: var(--st); }
+    .students { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 12px; }
+    .student { position: relative; overflow: hidden; display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 12px 14px; align-items: center; padding: 18px 18px 18px 24px; border: 1px solid var(--night-3); border-radius: var(--r-md); }
+    .student::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 6px; background: var(--st); }
+    .avatar { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; background: var(--night-3); color: var(--night-text); font: 600 14px/1 var(--mono); }
+    .avatar.bot { background: var(--purple); color: #fff; }
+    .msg .avatar { width: 36px; height: 36px; font-size: 13px; }
+    .student .name { display: grid; gap: 8px; justify-items: start; font: 600 18px/1.2 var(--display); letter-spacing: -.02em; }
+    .student .test-grid { grid-column: 1 / -1; }
+    .student .reason { grid-column: 1 / -1; margin: 0; padding-top: 12px; border-top: 1px solid var(--night-3); font-size: 14.5px; line-height: 1.4; color: var(--night-muted); }
+    .board-demo .test-mission, .board-demo .test-row[data-state="future"] .test-count { color: var(--night-muted); }
+    .board-demo .test-count { color: var(--night-text); }
+    .status { display: inline-flex; align-items: center; gap: 5px; padding: 5px 8px 5px 6px; border-radius: var(--r-xs); background: var(--st); color: #141414; font: 600 11px/1 var(--mono); text-transform: uppercase; letter-spacing: .05em; white-space: nowrap; }
+    .status svg { width: 13px; height: 13px; }
+    .status[data-status="COMPLETED"] { color: #fff; }
+    .sees { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px 48px; margin-top: 32px; }
+    .sees h3 { margin-bottom: 8px; }
+    .sees ul { list-style: none; margin: 0; padding: 0; }
+    .sees li { padding: 9px 0; border-top: 1px solid var(--line); font-size: 15px; }
 
-    /* How it works – bento */
-    .how { padding: 120px 0 100px; }
-    .how-head { display: flex; justify-content: space-between; align-items: end; gap: 32px; margin-bottom: 48px; flex-wrap: wrap; }
-    .how-head p { margin: 0; color: var(--ink-2); max-width: 26em; font-size: 18px; }
-    .bento { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(12, 1fr); gap: 16px; counter-reset: step; }
-    .bento li { border-radius: var(--radius); padding: 28px; position: relative; overflow: hidden; min-height: 280px; display: flex; flex-direction: column; counter-increment: step; color: #141414; }
-    .bento li::before { content: "0" counter(step); font: 800 15px/1 var(--mono); padding: 8px 12px; border-radius: 999px; background: rgba(20,20,20,.1); align-self: flex-start; margin-bottom: auto; }
-    .bento h3 { font-size: 30px; margin: 40px 0 10px; letter-spacing: -.03em; }
-    .bento p { margin: 0; max-width: 28em; }
-    .b1 { grid-column: span 5; background: var(--yellow); }
-    .b2 { grid-column: span 7; background: var(--purple); color: #fff !important; }
-    .b2::before { background: rgba(255,255,255,.18) !important; }
-    .b3 { grid-column: span 7; background: var(--green); }
-    .b4 { grid-column: span 5; background: var(--coral); }
-    .shape { position: absolute; right: -20px; top: -20px; width: 170px; opacity: .9; pointer-events: none; }
-    .b2 .mini-plan { position: absolute; right: 24px; top: 24px; display: grid; gap: 6px; width: 46%; }
-    .mini-plan span { display: block; height: 12px; border-radius: 999px; background: rgba(255,255,255,.25); }
-    .mini-plan span:nth-child(1) { width: 40%; background: var(--yellow); }
-    .mini-plan span:nth-child(2) { width: 55%; } .mini-plan span:nth-child(3) { width: 62%; }
-    .mini-plan span:nth-child(4) { width: 70%; } .mini-plan span:nth-child(5) { width: 80%; } .mini-plan span:nth-child(6) { width: 100%; }
-    .b3 .dots { position: absolute; right: 26px; top: 26px; display: grid; grid-template-columns: repeat(6, 18px); gap: 8px; }
-    .b3 .dots i { width: 18px; height: 18px; border-radius: 50%; background: #141414; }
-    .b3 .dots i.f { background: var(--coral); border: 2px solid #141414; }
-    .b4 .q { position: absolute; right: 22px; top: 18px; font: 800 120px/1 var(--display); color: #141414; opacity: .9; transform: rotate(10deg); }
+    /* Principles and status: text in rows on paper, no icons, no badges. */
+    .rules { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
+    .rules li { padding-top: 16px; border-top: 1px solid var(--line); }
+    .rules h3 { margin-bottom: 6px; }
+    .rules p { margin: 0; font-size: 15px; color: var(--ink-2); }
+    .roadmap-grid { display: grid; grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr); gap: 24px 48px; align-items: start; }
+    .roadmap-grid > div > p { margin: 16px 0 0; color: var(--ink-2); }
+    .roadmap-grid .stack-line { font-size: 15px; }
+    .roadmap { list-style: none; margin: 0; padding: 0; }
+    .roadmap li { display: grid; grid-template-columns: 88px minmax(0, 1fr); gap: 16px; padding: 14px 0; border-top: 1px solid var(--line); }
+    .roadmap .state { font: 600 12px/1.7 var(--mono); text-transform: uppercase; letter-spacing: .06em; color: var(--ink); }
+    .roadmap .state.next { color: var(--ink-2); }
+    .roadmap h3 { font-size: 17px; }
+    .roadmap p { margin: 2px 0 0; font-size: 15px; color: var(--ink-2); }
 
-    /* Reviewer demo */
-    .reviewer { padding: 40px 0 120px; }
-    .reviewer-grid { display: grid; grid-template-columns: .9fr 1.1fr; gap: 56px; align-items: center; }
-    .reviewer-copy p { color: var(--ink-2); font-size: 18px; margin: 20px 0 0; }
-    .levels { display: flex; gap: 8px; margin-top: 28px; flex-wrap: wrap; }
-    .levels span { font: 600 13px/1 var(--mono); padding: 9px 14px; border-radius: 999px; border: 2px solid var(--ink); }
-    .levels span:nth-child(1) { background: var(--yellow); color: #141414; border-color: var(--yellow); }
-    .levels span:nth-child(2) { background: var(--green); color: #141414; border-color: var(--green); }
-    .levels span:nth-child(3) { background: var(--coral); color: #141414; border-color: var(--coral); }
+    /* Closing: the page's one block with the resting shadow, and its second purple button, far from the hero's. */
+    .cta { padding: 0 0 96px; }
+    .cta-box { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 24px 48px; padding: clamp(24px, 4vw, 40px); background: var(--card); border: 1px solid var(--line); border-radius: var(--r-lg); box-shadow: var(--rest); }
+    .cta-box p { margin: 8px 0 0; color: var(--ink-2); max-width: 36em; }
 
-    .pr { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; box-shadow: 0 30px 60px -30px rgba(20,20,20,.3); }
-    .pr-bar { display: flex; align-items: center; gap: 10px; padding: 16px 22px; border-bottom: 1px solid var(--line); font-weight: 700; font-size: 15px; flex-wrap: wrap; }
-    .pr-bar .open { background: var(--green); color: #141414; font: 700 12px/1 var(--body); padding: 6px 10px; border-radius: 999px; }
-    .pr-bar .num { color: var(--ink-2); font-weight: 500; }
-    .thread { padding: 22px; display: grid; gap: 14px; }
-    .msg { display: grid; grid-template-columns: 36px 1fr; gap: 12px; align-items: start; }
-    .avatar { width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; font: 800 15px/1 var(--display); color: #fff; }
-    .avatar.bot { background: var(--purple); }
-    .avatar.me { background: var(--coral); color: #141414; }
-    .bubble { background: var(--paper); border-radius: 4px 18px 18px 18px; padding: 12px 16px; font-size: 15.5px; line-height: 1.5; }
-    .bubble .meta { display: block; font: 600 12px/1 var(--mono); color: var(--ink-2); margin-bottom: 8px; }
-    .bubble.hint { border-left: 4px solid var(--yellow); }
-    .bubble.hint[data-level="2"] { border-left-color: var(--green); }
-    .bubble.hint[data-level="3"] { border-left-color: var(--coral); }
-    .bubble code { font: 500 .9em var(--mono); background: var(--paper-2); padding: 1px 6px; border-radius: 6px; }
-    .msg[hidden] { display: none; }
-    .msg.reveal { animation: pop .35s ease; }
-    @keyframes pop { from { opacity: 0; transform: translateY(8px); } }
-    @media (prefers-reduced-motion: reduce) { .msg.reveal { animation: none; } }
-    .pr-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 16px 22px; border-top: 1px solid var(--line); flex-wrap: wrap; }
-    .pr-foot small { color: var(--ink-2); font-size: 14px; }
-    .pr-foot .btn { padding: 11px 18px; font-size: 15px; }
-    .pr-foot .btn[disabled] { opacity: .45; cursor: default; transform: none; box-shadow: none; }
+    /* A demo below the hero starts in its first frame only when it will play (.is-armed, set by its script); without
+       JS or with reduced motion it is already final. Off screen (.is-paused) it waits where it is. */
+    .missions li, .issues li, .student, .repo-result { transition: opacity var(--t-base) var(--ease-out), transform var(--t-base) var(--ease-out); }
+    .is-armed .missions li:not(.on), .is-armed .issues li:not(.on), .is-armed .student:not(.on) { opacity: 0; transform: translateY(10px); }
+    .is-armed .repo-result:not(.on) { opacity: 0; }
+    .is-armed .repo-ready:not(.on) { display: none; }
+    .is-armed .meter i:not(.on) { transform: scaleX(0); }
+    .is-armed .student.on .td { animation: vvm-pop var(--t-base) var(--ease-out) both; }
+    .is-paused .step-mark *, .is-paused .td { animation-play-state: paused; }
 
-    /* Audience */
-    .audience { padding: 0 0 120px; }
-    .aud-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 48px; }
-    .aud { border-radius: var(--radius); padding: 32px; display: flex; flex-direction: column; gap: 14px; }
-    .aud.student { background: var(--purple-soft); }
-    .aud.teacher { background: #141414; color: #f4f1ea; }
-    .aud.teacher .muted { color: #a9a59b; }
-    .aud h3 { font-size: 34px; letter-spacing: -.03em; }
-    .aud > p { margin: 0; }
-    .ticks { list-style: none; padding: 0; margin: 4px 0 0; display: grid; gap: 10px; }
-    .ticks li { display: grid; grid-template-columns: 24px 1fr; gap: 10px; align-items: start; }
-    .ticks li::before { content: ""; width: 22px; height: 22px; border-radius: 50%; margin-top: 2px; background: var(--purple) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M6 12.5l4 4 8-9' stroke='white' stroke-width='3' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / 16px no-repeat; }
-    .aud.teacher .ticks li::before { background-color: var(--green); }
-
-    .st-stuck { --st: var(--coral); } .st-idle { --st: #8b8678; } .st-adv { --st: var(--green); } .st-done { --st: var(--purple); }
-    .board { margin-top: auto; background: #1f1f1f; border-radius: var(--radius-sm); padding: 16px; font-size: 14px; display: grid; gap: 14px; }
-    .board-head { display: flex; justify-content: space-between; font: 600 12px/1 var(--mono); color: #a9a59b; text-transform: uppercase; letter-spacing: .06em; }
-    .dash-meter { display: flex; gap: 3px; height: 10px; }
-    .dash-meter i { background: var(--st); border-radius: 3px; transform-origin: left; }
-    .in-view .dash-meter i { animation: grow .7s cubic-bezier(.2, .8, .2, 1) both; }
-    @keyframes grow { from { transform: scaleX(0); } }
-    .dash-legend { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 12.5px; color: #cfcabe; }
-    .dash-legend span::before { content: ""; display: inline-block; width: 8px; height: 8px; margin-right: 6px; border-radius: 50%; background: var(--st); }
-    .dash-cols { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-    .dash-col { background: #2a2a2a; border-radius: 12px; padding: 10px; display: grid; gap: 8px; align-content: start; }
-    .dash-col b { font: 600 11px/1 var(--mono); color: #a9a59b; letter-spacing: .04em; }
-    .dash-card { position: relative; overflow: hidden; background: #1f1f1f; border-radius: 10px; padding: 9px 9px 9px 14px; font-weight: 700; font-size: 13.5px; line-height: 1.25; }
-    .dash-card::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 5px; background: var(--st); }
-    .dash-card small { display: block; margin-top: 3px; font: 600 10.5px/1.3 var(--mono); text-transform: uppercase; letter-spacing: .04em; color: var(--st); }
-    .dash-note { margin: 0; font-size: 12.5px; color: #a9a59b; }
-
-    .portfolio { margin-top: auto; background: var(--card); border-radius: var(--radius-sm); padding: 16px; display: grid; gap: 10px; font-size: 14px; }
-    .portfolio .repo-line { display: flex; align-items: center; gap: 10px; font: 600 13px/1.3 var(--mono); overflow-wrap: anywhere; }
-    .contrib { display: grid; grid-template-columns: repeat(18, 1fr); gap: 4px; }
-    .contrib i { aspect-ratio: 1; border-radius: 3px; background: var(--paper-2); }
-    .contrib i.l1 { background: #b9ecd0; } .contrib i.l2 { background: #6fd9a1; } .contrib i.l3 { background: var(--green); } .contrib i.l4 { background: var(--green-ink); }
-
-    /* Principles (dark) */
-    .principles { padding: 120px 0; }
-    .pr-grid { display: grid; grid-template-columns: .8fr 1.2fr; gap: 56px; align-items: start; position: relative; z-index: 1; }
-    .pr-grid > div:first-child p { color: var(--night-muted); font-size: 18px; margin: 20px 0 0; }
-    .rules { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; }
-    .rules li { display: grid; grid-template-columns: 52px 1fr; gap: 18px; padding: 22px; background: var(--night-2); border: 1px solid var(--night-3); border-radius: 22px; }
-    .rules .ic { width: 52px; height: 52px; border-radius: 50%; display: grid; place-items: center; color: #141414; }
-    .rules h3 { color: var(--night-text); margin-bottom: 6px; }
-    .rules p { margin: 0; color: var(--night-muted); }
-    .night .zig-d { left: -140px; bottom: -60px; width: 520px; }
-
-    /* Status timeline */
-    .status { padding: 120px 0; }
-    .status-grid { display: grid; grid-template-columns: .8fr 1.2fr; gap: 56px; }
-    .status-grid > div:first-child p { color: var(--ink-2); font-size: 18px; margin: 20px 0 0; }
-    .deadline { display: inline-flex; align-items: center; gap: 12px; margin-top: 28px; padding: 14px 18px; border-radius: 18px; background: var(--yellow); color: #141414; font-weight: 700; }
-    .deadline b { font: 800 30px/1 var(--display); letter-spacing: -.03em; }
-    .timeline { list-style: none; margin: 0; padding: 0; position: relative; }
-    .timeline::before { content: ""; position: absolute; left: 21px; top: 22px; bottom: 22px; border-left: 2px dashed var(--line); }
-    .timeline li { position: relative; display: grid; grid-template-columns: 44px 1fr; gap: 18px; padding: 12px 0; align-items: start; }
-    .timeline .n { width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; font: 700 14px/1 var(--mono); background: var(--card); border: 2px solid var(--line); position: relative; }
-    .timeline li.done .n { background: var(--green); border-color: var(--green); color: #141414; }
-    .timeline h3 { font-size: 20px; display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
-    .timeline p { margin: 4px 0 0; color: var(--ink-2); }
-    .tag { font: 700 11px/1 var(--mono); text-transform: uppercase; letter-spacing: .06em; padding: 5px 9px; border-radius: 999px; }
-    .tag.done { background: var(--green); color: #141414; }
-    .tag.next { background: var(--paper-2); color: var(--ink-2); }
-
-    /* CTA */
-    .cta { padding: 0 0 100px; }
-    .cta-box { position: relative; overflow: hidden; background: var(--purple); color: #fff; border-radius: 36px; padding: clamp(48px, 7vw, 88px) clamp(24px, 6vw, 72px); display: grid; grid-template-columns: 1.2fr .8fr; gap: 40px; align-items: end; }
-    .cta-box h2 { font-size: clamp(44px, 8vw, 96px); position: relative; z-index: 1; }
-    .cta-box p { margin: 0 0 24px; font-size: 18px; color: #e6e0ff; position: relative; z-index: 1; }
-    .cta-box .btn { background: #fff; color: #141414; border-color: #fff; position: relative; z-index: 1; }
-    .cta-box .btn:hover { box-shadow: 0 6px 0 var(--yellow); }
-    .cta-box .zig-e { right: -70px; top: -110px; width: 420px; }
-
-    /* Icons and logos */
-    .ico { width: 1.15em; height: 1.15em; fill: currentColor; flex: none; }
-    .hb-word { font: 600 1em/1 var(--mono); letter-spacing: -.02em; }
-    .hb-word b { font-weight: 600; color: #00a845; }
-
-    .stack { padding: 0 0 96px; }
-    .stack-inner { display: flex; align-items: center; gap: 20px 40px; flex-wrap: wrap; justify-content: center; }
-    .stack-label { font: 600 13px/1 var(--mono); text-transform: uppercase; letter-spacing: .08em; color: var(--ink-2); width: 100%; text-align: center; }
-    .logos { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; }
-    .logos li { display: inline-flex; align-items: center; gap: 9px; padding: 10px 16px; border-radius: 999px; background: var(--card); border: 1px solid var(--line); font-weight: 700; font-size: 15px; color: var(--ink); transition: color .15s ease, transform .15s ease; }
-    .logos li .ico { width: 22px; height: 22px; color: var(--ink-2); transition: color .15s ease; }
-    .logos li:hover { transform: translateY(-2px); }
-    .logos li:hover .ico { color: var(--brand, var(--ink)); }
-
+    /* Footer */
     footer { background: #0b0b0a; color: #c9c5bb; font-size: 15px; padding: 64px 0 40px; }
     .foot-grid { display: grid; grid-template-columns: 1.3fr 1fr 1fr; gap: 40px; }
     footer .brand { color: #f4f1ea; margin-bottom: 14px; }
@@ -450,65 +413,50 @@
     footer h2 { font: 600 12px/1 var(--mono); text-transform: uppercase; letter-spacing: .08em; color: #a9a59b; margin: 0 0 16px; }
     footer ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
     footer a { color: #f4f1ea; text-decoration: underline; text-decoration-color: #5c5850; text-underline-offset: 4px; display: inline-flex; align-items: center; gap: 8px; }
-    footer a:hover { text-decoration-color: #33c47a; }
-    footer :focus-visible { outline-color: #33c47a; }
-    .hb-card { display: inline-flex; align-items: center; gap: 12px; padding: 12px 16px; border: 1px solid #2c2b28; border-radius: 16px; background: #000; text-decoration: none !important; }
+    footer a:hover { text-decoration-color: #f4f1ea; }
+    footer :focus-visible { outline-color: #8a75ff; }
+    .hb-card { display: inline-flex; align-items: center; gap: 12px; padding: 12px 16px; border: 1px solid #2c2b28; border-radius: var(--r-md); background: #000; text-decoration: none !important; }
     .hb-card img { width: 36px; height: 36px; image-rendering: pixelated; }
-    .hb-card .hb-word { font-size: 18px; color: #ededed; }
-    .hb-card .hb-word b { color: #00d95a; }
+    .hb-word { font: 600 18px/1 var(--mono); letter-spacing: -.02em; color: #ededed; }
+    .hb-word b { font-weight: 600; color: #00d95a; }
     .hb-card small { display: block; font-size: 13px; color: #a9a59b; margin-top: 4px; }
     .foot-base { margin-top: 48px; padding-top: 24px; border-top: 1px solid #2c2b28; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px 32px; font-size: 14px; color: #a9a59b; }
     .foot-base .eu { display: inline-flex; align-items: center; gap: 8px; }
     .foot-base .eu .ico { color: #ffcc00; width: 20px; height: 20px; }
-    @media (max-width: 760px) { .foot-grid { grid-template-columns: 1fr; gap: 32px; } }
 
     /* Responsive */
-    @media (max-width: 1120px) {
-      .flow { grid-template-columns: 1fr; max-width: 560px; margin: 0 auto; }
-      .flow-arrow { transform: rotate(90deg); justify-self: center; }
-    }
     @media (max-width: 1000px) {
-      .showcase-head, .reviewer-grid, .pr-grid, .status-grid, .cta-box { grid-template-columns: 1fr; }
-      .bento li { grid-column: span 12 !important; min-height: 240px; }
+      .sec-head, .reviewer-grid, .roadmap-grid, .build { grid-template-columns: minmax(0, 1fr); }
+      .reviewer-copy { position: static; }
+      .how-steps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .rules { grid-template-columns: minmax(0, 1fr); gap: 0; }
+      .rules li { padding: 16px 0; }
     }
     @media (max-width: 760px) {
       .top nav { display: none; }
-      .aud-grid { grid-template-columns: 1fr; }
-      .night .zig-c { top: -190px; right: -220px; }
-      .showcase, .how, .principles, .status { padding: 88px 0; }
-      .b2 .mini-plan, .b3 .dots { position: static; margin-bottom: 8px; }
-      .b2 .mini-plan { width: 70%; }
-      .b4 .q { font-size: 90px; }
-      .cta-box .zig-e { top: auto; bottom: -60px; right: -120px; width: 300px; opacity: .8; }
+      .section { padding: 64px 0; }
+      .cta { padding-bottom: 64px; }
+      .sees { grid-template-columns: minmax(0, 1fr); }
+      .foot-grid { grid-template-columns: 1fr; gap: 32px; }
     }
     @media (max-width: 520px) {
       body { font-size: 16px; }
       .wrap { padding: 0 16px; }
       .top .btn span.long { display: none; }
-      .bento li { padding: 22px; }
-      .bento h3 { font-size: 26px; margin-top: 28px; }
-      .aud { padding: 22px; }
-      .aud h3 { font-size: 28px; }
-      .rules li { grid-template-columns: 1fr; gap: 12px; padding: 18px; }
-      .thread, .pr-bar, .pr-foot { padding-left: 16px; padding-right: 16px; }
-      .dash-cols { grid-template-columns: 1fr; }
+      .how-steps { grid-template-columns: minmax(0, 1fr); gap: 0; margin-bottom: 32px; }
+      .how-steps li { padding: 16px 0; }
+      .missions li { grid-template-columns: auto minmax(0, 1fr); row-gap: 10px; }
+      .m-side { grid-column: 2; display: flex; align-items: center; gap: 10px; }
+      .roadmap li { grid-template-columns: minmax(0, 1fr); gap: 4px; }
+      .student { padding: 16px 14px 16px 20px; }
+      .cta-box .btn { width: 100%; }
     }
   </style>
-  <script>document.documentElement.className += ' js';</script>
 </head>
 <body>
   <svg width="0" height="0" style="position:absolute" aria-hidden="true">
     <!-- Brand icons from Simple Icons (CC0 1.0), simpleicons.org -->
     <symbol id="i-github" viewBox="0 0 24 24"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></symbol>
-    <symbol id="i-openjdk" viewBox="0 0 24 24"><path d="M11.915 0 11.7.215C9.515 2.4 7.47 6.39 6.046 10.483c-1.064 1.024-3.633 2.81-3.711 3.551-.093.87 1.746 2.611 1.55 3.235-.198.625-1.304 1.408-1.014 1.939.1.188.823.011 1.277-.491a13.389 13.389 0 0 0-.017 2.14c.076.906.27 1.668.643 2.232.372.563.956.911 1.667.911.397 0 .727-.114 1.024-.264.298-.149.571-.33.91-.5.68-.34 1.634-.666 3.53-.604 1.903.062 2.872.39 3.559.704.687.314 1.15.664 1.925.664.767 0 1.395-.336 1.807-.9.412-.563.631-1.33.72-2.24.06-.623.055-1.32 0-2.066.454.45 1.117.604 1.213.424.29-.53-.816-1.314-1.013-1.937-.198-.624 1.642-2.366 1.549-3.236-.08-.748-2.707-2.568-3.748-3.586C16.428 6.374 14.308 2.394 12.13.215zm.175 6.038a2.95 2.95 0 0 1 2.943 2.942 2.95 2.95 0 0 1-2.943 2.943A2.95 2.95 0 0 1 9.148 8.98a2.95 2.95 0 0 1 2.942-2.942zM8.685 7.983a3.515 3.515 0 0 0-.145.997c0 1.951 1.6 3.55 3.55 3.55 1.95 0 3.55-1.598 3.55-3.55 0-.329-.046-.648-.132-.951.334.095.64.208.915.336a42.699 42.699 0 0 1 2.042 5.829c.678 2.545 1.01 4.92.846 6.607-.082.844-.29 1.51-.606 1.94-.315.431-.713.651-1.315.651-.593 0-.932-.27-1.673-.61-.741-.338-1.825-.694-3.792-.758-1.974-.064-3.073.293-3.821.669-.375.188-.659.373-.911.5s-.466.2-.752.2c-.53 0-.876-.209-1.16-.64-.285-.43-.474-1.101-.545-1.948-.141-1.693.176-4.069.823-6.614a43.155 43.155 0 0 1 1.934-5.783c.348-.167.749-.31 1.192-.425zm-3.382 4.362a.216.216 0 0 1 .13.031c-.166.56-.323 1.116-.463 1.665a33.849 33.849 0 0 0-.547 2.555 3.9 3.9 0 0 0-.2-.39c-.58-1.012-.914-1.642-1.16-2.08.315-.24 1.679-1.755 2.24-1.781zm13.394.01c.562.027 1.926 1.543 2.24 1.783-.246.438-.58 1.068-1.16 2.08a4.428 4.428 0 0 0-.163.309 32.354 32.354 0 0 0-.562-2.49 40.579 40.579 0 0 0-.482-1.652.216.216 0 0 1 .127-.03z"/></symbol>
-    <symbol id="i-springboot" viewBox="0 0 24 24"><path d="m23.693 10.7058-4.73-8.1844c-.4094-.7106-1.4166-1.2942-2.2402-1.2942H7.2725c-.819 0-1.8308.5836-2.2402 1.2942L.307 10.7058c-.4095.7106-.4095 1.873 0 2.5837l4.7252 8.189c.4094.7107 1.4166 1.2943 2.2402 1.2943h9.455c.819 0 1.826-.5836 2.2402-1.2942l4.7252-8.189c.4095-.7107.4095-1.8732 0-2.5838zM10.9763 5.7547c0-.5365.4377-.9742.9742-.9742s.9742.4377.9742.9742v5.8217c0 .5366-.4377.9742-.9742.9742s-.9742-.4376-.9742-.9742zm.9742 12.4294c-3.6427 0-6.6077-2.965-6.6077-6.6077.0047-2.0896.993-4.0521 2.6685-5.304a.8657.8657 0 0 1 1.2142.1788.8657.8657 0 0 1-.1788 1.2143c-2.1602 1.6048-2.612 4.6592-1.0072 6.8194 1.6049 2.1603 4.6593 2.612 6.8195 1.0072 1.2378-.9177 1.9673-2.372 1.9673-3.9157a4.8972 4.8972 0 0 0-1.9861-3.925c-.386-.2824-.466-.8284-.1836-1.2143.2824-.386.8283-.466 1.2143-.1835 1.6895 1.2471 2.6826 3.2238 2.6873 5.3228 0 3.6474-2.965 6.6077-6.6077 6.6077z"/></symbol>
-    <symbol id="i-postgresql" viewBox="0 0 24 24"><path d="M23.5594 14.7228a.5269.5269 0 0 0-.0563-.1191c-.139-.2632-.4768-.3418-1.0074-.2321-1.6533.3411-2.2935.1312-2.5256-.0191 1.342-2.0482 2.445-4.522 3.0411-6.8297.2714-1.0507.7982-3.5237.1222-4.7316a1.5641 1.5641 0 0 0-.1509-.235C21.6931.9086 19.8007.0248 17.5099.0005c-1.4947-.0158-2.7705.3461-3.1161.4794a9.449 9.449 0 0 0-.5159-.0816 8.044 8.044 0 0 0-1.3114-.1278c-1.1822-.0184-2.2038.2642-3.0498.8406-.8573-.3211-4.7888-1.645-7.2219.0788C.9359 2.1526.3086 3.8733.4302 6.3043c.0409.818.5069 3.334 1.2423 5.7436.4598 1.5065.9387 2.7019 1.4334 3.582.553.9942 1.1259 1.5933 1.7143 1.7895.4474.1491 1.1327.1441 1.8581-.7279.8012-.9635 1.5903-1.8258 1.9446-2.2069.4351.2355.9064.3625 1.39.3772a.0569.0569 0 0 0 .0004.0041 11.0312 11.0312 0 0 0-.2472.3054c-.3389.4302-.4094.5197-1.5002.7443-.3102.064-1.1344.2339-1.1464.8115-.0025.1224.0329.2309.0919.3268.2269.4231.9216.6097 1.015.6331 1.3345.3335 2.5044.092 3.3714-.6787-.017 2.231.0775 4.4174.3454 5.0874.2212.5529.7618 1.9045 2.4692 1.9043.2505 0 .5263-.0291.8296-.0941 1.7819-.3821 2.5557-1.1696 2.855-2.9059.1503-.8707.4016-2.8753.5388-4.1012.0169-.0703.0357-.1207.057-.1362.0007-.0005.0697-.0471.4272.0307a.3673.3673 0 0 0 .0443.0068l.2539.0223.0149.001c.8468.0384 1.9114-.1426 2.5312-.4308.6438-.2988 1.8057-1.0323 1.5951-1.6698zM2.371 11.8765c-.7435-2.4358-1.1779-4.8851-1.2123-5.5719-.1086-2.1714.4171-3.6829 1.5623-4.4927 1.8367-1.2986 4.8398-.5408 6.108-.13-.0032.0032-.0066.0061-.0098.0094-2.0238 2.044-1.9758 5.536-1.9708 5.7495-.0002.0823.0066.1989.0162.3593.0348.5873.0996 1.6804-.0735 2.9184-.1609 1.1504.1937 2.2764.9728 3.0892.0806.0841.1648.1631.2518.2374-.3468.3714-1.1004 1.1926-1.9025 2.1576-.5677.6825-.9597.5517-1.0886.5087-.3919-.1307-.813-.5871-1.2381-1.3223-.4796-.839-.9635-2.0317-1.4155-3.5126zm6.0072 5.0871c-.1711-.0428-.3271-.1132-.4322-.1772.0889-.0394.2374-.0902.4833-.1409 1.2833-.2641 1.4815-.4506 1.9143-1.0002.0992-.126.2116-.2687.3673-.4426a.3549.3549 0 0 0 .0737-.1298c.1708-.1513.2724-.1099.4369-.0417.156.0646.3078.26.3695.4752.0291.1016.0619.2945-.0452.4444-.9043 1.2658-2.2216 1.2494-3.1676 1.0128zm2.094-3.988-.0525.141c-.133.3566-.2567.6881-.3334 1.003-.6674-.0021-1.3168-.2872-1.8105-.8024-.6279-.6551-.9131-1.5664-.7825-2.5004.1828-1.3079.1153-2.4468.079-3.0586-.005-.0857-.0095-.1607-.0122-.2199.2957-.2621 1.6659-.9962 2.6429-.7724.4459.1022.7176.4057.8305.928.5846 2.7038.0774 3.8307-.3302 4.7363-.084.1866-.1633.3629-.2311.5454zm7.3637 4.5725c-.0169.1768-.0358.376-.0618.5959l-.146.4383a.3547.3547 0 0 0-.0182.1077c-.0059.4747-.054.6489-.115.8693-.0634.2292-.1353.4891-.1794 1.0575-.11 1.4143-.8782 2.2267-2.4172 2.5565-1.5155.3251-1.7843-.4968-2.0212-1.2217a6.5824 6.5824 0 0 0-.0769-.2266c-.2154-.5858-.1911-1.4119-.1574-2.5551.0165-.5612-.0249-1.9013-.3302-2.6462.0044-.2932.0106-.5909.019-.8918a.3529.3529 0 0 0-.0153-.1126 1.4927 1.4927 0 0 0-.0439-.208c-.1226-.4283-.4213-.7866-.7797-.9351-.1424-.059-.4038-.1672-.7178-.0869.067-.276.1831-.5875.309-.9249l.0529-.142c.0595-.16.134-.3257.213-.5012.4265-.9476 1.0106-2.2453.3766-5.1772-.2374-1.0981-1.0304-1.6343-2.2324-1.5098-.7207.0746-1.3799.3654-1.7088.5321a5.6716 5.6716 0 0 0-.1958.1041c.0918-1.1064.4386-3.1741 1.7357-4.4823a4.0306 4.0306 0 0 1 .3033-.276.3532.3532 0 0 0 .1447-.0644c.7524-.5706 1.6945-.8506 2.802-.8325.4091.0067.8017.0339 1.1742.081 1.939.3544 3.2439 1.4468 4.0359 2.3827.8143.9623 1.2552 1.9315 1.4312 2.4543-1.3232-.1346-2.2234.1268-2.6797.779-.9926 1.4189.543 4.1729 1.2811 5.4964.1353.2426.2522.4522.2889.5413.2403.5825.5515.9713.7787 1.2552.0696.087.1372.1714.1885.245-.4008.1155-1.1208.3825-1.0552 1.717-.0123.1563-.0423.4469-.0834.8148-.0461.2077-.0702.4603-.0994.7662zm.8905-1.6211c-.0405-.8316.2691-.9185.5967-1.0105a2.8566 2.8566 0 0 0 .135-.0406 1.202 1.202 0 0 0 .1342.103c.5703.3765 1.5823.4213 3.0068.1344-.2016.1769-.5189.3994-.9533.6011-.4098.1903-1.0957.333-1.7473.3636-.7197.0336-1.0859-.0807-1.1721-.151zm.5695-9.2712c-.0059.3508-.0542.6692-.1054 1.0017-.055.3576-.112.7274-.1264 1.1762-.0142.4368.0404.8909.0932 1.3301.1066.887.216 1.8003-.2075 2.7014a3.5272 3.5272 0 0 1-.1876-.3856c-.0527-.1276-.1669-.3326-.3251-.6162-.6156-1.1041-2.0574-3.6896-1.3193-4.7446.3795-.5427 1.3408-.5661 2.1781-.463zm.2284 7.0137a12.3762 12.3762 0 0 0-.0853-.1074l-.0355-.0444c.7262-1.1995.5842-2.3862.4578-3.4385-.0519-.4318-.1009-.8396-.0885-1.2226.0129-.4061.0666-.7543.1185-1.0911.0639-.415.1288-.8443.1109-1.3505.0134-.0531.0188-.1158.0118-.1902-.0457-.4855-.5999-1.938-1.7294-3.253-.6076-.7073-1.4896-1.4972-2.6889-2.0395.5251-.1066 1.2328-.2035 2.0244-.1859 2.0515.0456 3.6746.8135 4.8242 2.2824a.908.908 0 0 1 .0667.1002c.7231 1.3556-.2762 6.2751-2.9867 10.5405zm-8.8166-6.1162c-.025.1794-.3089.4225-.6211.4225a.5821.5821 0 0 1-.0809-.0056c-.1873-.026-.3765-.144-.5059-.3156-.0458-.0605-.1203-.178-.1055-.2844.0055-.0401.0261-.0985.0925-.1488.1182-.0894.3518-.1226.6096-.0867.3163.0441.6426.1938.6113.4186zm7.9305-.4114c.0111.0792-.049.201-.1531.3102-.0683.0717-.212.1961-.4079.2232a.5456.5456 0 0 1-.075.0052c-.2935 0-.5414-.2344-.5607-.3717-.024-.1765.2641-.3106.5611-.352.297-.0414.6111.0088.6356.1851z"/></symbol>
-    <symbol id="i-flyway" viewBox="0 0 24 24"><path d="m3.02 21.055 1.12-.23c1.054-.219 2.114-.415 3.161-.66a4.955 4.952 0 0 0 3.696-3.915 6.06 6.057 0 0 0 .085-1.153l.366-.09a4.936 4.933 0 0 0 3.75-3.717 3.8 3.798 0 0 0 .128-1.06c-.002-.096 0-.193 0-.305.094-.023.18-.047.267-.067a4.552 4.549 0 0 0 2.68-1.755 5.772 5.769 0 0 0 1.005-4.854c-.021-.088-.035-.179-.061-.264a.63.629 0 0 0-.728-.432l-3.184.652-3.485.716-4.002.822q-2.186.449-4.373.893a1.125 1.125 0 0 1-.422.06c-.007-.074-.017-.14-.017-.204-.001-1.12.002-2.243-.005-3.364a.324.324 0 0 1 .174-.307 8.493 8.488 0 0 1 1.9-.86A17.205 17.194 0 0 1 7.827.315C8.373.23 8.922.181 9.47.12a26.795 26.777 0 0 1 3.526-.102c.496.01.992.051 1.487.097.542.051 1.085.11 1.623.192a14.482 14.472 0 0 1 4.007 1.124c.262.123.509.28.764.422a.215.215 0 0 1 .122.223c-.004.054 0 .11 0 .163v19.519c0 .347.045.28-.262.472a8.437 8.432 0 0 1-1.961.857 16.78 16.769 0 0 1-2.851.63c-.6.08-1.2.146-1.804.207-.277.03-.556.035-.835.043-.564.015-1.128.041-1.691.03-.636-.014-1.272-.059-1.907-.099a20.054 20.041 0 0 1-2.519-.332 13.423 13.415 0 0 1-3.224-.976c-.273-.13-.53-.29-.797-.435a.246.246 0 0 1-.144-.248c.008-.23 0-.46.003-.69 0-.049.01-.096.016-.163zm9.985-10.652a1.248 1.248 0 0 1-.09.55 2.624 2.622 0 0 1-2.045 1.84c-1.3.28-2.607.537-3.912.805l-.57.114a1.147 1.146 0 1 0 .403 2.256c.595-.11 1.186-.242 1.779-.363.064-.014.128-.022.209-.035a2.584 2.582 0 0 1-.55 1.41A2.801 2.8 0 0 1 6.516 18c-1.103.223-2.206.45-3.308.676-.052.01-.106.013-.156.02-.048-.146-.061-10.38-.014-10.63l14.048-2.883a1.523 1.522 0 0 1-.016.18 3.438 3.436 0 0 1-.738 1.502 2.399 2.397 0 0 1-1.426.804c-1.11.216-2.218.45-3.326.677l-.96.196a1.168 1.168 0 0 0-.953 1.057 1.147 1.147 0 0 0 .875 1.186 1.747 1.746 0 0 0 .807-.054c.492-.1.983-.203 1.475-.304.053-.01.108-.014.18-.023z"/></symbol>
-    <symbol id="i-junit5" viewBox="0 0 24 24"><path d="M11.886 9.769c1.647 0 2.95.436 3.912 1.307.961.872 1.442 2.06 1.442 3.566 0 1.744-.548 3.107-1.643 4.09-1.088.977-2.638 1.465-4.65 1.465-1.826 0-3.26-.294-4.303-.883v-2.38a7.89 7.89 0 002.079.793c.782.186 1.509.28 2.18.28 1.184 0 2.086-.265 2.704-.794.619-.53.928-1.304.928-2.325 0-1.952-1.245-2.929-3.733-2.929-.35 0-.783.038-1.297.112-.514.067-.965.145-1.352.235l-1.174-.693.626-7.98H16.1v2.335H9.919l-.37 4.046c.262-.044.578-.096.95-.156.38-.06.843-.09 1.387-.09zM12 0C5.373 0 0 5.373 0 12a11.998 11.998 0 006.65 10.738v-3.675h.138c.01.004 4.86 2.466 8.021 0 3.163-2.468 1.62-5.785 1.08-6.557-.54-.771-3.317-2.083-5.708-1.851-2.391.231-2.391.308-2.391.308l.617-7.096 7.687-.074V.744A12 12 0 0011.999 0zm4.095.744V3.793l-7.688.074-.617 7.096s0-.077 2.391-.308c2.392-.232 5.169 1.08 5.708 1.851.54.772 2.083 4.089-1.08 6.557-3.16 2.467-8.013.004-8.02 0h-.14v3.675A12 12 0 0012 24c6.628 0 12-5.373 12-12A12.007 12.007 0 0016.35.83c-.085-.03-.17-.059-.255-.086zM6.299 22.556z"/></symbol>
-    <symbol id="i-docker" viewBox="0 0 24 24"><path d="M13.983 11.078h2.119a.186.186 0 00.186-.185V9.006a.186.186 0 00-.186-.186h-2.119a.185.185 0 00-.185.185v1.888c0 .102.083.185.185.185m-2.954-5.43h2.118a.186.186 0 00.186-.186V3.574a.186.186 0 00-.186-.185h-2.118a.185.185 0 00-.185.185v1.888c0 .102.082.185.185.185m0 2.716h2.118a.187.187 0 00.186-.186V6.29a.186.186 0 00-.186-.185h-2.118a.185.185 0 00-.185.185v1.887c0 .102.082.185.185.186m-2.93 0h2.12a.186.186 0 00.184-.186V6.29a.185.185 0 00-.185-.185H8.1a.185.185 0 00-.185.185v1.887c0 .102.083.185.185.186m-2.964 0h2.119a.186.186 0 00.185-.186V6.29a.185.185 0 00-.185-.185H5.136a.186.186 0 00-.186.185v1.887c0 .102.084.185.186.186m5.893 2.715h2.118a.186.186 0 00.186-.185V9.006a.186.186 0 00-.186-.186h-2.118a.185.185 0 00-.185.185v1.888c0 .102.082.185.185.185m-2.93 0h2.12a.185.185 0 00.184-.185V9.006a.185.185 0 00-.184-.186h-2.12a.185.185 0 00-.184.185v1.888c0 .102.083.185.185.185m-2.964 0h2.119a.185.185 0 00.185-.185V9.006a.185.185 0 00-.184-.186h-2.12a.186.186 0 00-.186.186v1.887c0 .102.084.185.186.185m-2.92 0h2.12a.185.185 0 00.184-.185V9.006a.185.185 0 00-.184-.186h-2.12a.185.185 0 00-.184.185v1.888c0 .102.082.185.185.185M23.763 9.89c-.065-.051-.672-.51-1.954-.51-.338.001-.676.03-1.01.087-.248-1.7-1.653-2.53-1.716-2.566l-.344-.199-.226.327c-.284.438-.49.922-.612 1.43-.23.97-.09 1.882.403 2.661-.595.332-1.55.413-1.744.42H.751a.751.751 0 00-.75.748 11.376 11.376 0 00.692 4.062c.545 1.428 1.355 2.48 2.41 3.124 1.18.723 3.1 1.137 5.275 1.137.983.003 1.963-.086 2.93-.266a12.248 12.248 0 003.823-1.389c.98-.567 1.86-1.288 2.61-2.136 1.252-1.418 1.998-2.997 2.553-4.4h.221c1.372 0 2.215-.549 2.68-1.009.309-.293.55-.65.707-1.046l.098-.288Z"/></symbol>
-    <symbol id="i-githubactions" viewBox="0 0 24 24"><path d="M10.984 13.836a.5.5 0 0 1-.353-.146l-.745-.743a.5.5 0 1 1 .706-.708l.392.391 1.181-1.18a.5.5 0 0 1 .708.707l-1.535 1.533a.504.504 0 0 1-.354.146zm9.353-.147l1.534-1.532a.5.5 0 0 0-.707-.707l-1.181 1.18-.392-.391a.5.5 0 1 0-.706.708l.746.743a.497.497 0 0 0 .706-.001zM4.527 7.452l2.557-1.585A1 1 0 0 0 7.09 4.17L4.533 2.56A1 1 0 0 0 3 3.406v3.196a1.001 1.001 0 0 0 1.527.85zm2.03-2.436L4 6.602V3.406l2.557 1.61zM24 12.5c0 1.93-1.57 3.5-3.5 3.5a3.503 3.503 0 0 1-3.46-3h-2.08a3.503 3.503 0 0 1-3.46 3 3.502 3.502 0 0 1-3.46-3h-.558c-.972 0-1.85-.399-2.482-1.042V17c0 1.654 1.346 3 3 3h.04c.244-1.693 1.7-3 3.46-3 1.93 0 3.5 1.57 3.5 3.5S13.43 24 11.5 24a3.502 3.502 0 0 1-3.46-3H8c-2.206 0-4-1.794-4-4V9.899A5.008 5.008 0 0 1 0 5c0-2.757 2.243-5 5-5s5 2.243 5 5a5.005 5.005 0 0 1-4.952 4.998A2.482 2.482 0 0 0 7.482 12h.558c.244-1.693 1.7-3 3.46-3a3.502 3.502 0 0 1 3.46 3h2.08a3.503 3.503 0 0 1 3.46-3c1.93 0 3.5 1.57 3.5 3.5zm-15 8c0 1.378 1.122 2.5 2.5 2.5s2.5-1.122 2.5-2.5-1.122-2.5-2.5-2.5S9 19.122 9 20.5zM5 9c2.206 0 4-1.794 4-4S7.206 1 5 1 1 2.794 1 5s1.794 4 4 4zm9 3.5c0-1.378-1.122-2.5-2.5-2.5S9 11.122 9 12.5s1.122 2.5 2.5 2.5 2.5-1.122 2.5-2.5zm9 0c0-1.378-1.122-2.5-2.5-2.5S18 11.122 18 12.5s1.122 2.5 2.5 2.5 2.5-1.122 2.5-2.5zm-13 8a.5.5 0 1 0 1 0 .5.5 0 0 0-1 0zm2 0a.5.5 0 1 0 1 0 .5.5 0 0 0-1 0zm12 0c0 1.93-1.57 3.5-3.5 3.5a3.503 3.503 0 0 1-3.46-3.002c-.007.001-.013.005-.021.005l-.506.017h-.017a.5.5 0 0 1-.016-.999l.506-.017c.018-.002.035.006.052.007A3.503 3.503 0 0 1 20.5 17c1.93 0 3.5 1.57 3.5 3.5zm-1 0c0-1.378-1.122-2.5-2.5-2.5S18 19.122 18 20.5s1.122 2.5 2.5 2.5 2.5-1.122 2.5-2.5z"/></symbol>
-    <symbol id="i-resend" viewBox="0 0 24 24"><path d="M2.023 0v24h5.553v-8.434h2.998L15.326 24h6.65l-5.372-9.258a7.652 7.652 0 0 0 3.316-3.016c.709-1.21 1.062-2.57 1.062-4.08 0-1.462-.353-2.767-1.062-3.91-.709-1.165-1.692-2.079-2.95-2.742C15.737.331 14.355 0 12.823 0Zm5.553 4.87h4.219c.731 0 1.349.125 1.851.376.526.252.925.618 1.2 1.098.274.457.412.994.412 1.611S15.132 9.12 14.88 9.6c-.229.48-.572.856-1.03 1.13-.434.252-.948.38-1.542.38H7.576Z"/></symbol>
-    <symbol id="i-typescript" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="4"/><text x="12" y="16.6" font-size="10.5" font-weight="800" text-anchor="middle" fill="#f4f1ea" font-family="JetBrains Mono, monospace">TS</text></symbol>
     <symbol id="i-europeanunion" viewBox="0 0 24 24"><path d="M11.373 1.94 10.36 1.2h1.253L12 0l.387 1.2h1.253l-1.013.74.386 1.207L12 2.4l-1.013.747Zm1.254 20.86.386 1.2L12 23.26l-1.013.74.386-1.2-1.013-.74h1.253L12 20.853l.387 1.207h1.253ZM1.64 12.8l-1.013.747.386-1.2L0 11.627h1.253l.387-1.2.387 1.2h1.26l-1.02.746.386 1.2-1.013-.746Zm5.807-9.467.386 1.2L6.82 3.8l-1.013.74.386-1.2L5.18 2.6h1.253l.387-1.2.387 1.2H8.46Zm-4.78 3.08.386-1.2.394 1.2h1.22l-1.014.747.387 1.2-1.02-.747L2 8.36l.387-1.2-1.014-.747ZM1.387 16.84h1.28l.386-1.2.394 1.2h1.22l-1.014.747.387 1.2-1.02-.74-1.02.74.387-1.2-1.014-.747Zm4.806 4.56-1.013-.733h1.253l.387-1.2.387 1.2H8.46l-1.013.733.386 1.2-1.013-.74-1.013.74Zm16.794-9.027.386 1.2-1.013-.746-1.027.746.387-1.2-1.02-.746H22l.387-1.2.386 1.2H24Zm-6.434-9.04L15.54 2.6h1.253l.387-1.2.387 1.2h1.253l-1.013.733.386 1.2L17.18 3.8l-1.013.74.386-1.2Zm4 3.074.394-1.2.386 1.2h1.254l-.987.753.387 1.2-1.014-.747-1.02.747.387-1.2-1.007-.747Zm.78 10.433h1.254l-.987.747.387 1.2-1.014-.74-1.02.74.387-1.2-1.007-.747h1.254l.393-1.2.387 1.2zm-2.513 3.827-1.013.733.386 1.2-1.013-.74-1.013.74.386-1.2-1.013-.733h1.253l.387-1.2.387 1.2z"/></symbol>
   </svg>
   <a class="skip" href="#conteudo">Pular para o conteúdo</a>
@@ -516,13 +464,13 @@
   <header class="top">
     <div class="wrap">
       <a class="brand" href="#" aria-label="Vaga Viva, início">
-        <svg width="34" height="34" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="10" fill="#141414"/><path d="M8 17l5 5 11-12" stroke="#33c47a" stroke-width="3.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <svg class="logo" width="34" height="34" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="7"/><path d="M8 17l5 5 11-12" stroke-width="3.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
         Vaga Viva
       </a>
       <nav aria-label="Seções">
         <a href="#como-funciona">Como funciona</a>
         <a href="#revisor">Revisor</a>
-        <a href="#principios">Princípios</a>
+        <a href="#professores">Professores</a>
         <a href="#status">Onde estamos</a>
       </nav>
       <a class="btn ghost" href="https://github.com/precavidos/vaga-viva"><svg class="ico" aria-hidden="true"><use href="#i-github"/></svg><span class="long">Ver no </span>GitHub</a>
@@ -580,278 +528,211 @@
       </div>
     </section>
 
-    <!-- Stack -->
-    <section class="stack" aria-labelledby="stack-titulo">
-      <div class="wrap stack-inner">
-        <h2 class="stack-label" id="stack-titulo">Feito com</h2>
-        <ul class="logos">
-          <li style="--brand: #e76f00"><svg class="ico" aria-hidden="true"><use href="#i-openjdk"/></svg>Java 21</li>
-          <li style="--brand: #6db33f"><svg class="ico" aria-hidden="true"><use href="#i-springboot"/></svg>Spring Boot</li>
-          <li style="--brand: #3178c6"><svg class="ico" aria-hidden="true"><use href="#i-typescript"/></svg>TypeScript e NestJS</li>
-          <li style="--brand: #4169e1"><svg class="ico" aria-hidden="true"><use href="#i-postgresql"/></svg>PostgreSQL</li>
-          <li style="--brand: #cc0200"><svg class="ico" aria-hidden="true"><use href="#i-flyway"/></svg>Flyway</li>
-          <li style="--brand: #25a162"><svg class="ico" aria-hidden="true"><use href="#i-junit5"/></svg>JUnit 5</li>
-          <li style="--brand: #2496ed"><svg class="ico" aria-hidden="true"><use href="#i-docker"/></svg>Docker</li>
-          <li><svg class="ico" aria-hidden="true"><use href="#i-github"/></svg>GitHub App</li>
-          <li style="--brand: #2088ff"><svg class="ico" aria-hidden="true"><use href="#i-githubactions"/></svg>GitHub Actions</li>
-          <li><svg class="ico" aria-hidden="true"><use href="#i-resend"/></svg>Resend</li>
-          <li style="--brand: #3d6bff"><svg class="ico" aria-hidden="true"><use href="#i-europeanunion"/></svg>ESCO</li>
-        </ul>
-      </div>
-    </section>
-
-    <!-- Showcase -->
-    <section class="night showcase" aria-labelledby="exemplo">
-      <svg class="zig zig-c" viewBox="0 0 520 300" aria-hidden="true">
-        <defs><linearGradient id="g1" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#3d6bff"/><stop offset=".45" stop-color="#33c47a"/><stop offset=".8" stop-color="#ffd23f"/><stop offset="1" stop-color="#ff6b4a"/></linearGradient></defs>
-        <path d="M30 260 L140 60 L200 220 L300 40 L360 200 L490 30" stroke="url(#g1)" stroke-width="34" opacity=".9"/>
-      </svg>
+    <!-- How it works: the four steps, then the plan of the hero's posting and its repository being created. -->
+    <section class="section" id="como-funciona" aria-labelledby="como-funciona-titulo">
       <div class="wrap">
-        <div class="showcase-head">
-          <div>
-            <span class="eyebrow">Um exemplo de ponta a ponta</span>
-            <h2 id="exemplo">Da vaga ao repositório, sem inventar nada.</h2>
-          </div>
-          <p>Cada termo marcado na vaga vira uma competência de um vocabulário fechado. O que a vaga pede e o projeto não pratica fica de fora, e o aluno é avisado. As regras escolhem as missões; o mesmo texto sempre gera o mesmo plano.</p>
+        <div class="sec-head">
+          <h2 id="como-funciona-titulo">Da vaga ao primeiro pull request.</h2>
+          <p>Tudo acontece no GitHub. O repositório fica na sua conta, com o seu histórico de commits, e continua seu depois do curso.</p>
         </div>
-
-        <div class="flow">
-          <div class="panel" id="vaga-panel">
-            <div class="panel-tag"><span>1 · A vaga</span><b>lida em memória</b></div>
-            <article class="classified">
-              <span class="clip-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="6" r="2.5"/><circle cx="6" cy="18" r="2.5"/><path d="M8 7.5L20 18M8 16.5L20 6"/></svg>vaga</span>
-              <h4>Pessoa Desenvolvedora Java <mark class="lvl" data-chip="lvl">Júnior</mark></h4>
-              <p>Buscamos quem tenha conhecimento em <mark data-chip="java">Java</mark> e <mark data-chip="spring">Spring Boot</mark>, construção de <mark data-chip="api">APIs REST</mark>, banco de dados <mark data-chip="pg">PostgreSQL</mark> e <mark data-chip="tests">testes automatizados</mark>. Diferencial: <mark class="out" data-chip="kafka">Kafka</mark>. Trabalho híbrido em equipe pequena.</p>
-            </article>
-            <div class="chips" aria-label="O que foi reconhecido">
-              <span class="chip lvl" data-chip="lvl">nível: júnior</span>
-              <span class="chip" data-chip="java">java</span><span class="chip" data-chip="spring">spring</span><span class="chip" data-chip="api">api-design</span>
-              <span class="chip" data-chip="pg">postgresql</span><span class="chip" data-chip="tests">automated-testing</span>
-              <span class="chip out" data-chip="kafka">kafka · fora do projeto</span>
-            </div>
-            <button class="replay" id="replay" type="button" hidden>Ver de novo</button>
-          </div>
-
-          <svg class="flow-arrow" width="40" height="40" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15m-6-6l6 6-6 6" stroke="currentColor" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
-
-          <div class="panel">
-            <div class="panel-tag"><span>2 · O plano</span><b>teto: dificuldade 3</b></div>
-            <ol class="plan" aria-label="Missões do plano em ordem">
-              <li><span class="n">01</span><span>Cadastro de pacientes<span class="core">central</span></span><span class="diff" aria-label="dificuldade 1"><i class="on"></i><i></i><i></i></span></li>
-              <li><span class="n">02</span><span>Pacientes no banco de dados<span class="core">central</span></span><span class="diff" aria-label="dificuldade 2"><i class="on"></i><i class="on"></i><i></i></span></li>
-              <li><span class="n">03</span><span>Validação e mensagens de erro</span><span class="diff" aria-label="dificuldade 2"><i class="on"></i><i class="on"></i><i></i></span></li>
-              <li><span class="n">04</span><span>Caça ao bug</span><span class="diff" aria-label="dificuldade 2"><i class="on"></i><i class="on"></i><i></i></span></li>
-              <li><span class="n">05</span><span>Listagem paginada de consultas</span><span class="diff" aria-label="dificuldade 2"><i class="on"></i><i class="on"></i><i></i></span></li>
-              <li><span class="n">06</span><span>Regras de agendamento<span class="core">central</span></span><span class="diff" aria-label="dificuldade 3"><i class="on"></i><i class="on"></i><i class="on"></i></span></li>
-            </ol>
-          </div>
-
-          <svg class="flow-arrow" width="40" height="40" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15m-6-6l6 6-6 6" stroke="currentColor" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
-
-          <div class="panel">
-            <div class="panel-tag"><span>3 · No GitHub do aluno</span><b>issues</b></div>
-            <div class="repo">
-              <div class="repo-name" style="display: flex; align-items: center; gap: 8px"><svg class="ico" aria-hidden="true"><use href="#i-github"/></svg>maria/vaga-viva-clinic-scheduling</div>
-              <ul class="issues">
-                <li><span class="state ok" aria-hidden="true"></span>Cadastro de pacientes<span class="t">concluída</span></li>
-                <li><span class="state ok" aria-hidden="true"></span>Pacientes no banco<span class="t">concluída</span></li>
-                <li><span class="state ok" aria-hidden="true"></span>Validação e erros<span class="t">concluída</span></li>
-                <li><span class="state ok" aria-hidden="true"></span>Caça ao bug<span class="t">concluída</span></li>
-                <li><span class="state fail" aria-hidden="true"></span>Listagem paginada<span class="t">testes vermelhos</span></li>
-                <li><span class="state todo" aria-hidden="true"></span>Regras de agendamento<span class="t">a fazer</span></li>
-              </ul>
-              <pre class="term" aria-label="Saída do teste"><span class="d">$ ./mvnw test</span>
-<span class="r">FAIL</span> secondPageHasTenAppointments
-  expected: 10
-   but was: 20</pre>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- How it works -->
-    <section class="how" id="como-funciona" aria-labelledby="como-funciona-titulo">
-      <div class="wrap">
-        <div class="how-head">
-          <div>
-            <span class="eyebrow">Como funciona</span>
-            <h2 id="como-funciona-titulo">Quatro passos,<br>nenhum atalho.</h2>
-          </div>
-          <p>Da vaga ao primeiro pull request, sem sair do GitHub. O projeto fica na conta do aluno e vira portfólio.</p>
-        </div>
-        <ol class="bento">
-          <li class="b1">
-            <svg class="shape" viewBox="0 0 100 100" aria-hidden="true"><path d="M50 4l12 30 32 4-24 22 7 32-27-16-27 16 7-32L6 38l32-4z" fill="#141414" opacity=".08"/></svg>
-            <h3>Cole a vaga</h3>
-            <p>O texto de uma vaga real, colado no site ou lido de um link de página de carreira. Ele é lido em memória e descartado.</p>
-          </li>
-          <li class="b2">
-            <div class="mini-plan" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span></div>
-            <h3>Receba um plano</h3>
-            <p>As competências da vaga viram um plano de 5 a 6 missões, em ordem crescente de dificuldade e no nível que a vaga pede.</p>
-          </li>
-          <li class="b3">
-            <div class="dots" aria-hidden="true"><i></i><i></i><i></i><i></i><i class="f"></i><i class="f"></i></div>
-            <h3>Construa no seu GitHub</h3>
-            <p>Um repositório nasce na conta do aluno, com uma issue por missão e testes que falham até ele implementar.</p>
-          </li>
-          <li class="b4">
-            <span class="q" aria-hidden="true">?</span>
-            <h3>Revisão que pergunta</h3>
-            <p>A cada pull request, o revisor responde com perguntas e dicas graduais, nunca com a solução.</p>
-          </li>
+        <ol class="how-steps">
+          <li><span class="n" aria-hidden="true">1</span><h3>Cole a vaga</h3><p>O texto de uma vaga real. Ele é lido em memória e não fica guardado.</p></li>
+          <li><span class="n" aria-hidden="true">2</span><h3>Confira o plano</h3><p>De 5 a 6 missões, em ordem de dificuldade e no nível que a vaga pede.</p></li>
+          <li><span class="n" aria-hidden="true">3</span><h3>Crie o repositório</h3><p>Cada missão vira uma tarefa no GitHub, com testes que falham até você implementar.</p></li>
+          <li><span class="n" aria-hidden="true">4</span><h3>Abra um pull request</h3><p>O revisor comenta com uma pergunta. Travou? Comente <code>/dica</code>.</p></li>
         </ol>
+
+        <!-- Fictional data in the product's format: the plan of the hero's posting (prototype PLAN) and the stages of the
+             repository's creation. The last stage turns green only at the end of the run, as when the server answers. -->
+        <div class="build" id="build-demo">
+          <figure class="demo" aria-labelledby="plano-titulo">
+            <figcaption class="demo-head"><span id="plano-titulo">O plano</span><span class="demo-state">Java e Spring Boot · júnior</span></figcaption>
+            <ol class="missions">
+              <li><span class="num" aria-hidden="true">01</span><span><span class="m-title">Cadastro de pacientes</span><span class="m-sum">Criar e consultar pacientes por uma API REST.</span></span><span class="m-side"><span class="tag core">central</span><span class="diff" role="img" aria-label="Dificuldade 1 de 3"><i class="on"></i><i></i><i></i></span></span></li>
+              <li><span class="num" aria-hidden="true">02</span><span><span class="m-title">Pacientes no banco de dados</span><span class="m-sum">Guardar os pacientes no PostgreSQL, com migrações.</span></span><span class="m-side"><span class="tag core">central</span><span class="diff" role="img" aria-label="Dificuldade 1 de 3"><i class="on"></i><i></i><i></i></span></span></li>
+              <li><span class="num" aria-hidden="true">03</span><span><span class="m-title">Listagem paginada de consultas</span><span class="m-sum">Listar as consultas em páginas, com ordenação.</span><span class="m-chips"><span>APIs REST</span><span>SQL</span></span></span><span class="m-side"><span class="tag match">pela vaga</span><span class="diff" role="img" aria-label="Dificuldade 2 de 3"><i class="on"></i><i class="on"></i><i></i></span></span></li>
+              <li><span class="num" aria-hidden="true">04</span><span><span class="m-title">Regras de agendamento</span><span class="m-sum">Impedir horários em conflito e fora do expediente.</span></span><span class="m-side"><span class="tag core">central</span><span class="diff" role="img" aria-label="Dificuldade 2 de 3"><i class="on"></i><i class="on"></i><i></i></span></span></li>
+              <li><span class="num" aria-hidden="true">05</span><span><span class="m-title">Consulta de horários livres</span><span class="m-sum">Responder quais horários um médico tem livres num dia.</span><span class="m-chips"><span>SQL</span></span></span><span class="m-side"><span class="tag match">pela vaga</span><span class="diff" role="img" aria-label="Dificuldade 3 de 3"><i class="on"></i><i class="on"></i><i class="on"></i></span></span></li>
+              <li><span class="num" aria-hidden="true">06</span><span><span class="m-title">Aplicação em contêiner</span><span class="m-sum">Empacotar a aplicação numa imagem Docker.</span></span><span class="m-side"><span class="tag">padrão</span><span class="diff" role="img" aria-label="Dificuldade 2 de 3"><i class="on"></i><i class="on"></i><i></i></span></span></li>
+            </ol>
+          </figure>
+
+          <figure class="demo" aria-labelledby="repo-titulo">
+            <figcaption class="demo-head">
+              <span id="repo-titulo">No seu GitHub</span>
+              <span class="demo-state">
+                <span class="status-line on-night" id="repo-line" role="none" aria-hidden="true" hidden><span data-dot-matrix="flip"></span><span class="status-label"></span><span class="status-timer"></span></span>
+                <span class="repo-ready">Repositório pronto</span>
+              </span>
+            </figcaption>
+            <ol class="stage-list">
+              <li class="is-done"><span class="step-mark is-done"></span><span>Copiando o modelo<span class="sr">: feito</span></span></li>
+              <li class="is-done"><span class="step-mark is-done"></span><span>Gravando o plano<span class="sr">: feito</span></span></li>
+              <li class="is-done"><span class="step-mark is-done"></span><span>Abrindo as missões<span class="sr">: feito</span></span></li>
+              <li class="is-done"><span class="step-mark is-done"></span><span>Escrevendo o README<span class="sr">: feito</span></span></li>
+            </ol>
+            <div class="repo-result">
+              <p class="repo-name"><svg class="ico" aria-hidden="true"><use href="#i-github"/></svg>maria/vaga-viva-clinic-scheduling</p>
+              <ul class="issues" aria-label="Missões abertas no GitHub">
+                <li><span class="dot" aria-hidden="true"></span><span class="n">#1</span><span>Cadastro de pacientes</span></li>
+                <li><span class="dot" aria-hidden="true"></span><span class="n">#2</span><span>Pacientes no banco de dados</span></li>
+                <li><span class="dot" aria-hidden="true"></span><span class="n">#3</span><span>Listagem paginada de consultas</span></li>
+                <li><span class="dot" aria-hidden="true"></span><span class="n">#4</span><span>Regras de agendamento</span></li>
+                <li><span class="dot" aria-hidden="true"></span><span class="n">#5</span><span>Consulta de horários livres</span></li>
+                <li><span class="dot" aria-hidden="true"></span><span class="n">#6</span><span>Aplicação em contêiner</span></li>
+              </ul>
+              <p class="demo-note">Os 19 testes falham até você implementar cada missão.</p>
+            </div>
+          </figure>
+        </div>
       </div>
     </section>
 
-    <!-- Reviewer demo -->
-    <section class="reviewer" id="revisor" aria-labelledby="revisor-titulo">
+    <!-- Reviewer: a pull request on mission 3, the reviewer's question, and the hints asked for with /dica. -->
+    <section class="section" id="revisor" aria-labelledby="revisor-titulo">
       <div class="wrap reviewer-grid">
         <div class="reviewer-copy">
-          <span class="eyebrow">O revisor</span>
-          <h2 id="revisor-titulo">Ajuda que faz pensar.</h2>
-          <p>O revisor aponta o problema com uma pergunta. Se o aluno travar, pode pedir dicas, uma de cada vez. Nem a última entrega o código.</p>
-          <div class="levels" aria-hidden="true"><span>dica 1</span><span>dica 2</span><span>dica 3</span></div>
+          <h2 id="revisor-titulo">O revisor responde com uma pergunta.</h2>
+          <p>A cada pull request, ele lê os testes que falharam e aponta onde olhar. Se você travar, comente <code>/dica</code>: vem uma dica por vez, até três por missão, e nenhuma traz o código da solução.</p>
         </div>
 
-        <div class="pr" aria-label="Simulação de pull request com o revisor">
-          <div class="pr-bar"><svg class="ico" aria-hidden="true"><use href="#i-github"/></svg><span class="open">Aberto</span> Listagem paginada de consultas <span class="num">#5</span></div>
-          <div class="thread" id="thread" aria-live="polite">
+        <div class="demo" role="group" aria-label="Exemplo de pull request com o revisor">
+          <div class="pr-bar"><svg class="ico" aria-hidden="true"><use href="#i-github"/></svg><span class="pr-open">Aberto</span>Listagem paginada de consultas <span class="pr-num">#3</span></div>
+          <pre class="term" aria-label="Saída dos testes"><span class="d">$ ./mvnw test</span>
+<span class="r">FAIL</span> devolveASegundaPagina
+  esperava 10 consultas na página 2, veio 20</pre>
+          <div class="thread" aria-live="polite">
             <div class="msg">
               <span class="avatar bot" aria-hidden="true">?</span>
-              <div class="bubble"><span class="meta">revisor · pergunta</span>O teste <code>secondPageHasTenAppointments</code> espera 10 consultas na página 2, mas a sua resposta trouxe 20. Onde o tamanho da página é definido na sua consulta?</div>
+              <div class="bubble bot"><span class="meta">revisor · pergunta</span>O teste <code>devolveASegundaPagina</code> espera 10 consultas na página 2, e a sua resposta trouxe 20. Onde a sua consulta define o tamanho da página?</div>
             </div>
-            <div class="msg">
-              <span class="avatar me" aria-hidden="true">M</span>
-              <div class="bubble"><span class="meta">maria</span>Não sei por onde começar. Pode me dar uma dica?</div>
+            <div class="hint-pair">
+              <div class="msg"><span class="avatar" aria-hidden="true">M</span><div class="bubble"><span class="meta">maria</span><code>/dica</code></div></div>
+              <div class="msg"><span class="avatar bot" aria-hidden="true">?</span><div class="bubble bot"><span class="meta">revisor · dica 1 de 3</span>Releia o teste: que parâmetros ele manda na URL da requisição?</div></div>
             </div>
-            <div class="msg hint-msg">
-              <span class="avatar bot" aria-hidden="true">1</span>
-              <div class="bubble hint" data-level="1"><span class="meta">dica 1 de 3</span>Releia o teste: que parâmetros ele envia na URL da requisição?</div>
+            <div class="hint-pair">
+              <div class="msg"><span class="avatar" aria-hidden="true">M</span><div class="bubble"><span class="meta">maria</span><code>/dica</code></div></div>
+              <div class="msg"><span class="avatar bot" aria-hidden="true">?</span><div class="bubble bot"><span class="meta">revisor · dica 2 de 3</span>O Spring monta um objeto de paginação a partir desses parâmetros. O método do seu controller recebe esse objeto?</div></div>
             </div>
-            <div class="msg hint-msg">
-              <span class="avatar bot" aria-hidden="true">2</span>
-              <div class="bubble hint" data-level="2"><span class="meta">dica 2 de 3</span>O Spring consegue montar um objeto de paginação a partir desses parâmetros. O método do seu controller recebe esse objeto?</div>
-            </div>
-            <div class="msg hint-msg">
-              <span class="avatar bot" aria-hidden="true">3</span>
-              <div class="bubble hint" data-level="3"><span class="meta">dica 3 de 3</span>Procure <code>Pageable</code> na documentação do Spring Data. O que acontece se ele não chegar até o repositório?</div>
+            <div class="hint-pair">
+              <div class="msg"><span class="avatar" aria-hidden="true">M</span><div class="bubble"><span class="meta">maria</span><code>/dica</code></div></div>
+              <div class="msg"><span class="avatar bot" aria-hidden="true">?</span><div class="bubble bot"><span class="meta">revisor · dica 3 de 3</span>Procure <code>Pageable</code> na documentação do Spring Data. O que acontece se ele não chega até o repositório?</div></div>
             </div>
           </div>
           <div class="pr-foot">
-            <small id="hint-status">3 dicas disponíveis</small>
-            <button class="btn" id="hint-btn" type="button" hidden>Pedir dica</button>
+            <span class="hint-dots" aria-hidden="true"><i class="on"></i><i class="on"></i><i class="on"></i></span>
+            <small id="hint-status">3 de 3 dicas nesta missão</small>
+            <button class="btn on-night" id="hint-btn" type="button" hidden>Comentar /dica</button>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- Audience -->
-    <section class="audience" aria-labelledby="para-quem">
+    <!-- Teachers: the class dashboard. Fictitious students in alphabetical order, never sorted by green dots
+         (DESIGN.md 4.16): one advancing, one stuck, one completed; missions after the current one are empty. -->
+    <section class="section" id="professores" aria-labelledby="professores-titulo">
       <div class="wrap">
-        <span class="eyebrow">Para quem</span>
-        <h2 id="para-quem">Para quem aprende<br>e para quem ensina.</h2>
-        <div class="aud-grid">
-          <article class="aud student">
-            <h3>Alunos</h3>
-            <p>Quem quer uma primeira vaga e precisa mostrar o que sabe fazer.</p>
-            <ul class="ticks">
-              <li>Um projeto alinhado ao que a vaga pede.</li>
-              <li>Um portfólio real, na própria conta do GitHub.</li>
-              <li>Ajuda que faz pensar, em vez de entregar o código pronto.</li>
+        <div class="sec-head">
+          <h2 id="professores-titulo">O painel mostra onde cada aluno está e por quê.</h2>
+          <p>O professor cria uma turma a partir de uma vaga e manda um link. Cada aluno recebe o mesmo projeto no próprio GitHub e aparece no painel na missão em que está. Travado e parado são avisos para uma conversa, sempre com o motivo. Toda segunda, um resumo chega por e-mail.</p>
+        </div>
+
+        <figure class="demo board-demo" id="board-demo" aria-labelledby="painel-titulo">
+          <figcaption class="demo-head"><span id="painel-titulo">Turma piloto · 3 alunos</span><span class="demo-state">Atualizado às 14:05</span></figcaption>
+          <div class="meter" aria-hidden="true"><i data-status="STUCK"></i><i data-status="ADVANCING"></i><i data-status="COMPLETED"></i></div>
+          <ul class="legend">
+            <li data-status="STUCK"><i aria-hidden="true"></i>1 travado</li>
+            <li data-status="ADVANCING"><i aria-hidden="true"></i>1 avançando</li>
+            <li data-status="COMPLETED"><i aria-hidden="true"></i>1 concluído</li>
+          </ul>
+          <ul class="students">
+            <li class="student" data-status="ADVANCING">
+              <span class="avatar" aria-hidden="true">AB</span>
+              <span class="name">Ana Beatriz<span class="status" data-status="ADVANCING"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7M9 7h8v8"/></svg>avançando</span></span>
+              <span class="test-grid"><span class="test-row" data-order="1" data-state="counted"><span class="sr">Missão 1: 4 de 4 testes passando.</span><span class="test-mission" aria-hidden="true">01</span><span class="test-dots" aria-hidden="true"><i class="td is-pass"></i><i class="td is-pass"></i><i class="td is-pass"></i><i class="td is-pass"></i></span><span class="test-count" aria-hidden="true">4/4</span></span><span class="test-row" data-order="2" data-state="counted"><span class="sr">Missão 2: 3 de 3 testes passando.</span><span class="test-mission" aria-hidden="true">02</span><span class="test-dots" aria-hidden="true"><i class="td is-pass"></i><i class="td is-pass"></i><i class="td is-pass"></i></span><span class="test-count" aria-hidden="true">3/3</span></span><span class="test-row" data-order="3" data-state="counted"><span class="sr">Missão 3: 2 de 4 testes passando.</span><span class="test-mission" aria-hidden="true">03</span><span class="test-dots" aria-hidden="true"><i class="td is-pass"></i><i class="td is-pass"></i><i class="td is-fail"></i><i class="td is-fail"></i></span><span class="test-count" aria-hidden="true">2/4</span></span><span class="test-row" data-order="4" data-state="future"><span class="sr">Missão 4: ainda não começou.</span><span class="test-mission" aria-hidden="true">04</span><span class="test-dots" aria-hidden="true"><i class="td is-empty"></i><i class="td is-empty"></i><i class="td is-empty"></i></span><span class="test-count" aria-hidden="true">—</span></span><span class="test-row" data-order="5" data-state="future"><span class="sr">Missão 5: ainda não começou.</span><span class="test-mission" aria-hidden="true">05</span><span class="test-dots" aria-hidden="true"><i class="td is-empty"></i><i class="td is-empty"></i><i class="td is-empty"></i></span><span class="test-count" aria-hidden="true">—</span></span><span class="test-row" data-order="6" data-state="future"><span class="sr">Missão 6: ainda não começou.</span><span class="test-mission" aria-hidden="true">06</span><span class="test-dots" aria-hidden="true"><i class="td is-empty"></i><i class="td is-empty"></i></span><span class="test-count" aria-hidden="true">—</span></span></span>
+              <p class="reason">Há 2 dias na missão 3.</p>
+            </li>
+            <li class="student" data-status="STUCK">
+              <span class="avatar" aria-hidden="true">CR</span>
+              <span class="name">Caio Ramos<span class="status" data-status="STUCK"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.6-5.900M20 4v5h-5"/></svg>travado</span></span>
+              <span class="test-grid"><span class="test-row" data-order="1" data-state="counted"><span class="sr">Missão 1: 4 de 4 testes passando.</span><span class="test-mission" aria-hidden="true">01</span><span class="test-dots" aria-hidden="true"><i class="td is-pass"></i><i class="td is-pass"></i><i class="td is-pass"></i><i class="td is-pass"></i></span><span class="test-count" aria-hidden="true">4/4</span></span><span class="test-row" data-order="2" data-state="counted"><span class="sr">Missão 2: 1 de 3 testes passando.</span><span class="test-mission" aria-hidden="true">02</span><span class="test-dots" aria-hidden="true"><i class="td is-pass"></i><i class="td is-fail"></i><i class="td is-fail"></i></span><span class="test-count" aria-hidden="true">1/3</span></span><span class="test-row" data-order="3" data-state="future"><span class="sr">Missão 3: ainda não começou.</span><span class="test-mission" aria-hidden="true">03</span><span class="test-dots" aria-hidden="true"><i class="td is-empty"></i><i class="td is-empty"></i><i class="td is-empty"></i><i class="td is-empty"></i></span><span class="test-count" aria-hidden="true">—</span></span><span class="test-row" data-order="4" data-state="future"><span class="sr">Missão 4: ainda não começou.</span><span class="test-mission" aria-hidden="true">04</span><span class="test-dots" aria-hidden="true"><i class="td is-empty"></i><i class="td is-empty"></i><i class="td is-empty"></i></span><span class="test-count" aria-hidden="true">—</span></span><span class="test-row" data-order="5" data-state="future"><span class="sr">Missão 5: ainda não começou.</span><span class="test-mission" aria-hidden="true">05</span><span class="test-dots" aria-hidden="true"><i class="td is-empty"></i><i class="td is-empty"></i><i class="td is-empty"></i></span><span class="test-count" aria-hidden="true">—</span></span><span class="test-row" data-order="6" data-state="future"><span class="sr">Missão 6: ainda não começou.</span><span class="test-mission" aria-hidden="true">06</span><span class="test-dots" aria-hidden="true"><i class="td is-empty"></i><i class="td is-empty"></i></span><span class="test-count" aria-hidden="true">—</span></span></span>
+              <p class="reason">4 dias na missão 2, 3 PRs nesse período.</p>
+            </li>
+            <li class="student" data-status="COMPLETED">
+              <span class="avatar" aria-hidden="true">JT</span>
+              <span class="name">Júlia Torres<span class="status" data-status="COMPLETED"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5 9.5-10"/></svg>concluído</span></span>
+              <span class="test-grid"><span class="test-row" data-order="1" data-state="counted"><span class="sr">Missão 1: 4 de 4 testes passando.</span><span class="test-mission" aria-hidden="true">01</span><span class="test-dots" aria-hidden="true"><i class="td is-pass"></i><i class="td is-pass"></i><i class="td is-pass"></i><i class="td is-pass"></i></span><span class="test-count" aria-hidden="true">4/4</span></span><span class="test-row" data-order="2" data-state="counted"><span class="sr">Missão 2: 3 de 3 testes passando.</span><span class="test-mission" aria-hidden="true">02</span><span class="test-dots" aria-hidden="true"><i class="td is-pass"></i><i class="td is-pass"></i><i class="td is-pass"></i></span><span class="test-count" aria-hidden="true">3/3</span></span><span class="test-row" data-order="3" data-state="counted"><span class="sr">Missão 3: 4 de 4 testes passando.</span><span class="test-mission" aria-hidden="true">03</span><span class="test-dots" aria-hidden="true"><i class="td is-pass"></i><i class="td is-pass"></i><i class="td is-pass"></i><i class="td is-pass"></i></span><span class="test-count" aria-hidden="true">4/4</span></span><span class="test-row" data-order="4" data-state="counted"><span class="sr">Missão 4: 3 de 3 testes passando.</span><span class="test-mission" aria-hidden="true">04</span><span class="test-dots" aria-hidden="true"><i class="td is-pass"></i><i class="td is-pass"></i><i class="td is-pass"></i></span><span class="test-count" aria-hidden="true">3/3</span></span><span class="test-row" data-order="5" data-state="counted"><span class="sr">Missão 5: 3 de 3 testes passando.</span><span class="test-mission" aria-hidden="true">05</span><span class="test-dots" aria-hidden="true"><i class="td is-pass"></i><i class="td is-pass"></i><i class="td is-pass"></i></span><span class="test-count" aria-hidden="true">3/3</span></span><span class="test-row" data-order="6" data-state="counted"><span class="sr">Missão 6: 2 de 2 testes passando.</span><span class="test-mission" aria-hidden="true">06</span><span class="test-dots" aria-hidden="true"><i class="td is-pass"></i><i class="td is-pass"></i></span><span class="test-count" aria-hidden="true">2/2</span></span></span>
+              <p class="reason">Todas as missões passando.</p>
+            </li>
+          </ul>
+          <p class="demo-note">Dados de exemplo. Os alunos aparecem em ordem alfabética, nunca do pior para o melhor.</p>
+        </figure>
+
+        <div class="sees">
+          <div>
+            <h3>O professor vê</h3>
+            <ul>
+              <li>O nome que o aluno escolheu ao entrar</li>
+              <li>A missão atual e os testes que falham</li>
+              <li>As perguntas do revisor</li>
+              <li>Quantas dicas o aluno pediu</li>
             </ul>
-            <div class="portfolio" aria-hidden="true">
-              <div class="repo-line"><svg width="16" height="16" viewBox="0 0 16 16"><path d="M2 2.5A1.5 1.5 0 0 1 3.5 1h9v11h-9a1.5 1.5 0 0 0 0 3h9" stroke="currentColor" stroke-width="1.5" fill="none"/></svg>maria/vaga-viva-clinic-scheduling</div>
-              <div class="contrib">
-                <i></i><i class="l1"></i><i></i><i class="l2"></i><i class="l1"></i><i></i><i class="l3"></i><i class="l2"></i><i></i><i class="l1"></i><i class="l3"></i><i class="l4"></i><i class="l2"></i><i></i><i class="l3"></i><i class="l4"></i><i class="l3"></i><i class="l2"></i>
-                <i class="l1"></i><i></i><i class="l2"></i><i class="l3"></i><i></i><i class="l1"></i><i class="l2"></i><i class="l4"></i><i class="l3"></i><i></i><i class="l2"></i><i class="l3"></i><i class="l4"></i><i class="l1"></i><i class="l2"></i><i class="l4"></i><i class="l3"></i><i class="l4"></i>
-              </div>
-            </div>
-          </article>
-          <article class="aud teacher">
-            <h3>Professores</h3>
-            <p class="muted">Quem acompanha turmas de programação e quer saber onde cada aluno travou.</p>
-            <ul class="ticks">
-              <li>Os alunos entram por um link e recebem o mesmo projeto, a partir de uma vaga escolhida.</li>
-              <li>O painel mostra a missão de cada aluno e quem está travado ou parado, sempre com o motivo.</li>
-              <li>Um resumo chega por e-mail toda segunda.</li>
+          </div>
+          <div>
+            <h3>O professor não vê</h3>
+            <ul>
+              <li>O código do aluno</li>
+              <li>Os comentários do aluno</li>
+              <li>Nada fora deste projeto</li>
             </ul>
-            <div class="board" role="img" aria-label="Exemplo do painel da turma: 2 travados, 1 parado, 2 avançando e 1 concluído, com cada aluno na missão em que está">
-              <div class="board-head"><span>Painel da turma</span><span>6 alunos</span></div>
-              <div class="dash-meter"><i class="st-stuck" style="flex: 2"></i><i class="st-idle" style="flex: 1"></i><i class="st-adv" style="flex: 2"></i><i class="st-done" style="flex: 1"></i></div>
-              <div class="dash-legend"><span class="st-stuck">2 travados</span><span class="st-idle">1 parado</span><span class="st-adv">2 avançando</span><span class="st-done">1 concluído</span></div>
-              <div class="dash-cols">
-                <div class="dash-col"><b>MISSÃO 1</b><div class="dash-card st-idle">Caio<small>parado · 6 dias</small></div></div>
-                <div class="dash-col"><b>MISSÃO 2</b><div class="dash-card st-stuck">João Pedro<small>travado · 4 dias</small></div></div>
-                <div class="dash-col"><b>MISSÃO 3</b><div class="dash-card st-stuck">Bia<small>travado · 3 dias</small></div><div class="dash-card st-adv">Rafa<small>avançando</small></div></div>
-              </div>
-              <p class="dash-note">O professor vê o nome, a missão, os testes que falham e as perguntas do revisor. Nunca o código.</p>
-            </div>
-          </article>
+          </div>
         </div>
       </div>
     </section>
 
     <!-- Principles -->
-    <section class="night principles" id="principios" aria-labelledby="principios-titulo">
-      <svg class="zig zig-d" viewBox="0 0 520 300" aria-hidden="true">
-        <defs><linearGradient id="g2" x1="0" x2="1"><stop offset="0" stop-color="#ff6b4a"/><stop offset=".5" stop-color="#ffd23f"/><stop offset="1" stop-color="#33c47a"/></linearGradient></defs>
-        <path d="M20 250 L120 80 L180 230 L280 70 L340 210 L470 90" stroke="url(#g2)" stroke-width="32" opacity=".55"/>
-      </svg>
-      <div class="wrap pr-grid">
-        <div>
-          <span class="eyebrow">Princípios</span>
-          <h2 id="principios-titulo">Regras decidem.<br>IA só explica.</h2>
-          <p>Três escolhas de projeto que tornam o Vaga Viva previsível, auditável e seguro para quem usa.</p>
+    <section class="section" id="principios" aria-labelledby="principios-titulo">
+      <div class="wrap">
+        <div class="sec-head">
+          <h2 id="principios-titulo">As regras escolhem as missões; a IA só escreve os textos.</h2>
+          <p>O mesmo texto de vaga sempre gera o mesmo plano, e dá para conferir de onde veio cada missão.</p>
         </div>
         <ul class="rules">
-          <li>
-            <span class="ic" style="background: var(--yellow)" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#141414" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7.8 4.5v9L12 21l-7.8-4.5v-9z"/><circle cx="12" cy="12" r="2.5"/></svg></span>
-            <div><h3>Competências com nome</h3><p>As habilidades da vaga são reconhecidas num vocabulário fechado, baseado na ESCO. O sistema prefere deixar de reconhecer a inventar.</p></div>
-          </li>
-          <li>
-            <span class="ic" style="background: var(--green)" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#141414" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 6h10M10 12h10M10 18h10M4 6h1.5M4 12h1.5M4 18h1.5"/></svg></span>
-            <div><h3>Mesmo texto, mesmo plano</h3><p>A escolha e a ordem das missões seguem regras fixas; a IA só escreve os textos. Se ela falhar, o aluno recebe o projeto mesmo assim, com textos padrão.</p></div>
-          </li>
-          <li>
-            <span class="ic" style="background: var(--coral)" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#141414" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></span>
-            <div><h3>Privacidade desde o início</h3><p>O texto da vaga é lido em memória e não é guardado. Do aluno, ficam só o usuário do GitHub e o e-mail, com consentimento.</p></div>
-          </li>
+          <li><h3>Competências com nome</h3><p>Cada termo marcado na vaga vira uma competência de um vocabulário fechado, baseado na ESCO. Um termo que o vocabulário não tem fica sem marca.</p></li>
+          <li><h3>Regras fixas para o plano</h3><p>A escolha e a ordem das missões seguem regras fixas. Se a IA falhar ao escrever os textos, o projeto sai com os textos padrão.</p></li>
+          <li><h3>A vaga não fica guardada</h3><p>O texto da vaga é lido em memória e descartado. Do aluno, ficam o usuário do GitHub e, com consentimento, o e-mail.</p></li>
         </ul>
       </div>
     </section>
 
     <!-- Status -->
-    <section class="status" id="status" aria-labelledby="status-titulo">
-      <div class="wrap status-grid">
+    <section class="section" id="status" aria-labelledby="status-titulo">
+      <div class="wrap roadmap-grid">
         <div>
-          <span class="eyebrow">Onde estamos</span>
-          <h2 id="status-titulo">Em construção, à vista de todos.</h2>
-          <p>O Vaga Viva está sendo feito do zero durante o Hack Brasil 2026, na trilha Acesso à educação.</p>
-          <div class="deadline"><b>30/11</b> submissão do projeto</div>
+          <h2 id="status-titulo">Feito durante o Hack Brasil 2026.</h2>
+          <p>Na trilha Acesso à educação, com submissão em 30/11. O código é aberto desde o primeiro commit.</p>
+          <p class="stack-line">Construído com Java 21, Spring Boot, PostgreSQL, Flyway, JUnit 5, Docker, um GitHub App, GitHub Actions, Resend e o vocabulário ESCO; os projetos dos alunos saem em Java com Spring Boot ou em TypeScript com NestJS.</p>
         </div>
-        <ol class="timeline">
-          <li class="done"><span class="n">01</span><div><h3>Leitura da vaga <span class="tag done">pronto</span></h3><p>Nível, tecnologias e competências reconhecidos no texto.</p></div></li>
-          <li class="done"><span class="n">02</span><div><h3>Plano do projeto <span class="tag done">pronto</span></h3><p>Missões escolhidas e ordenadas pelas competências da vaga, em Java e Spring Boot ou em TypeScript e NestJS.</p></div></li>
-          <li class="done"><span class="n">03</span><div><h3>Repositório do aluno <span class="tag done">pronto</span></h3><p>Criado pelo GitHub App na conta do aluno, com uma issue por missão.</p></div></li>
-          <li class="done"><span class="n">04</span><div><h3>Revisor de pull requests <span class="tag done">pronto</span></h3><p>Lê os testes que falham e comenta com perguntas, sem código da solução.</p></div></li>
-          <li><span class="n">05</span><div><h3>Dicas em 3 níveis <span class="tag next">a seguir</span></h3><p>Uma dica por vez, quando o aluno pede com /dica.</p></div></li>
-          <li><span class="n">06</span><div><h3>Modo turma <span class="tag next">a seguir</span></h3><p>Convite por link, painel por missão e resumo semanal por e-mail.</p></div></li>
+        <ol class="roadmap">
+          <li><span class="state">pronto</span><div><h3>Leitura da vaga</h3><p>Nível, tecnologias e competências reconhecidos no texto.</p></div></li>
+          <li><span class="state">pronto</span><div><h3>Plano do projeto</h3><p>Missões escolhidas e ordenadas pelas competências da vaga, em Java e Spring Boot ou em TypeScript e NestJS.</p></div></li>
+          <li><span class="state">pronto</span><div><h3>Repositório do aluno</h3><p>Criado pelo GitHub App na conta do aluno, com cada missão aberta como tarefa.</p></div></li>
+          <li><span class="state">pronto</span><div><h3>Revisor de pull requests</h3><p>Lê os testes que falham e comenta com perguntas, sem o código da solução.</p></div></li>
+          <li><span class="state next">a seguir</span><div><h3>Dicas em 3 níveis</h3><p>Uma dica por vez, quando o aluno comenta <code>/dica</code>.</p></div></li>
+          <li><span class="state next">a seguir</span><div><h3>Modo turma</h3><p>Convite por link, painel por missão e resumo semanal por e-mail.</p></div></li>
         </ol>
       </div>
     </section>
 
-    <!-- CTA -->
+    <!-- Closing -->
     <section class="cta" aria-labelledby="cta-titulo">
       <div class="wrap">
         <div class="cta-box">
-          <svg class="zig zig-e" viewBox="0 0 460 260" aria-hidden="true"><path d="M20 230 L110 60 L170 200 L260 40 L320 180 L440 50" stroke="var(--yellow)" stroke-width="30"/></svg>
-          <h2 id="cta-titulo">Bora construir?</h2>
           <div>
-            <p>O código é aberto. Acompanhe o projeto, abra uma issue ou dê uma estrela no repositório.</p>
-            <a class="btn" href="https://github.com/precavidos/vaga-viva"><svg class="ico" aria-hidden="true"><use href="#i-github"/></svg>Ver no GitHub <span class="arrow" aria-hidden="true">→</span></a>
+            <h2 id="cta-titulo">O código é aberto.</h2>
+            <p>Licença MIT. Se uma vaga sua não foi reconhecida ou uma pergunta do revisor não ajudou, abra uma issue com o exemplo.</p>
           </div>
+          <a class="btn" href="https://github.com/precavidos/vaga-viva"><svg class="ico" aria-hidden="true"><use href="#i-github"/></svg>Abrir o repositório <span class="arrow" aria-hidden="true">→</span></a>
         </div>
       </div>
     </section>
@@ -862,7 +743,7 @@
       <div class="foot-grid">
         <div>
           <a class="brand" href="#" aria-label="Vaga Viva, voltar ao início" style="text-decoration: none">
-            <svg width="34" height="34" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="10" fill="#f4f1ea"/><path d="M8 17l5 5 11-12" stroke="#0e6b3c" stroke-width="3.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <svg width="34" height="34" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="7" fill="#f4f1ea"/><path d="M8 17l5 5 11-12" stroke="#0e6b3c" stroke-width="3.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
             Vaga Viva
           </a>
           <p>Aprender fazendo com vagas reais, com um revisor que não dá a resposta.</p>
@@ -892,7 +773,8 @@
 
   <script>
     /* copied from docs/design/prototipos/vv-motion.* */
-    // Only the components the landing uses: the dot matrix, the dot field and decrypt. Keep in sync with the source.
+    // Only the components the landing uses: the dot matrix, the status line, the step mark, the dot field and decrypt.
+    // Keep in sync with the source.
     (() => {
       const REDUCED = '(prefers-reduced-motion: reduce)';
       const reduced = () => window.matchMedia(REDUCED).matches;
@@ -986,6 +868,68 @@
         else ctrl.start();
       }
       register('[data-dot-matrix]', bindMatrix);
+
+      // ---------- Status line ----------
+      // statusLine(el, label) shows the line, writes the label, counts "0,0 s" and runs the matrix.
+      // done() / stop() freeze the timer and end the matrix loop. `since` (a performance.now() reading) is for a wait
+      // that began before its line appeared, as a request sent before the screen changed: the timer counts from it.
+      const lines = new WeakMap();
+      const generations = new WeakMap();
+      const seconds = (ms) => `${(ms / 1000).toFixed(1).replace('.', ',')} s`;
+
+      function statusLine(el, label, since) {
+        lines.get(el)?.stop();
+        init(el);
+        const labelEl = el.querySelector('.status-label');
+        const timerEl = el.querySelector('.status-timer');
+        const matrixEl = el.querySelector('[data-dot-matrix]');
+        const matrix = matrixEl && matrices.get(matrixEl);
+        if (!el.hasAttribute('role')) el.setAttribute('role', 'status');
+        timerEl?.setAttribute('aria-hidden', 'true');
+        // The live region is shown empty and the label is written after a rendered frame: a region that appears
+        // and fills in the same tick is often not announced. A newer call on the same line cancels the write.
+        const gen = (generations.get(el) ?? 0) + 1;
+        generations.set(el, gen);
+        if (labelEl) labelEl.textContent = '';
+        el.hidden = false;
+        el.classList.remove('is-done', 'is-stopped');
+        const write = () => { if (labelEl && generations.get(el) === gen && labelEl.textContent !== label) labelEl.textContent = label; };
+        requestAnimationFrame(() => setTimeout(write, 0));
+        setTimeout(write, 100); // rAF does not run in a background tab; the timeout still does
+        const t0 = typeof since === 'number' && since <= performance.now() ? since : performance.now();
+        const tick = () => { if (timerEl) timerEl.textContent = seconds(performance.now() - t0); };
+        tick();
+        const timer = setInterval(tick, 100);
+        matrix?.start();
+
+        let open = true;
+        const end = (done) => {
+          if (!open) return;
+          open = false;
+          clearInterval(timer);
+          tick();
+          matrix?.stop(done);
+          el.classList.add(done ? 'is-done' : 'is-stopped');
+          if (lines.get(el) === handle) lines.delete(el);
+        };
+        const handle = { done: () => end(true), stop: () => end(false) };
+        lines.set(el, handle);
+        return handle;
+      }
+
+      // ---------- Step mark ----------
+      // The state is the class (is-todo, is-current, is-done), switched by the page; the SVG is injected once.
+      const STEP_SVG = '<svg viewBox="0 0 18 18" aria-hidden="true" focusable="false">'
+        + '<circle class="sm-ring" cx="9" cy="9" r="7"/>'
+        + '<g class="sm-spin"><circle class="sm-arc" cx="9" cy="9" r="7" pathLength="100"/></g>'
+        + '<circle class="sm-disc" cx="9" cy="9" r="9"/>'
+        + '<path class="sm-check" d="M5.3 9.4l2.4 2.4 5-5.1" pathLength="1"/></svg>';
+
+      register('.step-mark', (el) => {
+        if (!el.querySelector('svg')) el.innerHTML = STEP_SVG;
+        el.setAttribute('aria-hidden', 'true');
+        if (reduced()) el.classList.add('is-still');
+      });
 
       // ---------- Dot field ----------
       // The only <canvas> of a page, inserted behind the wrapper's content. Near the cursor the dots turn green and
@@ -1160,187 +1104,196 @@
       }
       register('[data-decrypt]', (el) => { decrypt(el, el.dataset.decrypt || el.textContent.trim()); });
 
-      window.VVMotion = { init, decrypt };
+      window.VVMotion = { init, statusLine, decrypt };
     })();
     // end of the copy
   </script>
   <script>
-    // The hero demo: the posting is read (sweep), its recognized terms light up, the competencies resolve from
-    // the terms, and the first missions of the plan come in. It runs once, when the panel enters the screen;
-    // off screen the run waits where it is. Without JS or with reduced motion the panel is already final.
+    // The landing's demos are illustrative (DESIGN.md 3.2): each runs once, from the moment it is on screen, and its
+    // clock stops while it is off screen. A demo starts in its first frame only when it will play (.is-armed); without
+    // JS, with reduced motion or without IntersectionObserver the HTML is already the final state.
     (function () {
-      if (window.VVMotion) window.VVMotion.init(); // binds the dot field behind the hero
-      var demo = document.getElementById('demo');
-      if (!demo) return;
-      var state = document.getElementById('demo-state');
-      var scan = demo.querySelector('.demo-scan');
-      var marks = Array.prototype.slice.call(demo.querySelectorAll('mark'));
-      var skills = Array.prototype.slice.call(demo.querySelectorAll('.demo-skills li'));
-      var missions = Array.prototype.slice.call(demo.querySelectorAll('.demo-plan li'));
-      var note = demo.querySelector('.demo-note');
-      var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      var canPlay = !!window.VVMotion && 'IntersectionObserver' in window && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (window.VVMotion) window.VVMotion.init(); // the dot field behind the hero, the matrices and the step marks
       function on(el) { el.classList.add('on'); }
+      function all(root, selector) { return Array.prototype.slice.call(root.querySelectorAll(selector)); }
 
-      function setState(label, pattern) {
-        state.textContent = '';
-        if (pattern) {
-          var matrix = document.createElement('span');
-          matrix.setAttribute('data-dot-matrix', pattern);
-          state.appendChild(matrix);
-          window.VVMotion.init(state);
+      // Walks [time in ms, step] pairs once with a clock that only advances while `el` is on screen. A tall block
+      // needs less of itself in view, so it can start on a short screen too. hooks.pause / hooks.resume follow the clock.
+      function playOnce(el, steps, ratio, hooks) {
+        hooks = hooks || {};
+        steps.sort(function (a, b) { return a[0] - b[0]; }); // stable: steps at the same time keep their order
+        var next = 0, elapsed = 0, since = 0, timer = 0, running = false;
+        var clock = { now: function () { return elapsed + (running ? performance.now() - since : 0); } };
+        var need = Math.min(ratio, Math.max(0.05, 0.5 * window.innerHeight / Math.max(1, el.offsetHeight)));
+        function tick() {
+          timer = 0;
+          var now = clock.now();
+          while (next < steps.length && steps[next][0] <= now) steps[next++][1]();
+          if (next < steps.length) { timer = setTimeout(tick, steps[next][0] - now); return; }
+          elapsed = now; running = false;
+          io.disconnect();
+          el.classList.remove('is-paused');
         }
-        state.appendChild(document.createTextNode(label)); // the old matrix leaves the page, and its loop with it
-      }
-      function finalState() {
-        marks.concat(skills, missions, [note]).forEach(on);
-        setState('Plano pronto');
-        demo.classList.remove('is-armed', 'is-paused');
-      }
-      if (reduced || !window.VVMotion || !('IntersectionObserver' in window)) { finalState(); return; }
-
-      // The run as a list of [time in ms, step]. A pausable clock walks it, so leaving the screen stops it.
-      var steps = [[0, function () { setState('Lendo a vaga', 'scan'); scan.style.setProperty('--sweep', (scan.parentNode.offsetHeight - 52) + 'px'); scan.classList.add('run'); }]];
-      marks.forEach(function (m, i) { steps.push([900 + i * 240, function () { on(m); }]); });
-      skills.forEach(function (li, i) {
-        steps.push([2000 + i * 130, function () {
-          var name = li.querySelector('[data-demo-decrypt]');
-          on(li);
-          window.VVMotion.decrypt(name, name.textContent.trim());
-        }]);
-      });
-      steps.push([2750, function () { setState('Montando o plano', 'wave'); }]);
-      missions.forEach(function (li, i) { steps.push([3350 + i * 60, function () { on(li); }]); });
-      steps.push([3600, function () { on(note); }]);
-      steps.push([3700, function () { scan.classList.remove('run'); finalState(); }]);
-
-      var next = 0, elapsed = 0, since = 0, timer = 0, running = false;
-      function tick() {
-        timer = 0;
-        var now = elapsed + (performance.now() - since);
-        while (next < steps.length && steps[next][0] <= now) steps[next++][1]();
-        if (next < steps.length) timer = setTimeout(tick, steps[next][0] - now);
-        else { running = false; io.disconnect(); }
-      }
-      function resume() {
-        if (running || next >= steps.length) return;
-        running = true; since = performance.now();
-        demo.classList.remove('is-paused');
-        tick();
-      }
-      function pause() {
-        if (!running) return;
-        running = false; clearTimeout(timer); timer = 0;
-        elapsed += performance.now() - since;
-        demo.classList.add('is-paused');
-      }
-
-      demo.classList.add('is-armed');
-      setState('');
-      var io = new IntersectionObserver(function (entries) {
-        var e = entries[entries.length - 1];
-        if (e.isIntersecting && e.intersectionRatio >= 0.35) resume(); else pause();
-      }, { threshold: 0.35 });
-      io.observe(demo);
-    })();
-  </script>
-  <script>
-    (function () {
-      // The example posting: each recognized term lights up and flies to its chip when the panel scrolls into view.
-      var vaga = document.getElementById('vaga-panel');
-      var replay = document.getElementById('replay');
-      var marks = Array.prototype.slice.call(vaga.querySelectorAll('mark'));
-      var chips = {};
-      Array.prototype.forEach.call(vaga.querySelectorAll('.chip[data-chip]'), function (c) { chips[c.getAttribute('data-chip')] = c; });
-      var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      var run = 0;
-
-      function land(chip) { chip.classList.remove('waiting'); chip.classList.add('landed'); }
-      function showAll() {
-        marks.forEach(function (m) { m.classList.add('on'); });
-        Object.keys(chips).forEach(function (k) { chips[k].classList.remove('waiting'); });
-      }
-      function fly(mark, chip) {
-        var from = mark.getBoundingClientRect(), to = chip.getBoundingClientRect();
-        var flyer = document.createElement('span');
-        flyer.className = 'flyer' + (mark.classList.contains('out') ? ' out' : mark.classList.contains('lvl') ? ' lvl' : '');
-        flyer.textContent = mark.textContent;
-        flyer.style.left = from.left + 'px'; flyer.style.top = (from.top - 4) + 'px';
-        document.body.appendChild(flyer);
-        var dx = to.left - from.left, dy = to.top - from.top + 4, ended = false;
-        function end() { if (ended) return; ended = true; flyer.remove(); land(chip); }
-        var a = flyer.animate([
-          { transform: 'translate(0, 0) scale(1) rotate(0)' },
-          { transform: 'translate(' + dx * 0.45 + 'px, ' + (dy * 0.45 - 40) + 'px) scale(1.15) rotate(-4deg)', offset: 0.45 },
-          { transform: 'translate(' + dx + 'px, ' + dy + 'px) scale(1) rotate(0)' }
-        ], { duration: 520, easing: 'cubic-bezier(.2, .8, .2, 1)' });
-        a.onfinish = end;
-        setTimeout(end, 750); // a background tab pauses animations; the chip still arrives
-      }
-      function play() {
-        var id = ++run;
-        replay.hidden = true;
-        marks.forEach(function (m) { m.classList.remove('on'); });
-        Object.keys(chips).forEach(function (k) { chips[k].classList.add('waiting'); chips[k].classList.remove('landed'); });
-        marks.forEach(function (m, i) {
-          setTimeout(function () {
-            if (id !== run) return;
-            m.classList.add('on');
-            var chip = chips[m.getAttribute('data-chip')];
-            setTimeout(function () { if (id === run && chip) fly(m, chip); }, 220);
-          }, 350 + i * 340);
-        });
-        setTimeout(function () { if (id === run) replay.hidden = false; }, 350 + marks.length * 340 + 900);
-      }
-      replay.addEventListener('click', play);
-
-      if (reduce || !('IntersectionObserver' in window)) {
-        showAll();
-      } else {
-        Object.keys(chips).forEach(function (k) { chips[k].classList.add('waiting'); });
+        function resume() {
+          if (running || next >= steps.length) return;
+          running = true; since = performance.now();
+          el.classList.remove('is-paused');
+          if (hooks.resume) hooks.resume();
+          tick();
+        }
+        function pause() {
+          if (!running) return;
+          running = false; clearTimeout(timer); timer = 0;
+          elapsed += performance.now() - since;
+          el.classList.add('is-paused');
+          if (hooks.pause) hooks.pause();
+        }
+        el.classList.add('is-armed');
         var io = new IntersectionObserver(function (entries) {
-          entries.forEach(function (e) {
-            if (e.isIntersecting) { play(); io.disconnect(); }
-          });
-        }, { threshold: 0.4 });
-        io.observe(vaga);
+          var e = entries[entries.length - 1];
+          if (e.isIntersecting && e.intersectionRatio >= need) resume(); else pause();
+        }, { threshold: need });
+        io.observe(el);
+        return clock;
       }
 
-      // The teacher's dashboard draws its bar when it scrolls into view.
-      var board = document.querySelector('.audience .board');
-      if (board && 'IntersectionObserver' in window) {
-        var io2 = new IntersectionObserver(function (entries) {
-          entries.forEach(function (e) {
-            if (e.isIntersecting) { board.classList.add('in-view'); io2.disconnect(); }
-          });
-        }, { threshold: 0.5 });
-        io2.observe(board);
-      } else if (board) {
-        board.classList.add('in-view');
-      }
+      // Hero: the posting is read (sweep), its recognized terms light up, the competencies resolve from the terms,
+      // and the first missions of the plan come in.
+      (function () {
+        var demo = document.getElementById('demo');
+        if (!demo) return;
+        var state = document.getElementById('demo-state');
+        var scan = demo.querySelector('.demo-scan');
+        var marks = all(demo, 'mark');
+        var skills = all(demo, '.demo-skills li');
+        var missions = all(demo, '.demo-plan li');
+        var note = demo.querySelector('.demo-note');
 
-      // Reveal reviewer hints one at a time. Without JS all hints stay visible.
-      var hints = Array.prototype.slice.call(document.querySelectorAll('.hint-msg'));
-      var btn = document.getElementById('hint-btn');
-      var status = document.getElementById('hint-status');
-      var shown = 0;
-      hints.forEach(function (h) { h.hidden = true; });
-      btn.hidden = false;
-      function update() {
-        var left = hints.length - shown;
-        status.textContent = left > 0
-          ? (left === 1 ? '1 dica disponível' : left + ' dicas disponíveis')
-          : 'Sem mais dicas. A solução é sua.';
-        btn.textContent = shown === 0 ? 'Pedir dica' : 'Pedir próxima dica';
-        btn.disabled = left === 0;
-      }
-      btn.addEventListener('click', function () {
-        if (shown >= hints.length) return;
-        var h = hints[shown++];
-        h.hidden = false;
-        h.classList.add('reveal');
+        function setState(label, pattern) {
+          state.textContent = '';
+          if (pattern) {
+            var matrix = document.createElement('span');
+            matrix.setAttribute('data-dot-matrix', pattern);
+            state.appendChild(matrix);
+            window.VVMotion.init(state);
+          }
+          state.appendChild(document.createTextNode(label)); // the old matrix leaves the page, and its CSS loop with it
+        }
+        function finalState() {
+          marks.concat(skills, missions, [note]).forEach(on);
+          setState('Plano pronto');
+          demo.classList.remove('is-armed', 'is-paused');
+        }
+        if (!canPlay) { finalState(); return; }
+
+        var steps = [[0, function () { setState('Lendo a vaga', 'scan'); scan.style.setProperty('--sweep', (scan.parentNode.offsetHeight - 52) + 'px'); scan.classList.add('run'); }]];
+        marks.forEach(function (m, i) { steps.push([900 + i * 240, function () { on(m); }]); });
+        skills.forEach(function (li, i) {
+          steps.push([2000 + i * 130, function () {
+            var name = li.querySelector('[data-demo-decrypt]');
+            on(li);
+            window.VVMotion.decrypt(name, name.textContent.trim());
+          }]);
+        });
+        steps.push([2750, function () { setState('Montando o plano', 'wave'); }]);
+        missions.forEach(function (li, i) { steps.push([3350 + i * 60, function () { on(li); }]); });
+        steps.push([3600, function () { on(note); }]);
+        steps.push([3700, function () { scan.classList.remove('run'); finalState(); }]);
+        playOnce(demo, steps, 0.35);
+        setState('');
+      })();
+
+      // The plan: the missions come in as a cascade (DESIGN.md 3).
+      (function () {
+        var list = document.querySelector('#build-demo .missions');
+        if (!list || !canPlay) return;
+        var panel = list.closest('.demo');
+        var items = all(list, 'li');
+        var steps = items.map(function (li, i) { return [i * 70, function () { on(li); }]; });
+        steps.push([items.length * 70 + 300, function () { panel.classList.remove('is-armed'); }]);
+        playOnce(panel, steps, 0.35);
+      })();
+
+      // The repository: the status line in flip and one step mark per stage (DESIGN.md 4.14, 4.15, 5.1). The last
+      // stage is marked done only at the end, where the server would answer; then the line goes and the repository
+      // shows its missions, all with failing tests.
+      (function () {
+        var line = document.getElementById('repo-line');
+        if (!line || !canPlay) return;
+        var panel = line.closest('.demo');
+        var ready = panel.querySelector('.repo-ready');
+        var result = panel.querySelector('.repo-result');
+        var issues = all(result, '.issues li');
+        var stages = all(panel, '.stage-list li');
+        var LABEL = 'Criando o repositório';
+        var STEP = 850, START = 600;
+        var handle = null, lineStart = -1, clock = null;
+        function mark(li, state) { li.className = state; li.querySelector('.step-mark').className = 'step-mark ' + state; }
+
+        stages.forEach(function (li) { mark(li, 'is-todo'); });
+        var steps = [[START, function () {
+          lineStart = clock.now();
+          handle = window.VVMotion.statusLine(line, LABEL);
+          mark(stages[0], 'is-current');
+        }]];
+        stages.forEach(function (li, i) {
+          if (i > 0) steps.push([START + i * STEP, function () { mark(stages[i - 1], 'is-done'); mark(li, 'is-current'); }]);
+        });
+        var answer = START + stages.length * STEP + 250;
+        steps.push([answer, function () {
+          mark(stages[stages.length - 1], 'is-done');
+          handle.done(); handle = null; lineStart = -1;
+          line.hidden = true;
+          on(ready); on(result);
+        }]);
+        issues.forEach(function (li, i) { steps.push([answer + 150 + i * 60, function () { on(li); }]); });
+        steps.push([answer + 150 + issues.length * 60 + 300, function () { panel.classList.remove('is-armed'); }]);
+        clock = playOnce(panel, steps, 0.35, {
+          // Off screen the timer stops with the clock; back on screen it goes on from where it was.
+          pause: function () { if (handle) handle.stop(); },
+          resume: function () { if (lineStart >= 0) handle = window.VVMotion.statusLine(line, LABEL, performance.now() - (clock.now() - lineStart)); }
+        });
+      })();
+
+      // The dashboard: the bar grows and the cards come in with their test grids, once.
+      (function () {
+        var board = document.getElementById('board-demo');
+        if (!board || !canPlay) return;
+        var bars = all(board, '.meter i');
+        var cards = all(board, '.student');
+        var steps = [];
+        bars.forEach(function (b) { steps.push([0, function () { on(b); }]); });
+        cards.forEach(function (c, i) { steps.push([200 + i * 90, function () { on(c); }]); });
+        steps.push([200 + cards.length * 90 + 400, function () { board.classList.remove('is-armed'); }]);
+        playOnce(board, steps, 0.35);
+      })();
+
+      // The reviewer: each "Comentar /dica" shows the comment and the next hint, up to three. Without JS all show.
+      (function () {
+        var pairs = all(document, '.hint-pair');
+        var btn = document.getElementById('hint-btn');
+        var status = document.getElementById('hint-status');
+        var dots = all(document, '.hint-dots i');
+        if (!btn || !pairs.length) return;
+        var shown = 0;
+        pairs.forEach(function (p) { p.hidden = true; });
+        btn.hidden = false;
+        function update() {
+          var left = pairs.length - shown;
+          dots.forEach(function (d, i) { d.classList.toggle('on', i < shown); });
+          status.textContent = left ? shown + ' de ' + pairs.length + ' dicas nesta missão' : 'Sem mais dicas nesta missão. O próximo passo é seu.';
+          btn.setAttribute('aria-disabled', left ? 'false' : 'true');
+        }
+        btn.addEventListener('click', function () {
+          if (shown >= pairs.length) return;
+          var p = pairs[shown++];
+          p.hidden = false;
+          p.classList.add('reveal');
+          update();
+        });
         update();
-      });
-      update();
+      })();
     })();
   </script>
 </body>
