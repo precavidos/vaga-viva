@@ -46,6 +46,7 @@ Os valores são tokens CSS em `:root`. O modo escuro troca os tokens neutros; as
 | `--line` | `#dcd7ca` | `#34312c` | bordas finas |
 | `--purple` | `#5b3df5` | igual | botão principal, foco, revisor, concluído |
 | `--purple-soft` | `#e6e0ff` | `#2c2266` | fundos do revisor e de seleção |
+| `--focus` | `#5b3df5` (igual a `--purple`) | `#8a75ff` | contorno de foco e borda do campo em foco; no escuro, clareado para ter pelo menos 3:1 sobre `--card` e `--paper` |
 | `--yellow` | `#ffd23f` | igual | marca-texto e varredura |
 | `--green` | `#33c47a` | igual | teste passando, avançando |
 | `--coral` | `#ff6b4a` | igual | teste falhando, travado, erro |
@@ -397,7 +398,7 @@ Sem ninguém travado ou parado, o item 3 vira "Ninguém travado ou parado nesta 
 ## 7. Acessibilidade
 
 - Contraste mínimo de 4.5:1 para texto e 3:1 para bordas de controles, ícones e pontos vazios, nos dois modos.
-- Foco visível em tudo: contorno de 3 px roxo com 3 px de afastamento.
+- Foco visível em tudo: contorno de 3 px em `--focus` (roxo) com 3 px de afastamento.
 - Tudo funciona pelo teclado: abas com setas, contadores com `aria-pressed`, cartões como `<button>`, gaveta como `<dialog>`.
 - Mudanças assíncronas são anunciadas por uma região `role="status"`.
 - Pontos, matriz e cronômetro são decorativos para leitores de tela; a informação vem em texto (itens 4.14 a 4.16), e o texto decifrado chega pronto.
