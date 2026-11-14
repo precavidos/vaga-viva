@@ -97,7 +97,7 @@ const VV = (() => {
         + `<span class="test-dots" aria-hidden="true">${dots}</span>`
         + `<span class="test-count" aria-hidden="true">${count}</span></span>`;
     };
-    return `<span class="test-grid">${tests.map(row).join('')}</span>`;
+    return `<span class="test-grid">${(Array.isArray(tests) ? tests : []).filter((t) => t && typeof t === 'object').map(row).join('')}</span>`;
   }
 
   const missionItem = (m) => {

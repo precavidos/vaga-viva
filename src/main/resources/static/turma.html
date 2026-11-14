@@ -53,7 +53,7 @@
         <div class="sees">
           <div>
             <h3><span data-icon="eye"></span>Vê</h3>
-            <ul><li>O nome que você escrever aqui</li><li>Em qual missão você está</li><li>Os testes que falham</li><li>As perguntas do revisor</li><li>Quantas dicas você pediu</li></ul>
+            <ul><li>O nome que você escrever aqui</li><li>Em qual missão você está</li><li>Quantos testes passam e quais falham</li><li>As perguntas do revisor</li><li>Quantas dicas você pediu</li></ul>
           </div>
           <div>
             <h3><span data-icon="eyeOff"></span>Não vê</h3>
@@ -184,7 +184,7 @@
     $('#count').textContent = `${missions.length} ${missions.length === 1 ? 'missão' : 'missões'}`;
     $('#trail').innerHTML = missions.map((m) => `<li><span class="num">${String(Number(m.order) || 0).padStart(2, '0')}</span>${esc(m.title)}</li>`).join('');
     // The exact consent sentence from the design document, with the teacher's login.
-    $('#consent-text').textContent = `Ao entrar, @${c.teacherLogin} vai ver o nome que você escreveu, em qual missão você está, os testes que falham, as perguntas do revisor e quantas dicas você pediu. Seu código não aparece no painel.`;
+    $('#consent-text').textContent = `Ao entrar, @${c.teacherLogin} vai ver o nome que você escreveu, em qual missão você está, quantos testes passam e quais falham, as perguntas do revisor e quantas dicas você pediu. Seu código não aparece no painel.`;
     show('invite');
     refresh();
     say(`Convite para a turma ${c.name}.`);

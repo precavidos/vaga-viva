@@ -260,9 +260,9 @@ Modelo híbrido, em São Paulo.`;
     fast = reduced;
     VV.setStep(2); show('step-plan');
     // The form that held the focus is hidden now: the focus goes to the new step's title, not to the page.
-    $('#read-title').focus();
     $('#plan-ready').hidden = true; $('#plan-wait').hidden = true; $('#skip').hidden = false;
     $('#read-title').textContent = 'Lendo a vaga';
+    $('#read-title').focus();
 
     const terms = [
       { ...EXTRACTION.level, kind: 'level' },
@@ -329,7 +329,7 @@ Modelo híbrido, em São Paulo.`;
       $('#plan-wait').hidden = true;
       if (mine !== run) return;
     }
-    $('#missions').innerHTML = PLAN.missions.map(VV.missionItem).join('');
+    $('#missions').innerHTML = PLAN.missions.map((m) => VV.missionItem(m)).join('');
     $('#plan-ready').hidden = false;
     say(`Leitura concluída: nível ${LEVELS[PLAN.seniorityLevel]}, ${EXTRACTION.technologies.length} tecnologias e ${EXTRACTION.skills.length} competências. Plano pronto, com ${PLAN.missions.length} missões.`);
     if (!fast) $('#plan-ready').scrollIntoView({ block: 'nearest', behavior: 'smooth' });

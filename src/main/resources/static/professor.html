@@ -229,7 +229,7 @@
     const fit = fitText(plan.archetypeFit, plan.archetypeName);
     $('#plan-fit').hidden = !fit;
     $('#plan-fit-text').textContent = fit;
-    $('#missions').innerHTML = missions.map(VV.missionItem).join('');
+    $('#missions').innerHTML = missions.map((m) => VV.missionItem(m)).join('');
     go('f-plan', 2);
     say(`Plano pronto, com ${missions.length} ${missions.length === 1 ? 'missão' : 'missões'}.`);
     $('#plan-title').focus();

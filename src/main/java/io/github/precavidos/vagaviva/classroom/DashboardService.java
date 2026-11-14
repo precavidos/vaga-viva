@@ -133,7 +133,7 @@ class DashboardService {
 				"https://github.com/" + enrollment.getRepositoryFullName(), standing.missionOrder(),
 				standing.missionTitle(), standing.status(), standing.reason(),
 				progress == null ? List.of() : failingTests(progress.getFailingTests()),
-					tests(missions, progress),
+				tests(missions, progress),
 				progress == null ? null : progress.getLastReviewerQuestion(),
 				// The hints are counted from Task 10 on.
 				null, progress == null ? null : progress.getLastPullRequestUrl());

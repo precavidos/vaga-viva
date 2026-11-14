@@ -190,7 +190,7 @@ Os seis componentes vivem em `vv-motion.css` e `vv-motion.js`. Cada um é ativad
 | 2 | **Matriz de pontos** (`data-dot-matrix="scan\|wave\|flip"`) e **linha de status** (`.status-line`, item 4.14) | toda espera real | Matriz 4×4 de pontos redondos. Cada padrão é uma etapa: `scan` (varredura em amarelo) para ler a vaga e carregar o painel, `wave` (onda diagonal em roxo) para montar o plano e para o revisor, `flip` (coral vira verde, um por vez) para criar o repositório. Substitui as três bolinhas do botão carregando e o esqueleto com varredura. |
 | 3 | **Termo vira competência** (`data-decrypt`) | passo 3 da extração (item 3.1) e demo da landing | O nome da competência se resolve caractere por caractere a partir de símbolos, da esquerda para a direita, em até 600 ms. Só com nomes que a API devolveu. Leitores de tela recebem o texto final direto. |
 | 4 | **Marca de etapa** (`.step-mark`, item 4.15) | criação do repositório, entrada na turma | Anel parado (futuro), arco girando (atual), visto verde desenhado (feito). A regra do item 3.2 continua: a última etapa só fica verde quando o servidor responde. |
-| 5 | **Troca em pontos** (`data-dot-swap`) | da etapa Plano para a etapa Repositório (aluno e convite), e na demo da landing | Uma malha de pontos roxos cobre o bloco em ordem aleatória, o conteúdo troca por baixo e a malha some. Cerca de 500 ms no total. Uma única vez por fluxo. |
+| 5 | **Troca em pontos** (`data-dot-swap`) | da etapa Plano para a etapa Repositório (aluno e convite) | Uma malha de pontos roxos cobre o bloco em ordem aleatória, o conteúdo troca por baixo e a malha some. Cerca de 500 ms no total. Uma única vez por fluxo. |
 | 6 | **Contagem** (`data-count-up`) | resumo do painel | O número sobe de 0 ao valor em 600 ms, em Bricolage 600, com o ponto da situação ao lado do rótulo. Uma vez por carregamento. |
 
 Contrato de marcação, o que o HTML escreve e o que `vv-motion.js` faz:
@@ -362,7 +362,7 @@ Um único bloco de 760 px:
 
 1. Selo "Convite", o nome da turma como título e "com @professor".
 2. Chips do arquétipo e a lista das missões em trilha numerada.
-3. **O que o professor vê.** Duas colunas lado a lado: "Vê" (o nome que você escrever, sua missão atual, os testes que falham, as perguntas do revisor, quantas dicas você pediu) e "Não vê" (seu código, seus comentários, nada fora deste projeto). Abaixo, a frase de consentimento exata do desenho e a caixa de marcação.
+3. **O que o professor vê.** Duas colunas lado a lado: "Vê" (o nome que você escrever, sua missão atual, quantos testes passam e quais falham, as perguntas do revisor, quantas dicas você pediu) e "Não vê" (seu código, seus comentários, nada fora deste projeto). Abaixo, a frase de consentimento exata do desenho e a caixa de marcação.
 4. Campo "Como você quer ser chamado(a)?" com contador até 40.
 5. Botão "Entrar com o GitHub e criar meu repositório", desabilitado até o nome e o consentimento estarem preenchidos. A razão aparece ao lado do botão.
 

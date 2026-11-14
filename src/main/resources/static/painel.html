@@ -179,7 +179,8 @@
     loadedAt = Date.now();
     try {
       render();
-    } catch {
+    } catch (e) {
+      console.error(e);
       showError('Não foi possível mostrar a turma.', 'O Vaga Viva respondeu algo que o painel não entende.', true);
     }
   }

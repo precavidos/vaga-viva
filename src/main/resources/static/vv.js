@@ -100,7 +100,7 @@ const VV = (() => {
         + `<span class="test-dots" aria-hidden="true">${dots}</span>`
         + `<span class="test-count" aria-hidden="true">${count}</span></span>`;
     };
-    return `<span class="test-grid">${(Array.isArray(tests) ? tests : []).map(row).join('')}</span>`;
+    return `<span class="test-grid">${(Array.isArray(tests) ? tests : []).filter((t) => t && typeof t === 'object').map(row).join('')}</span>`;
   }
 
   // One mission of a plan: the server's strings are untrusted, so every one is escaped. `skillLabels` maps a skill

@@ -159,7 +159,7 @@
     await wait(1400);
     VV.idle($('#b-plan'));
     $('#plan-chips').innerHTML = `<span class="chip dark">${ICON.stack}${PLAN.archetypeName}</span><span class="chip">${ICON.level}Nível ${LEVELS[PLAN.seniorityLevel]}</span><span class="chip">${ICON.mission}${PLAN.missions.length} missões</span>`;
-    $('#missions').innerHTML = PLAN.missions.map(VV.missionItem).join('');
+    $('#missions').innerHTML = PLAN.missions.map((m) => VV.missionItem(m)).join('');
     go('f-plan', 2); say('Plano pronto, com 6 missões.');
   });
   $('#back').addEventListener('click', () => go('f-posting', 1));

@@ -100,6 +100,7 @@ Cada item do registro de progresso ("minor (deferred)") ficou corrigido ou decid
 | --- | --- |
 | `DESIGN.md` dizia que os itens 4.14 a 4.16 ficam em `vv-motion.css`. | **Corrigido** (`b8ce920`): a grade de testes está em `vv.css`. |
 | `movimento.html` carregava Bricolage 700 e 800. | **Corrigido** (`e0ceb5e`). |
+| Herdado: `passed: null` virava 0; total não positivo ou inválido contava como total; `passed` passava do total; `t.order` entrava sem escape; grade vazia aparecia na gaveta; coluna da contagem estreita demais para "10/10". | **Corrigido** (`232c249`) em `VV.testGrid`: `passed: null` mostra "—", total não positivo ou inválido vale como sem total, `passed` fica entre 0 e o total, `esc(t.order)`, grade vazia ignorada na gaveta e coluna da contagem com 40 px. |
 
 ### Tarefa 9 (páginas reais do aluno, do professor e do convite)
 
