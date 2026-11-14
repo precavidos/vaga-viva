@@ -159,10 +159,14 @@
     }
     try {
       classroom = await response.json();
-      await refreshMe();
-    } finally {
-      line.done();
+    } catch {
+      line.stop();
+      $('#failed-text').textContent = 'O Vaga Viva não respondeu como esperado. Tente de novo em instantes.';
+      show('failed'); say('Não deu para abrir o convite.');
+      return;
     }
+    await refreshMe();
+    line.done();
     render(classroom);
   }
 
