@@ -61,6 +61,7 @@
         let lit = 0;
         let cycle = 0;
         timer = setInterval(() => {
+          if (!el.isConnected) { clear(); return; } // removed without stop(): end the steps
           if (!visible) return;
           const elapsed = performance.now() - t0;
           const t = elapsed % CYCLE;

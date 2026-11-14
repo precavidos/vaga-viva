@@ -242,9 +242,11 @@
     .step-mark .sm-ring, .step-mark .sm-arc { fill: none; stroke-width: 2; }
     .step-mark .sm-ring { stroke: var(--dot-empty); }
     .step-mark .sm-arc { stroke: var(--purple); stroke-linecap: round; stroke-dasharray: 30 100; opacity: 0; }
+    .demo .step-mark .sm-arc { stroke: #8a75ff; } /* the purple is 2.7:1 on the dark panel; this one is 3:1 or more */
     .step-mark .sm-spin { transform-box: view-box; transform-origin: 9px 9px; }
     .step-mark .sm-disc { fill: var(--green); opacity: 0; transform-box: view-box; transform-origin: 9px 9px; }
     .step-mark .sm-check { fill: none; stroke: #141414; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1; stroke-dashoffset: 1; }
+    .step-mark:not(.is-done) .sm-check { visibility: hidden; } /* a round cap can draw a dot before the check runs */
     .step-mark.is-current .sm-ring { stroke: var(--line); }
     .step-mark.is-current .sm-arc { opacity: 1; }
     .step-mark.is-current .sm-spin { animation: vvm-spin .9s linear infinite; }
@@ -808,6 +810,7 @@
             let lit = 0;
             let cycle = 0;
             timer = setInterval(() => {
+              if (!el.isConnected) { clear(); return; } // removed without stop(): end the steps
               if (!visible) return;
               const elapsed = performance.now() - t0;
               const t = elapsed % CYCLE;
