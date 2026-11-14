@@ -83,7 +83,7 @@
     :focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
     .wrap { max-width: 1160px; margin: 0 auto; padding: 0 24px; }
     .skip { position: absolute; left: -9999px; }
-    .skip:focus { left: 16px; top: 16px; background: var(--card); padding: 8px 12px; z-index: 20; }
+    .skip:focus { left: 16px; top: 16px; display: inline-flex; align-items: center; min-height: 44px; background: var(--card); padding: 8px 12px; z-index: 20; }
     .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
     /* DESIGN.md 2.3: Bricolage 600 in every title, h2 28 px, h3 19 px. */
@@ -110,13 +110,14 @@
     /* Header */
     .top { position: relative; z-index: 5; }
     .top .wrap { display: flex; align-items: center; justify-content: space-between; height: 84px; gap: 16px; }
-    .brand { display: flex; align-items: center; gap: 10px; font: 600 21px/1 var(--display); letter-spacing: -.025em; text-decoration: none; }
+    /* Every link and button is at least 44 px tall (DESIGN.md 7); links inside a sentence are the exception. */
+    .brand { display: flex; align-items: center; gap: 10px; min-height: 44px; font: 600 21px/1 var(--display); letter-spacing: -.025em; text-decoration: none; }
     /* The mark follows the mode: an ink square with a green check on paper, a paper square with a dark green check
        in dark mode, so it never sinks into the background. */
     .logo rect { fill: var(--ink); }
     .logo path { stroke: var(--logo-check); }
     .top nav { display: flex; gap: 28px; }
-    .top nav a { text-decoration: none; font-weight: 500; font-size: 15px; color: var(--ink-2); }
+    .top nav a { display: inline-flex; align-items: center; min-height: 44px; text-decoration: none; font-weight: 500; font-size: 15px; color: var(--ink-2); }
     .top nav a:hover { color: var(--ink); text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 6px; }
     .top .btn { min-height: 44px; padding: 8px 16px; font-size: 15px; }
 
@@ -403,7 +404,8 @@
     footer .brand { color: #f4f1ea; margin-bottom: 14px; }
     footer p { margin: 0; }
     footer h2 { font: 600 12px/1 var(--mono); text-transform: uppercase; letter-spacing: .08em; color: #a9a59b; margin: 0 0 16px; }
-    footer ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+    footer ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; }
+    footer ul a { min-height: 44px; }
     footer a { color: #f4f1ea; text-decoration: underline; text-decoration-color: #5c5850; text-underline-offset: 4px; display: inline-flex; align-items: center; gap: 8px; }
     footer a:hover { text-decoration-color: #f4f1ea; }
     footer :focus-visible { outline-color: #8a75ff; }
