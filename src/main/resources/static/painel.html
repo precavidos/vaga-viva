@@ -177,7 +177,11 @@
     }
     line.done();
     loadedAt = Date.now();
-    render();
+    try {
+      render();
+    } catch {
+      showError('Não foi possível mostrar a turma.', 'O Vaga Viva respondeu algo que o painel não entende.', true);
+    }
   }
 
   const columnsOf = () => (Array.isArray(data?.columns) ? data.columns : []).map((c) => ({
@@ -214,8 +218,16 @@
       <span class="value" data-count-up="${counts[status]}" aria-hidden="true">${counts[status]}</span>
       <span class="name" aria-hidden="true"><i></i>${esc(STATUS[status].plural)}</span></button>`).join('');
 
+    // The card's name is short: who, the situation, the current mission's tests and the reason. The whole grid
+    // stays visible on the card and is read in the drawer, row by row.
+    const cardLabel = (s) => {
+      const row = testsOf(s).find((t) => t && t.order === s.missionOrder);
+      const counted = s.status !== 'COMPLETED' && row && Number.isInteger(row.total) && row.total > 0 && typeof row.passed === 'number';
+      const tests = counted ? `, missão ${num(s.missionOrder)}: ${Math.min(row.total, num(row.passed))} de ${row.total} testes passando` : '';
+      return `${s.displayName ?? s.login}, ${STATUS[s.status].one}${tests}, ${s.reason ?? ''}`;
+    };
     // The card: initials, name, badge, the test grid (DESIGN.md 4.16), then the reason under a thin line.
-    const card = (s) => `<button type="button" class="student" data-status="${s.status}" data-login="${esc(s.login)}">
+    const card = (s) => `<button type="button" class="student" data-status="${s.status}" data-login="${esc(s.login)}" aria-label="${esc(cardLabel(s))}">
       ${VV.avatar(s.displayName)}
       <span class="name">${esc(s.displayName)} ${statusBadge(s.status)}</span>
       ${VV.testGrid(testsOf(s), s.missionOrder, s.status === 'COMPLETED')}
