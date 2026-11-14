@@ -258,7 +258,7 @@ const VV = (() => {
 
   // The top bar; `setUser` fills in who is signed in once the page knows.
   function chrome(area = '') {
-    const logo = '<svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="6" fill="#141414"/><path d="M8 17l5 5 11-12" stroke="#33c47a" stroke-width="3.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    const logo = '<svg class="logo" width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="6" fill="#141414"/><path d="M8 17l5 5 11-12" stroke="#33c47a" stroke-width="3.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>';
     document.body.insertAdjacentHTML('afterbegin', `<header class="top"><div class="wrap">
       <a class="brand" href="/" aria-label="Vaga Viva, início">${logo}Vaga Viva${area ? `<small>${esc(area)}</small>` : ''}</a><span id="who"></span></div></header>`);
   }

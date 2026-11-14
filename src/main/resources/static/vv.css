@@ -13,6 +13,7 @@
   --dot-empty: #8f8a7c;
   --night: #121212; --night-2: #1e1e1e; --night-3: #2a2a2a; --night-text: #f4f1ea; --night-muted: #a9a59b;
   --on-color: #141414;
+  --logo-check: #33c47a;
 
   --display: "Bricolage Grotesque", "Arial Black", system-ui, sans-serif;
   --body: "DM Sans", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
@@ -31,7 +32,7 @@
     --paper: #161513; --paper-2: #201e1b; --card: #1f1d1a;
     --ink: #f4f1ea; --ink-2: #b4afa3; --line: #34312c;
     --purple-soft: #2c2266; --focus: #8a75ff; --green-ink: #5ee39c; --coral-ink: #ff9a82;
-    --dot-empty: #767166;
+    --dot-empty: #767166; --logo-check: #0e6b3c;
     --night: #0b0b0a; --night-2: #1a1917; --night-3: #26241f;
     --rest: 0 30px 60px -30px rgba(0, 0, 0, .7);
   }
@@ -74,6 +75,9 @@ h1 mark, h2 mark { color: inherit; }
 /* Top bar */
 .top .wrap { display: flex; align-items: center; justify-content: space-between; gap: 16px; height: 76px; }
 .brand { display: flex; align-items: center; gap: 10px; font: 600 21px/1 var(--display); letter-spacing: -.025em; text-decoration: none; }
+/* The logo: an ink square with a green check; in dark mode the square turns light and the check dark green. */
+.logo rect { fill: var(--ink); }
+.logo path { stroke: var(--logo-check); }
 .brand small { font: 600 11px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-2); padding: 5px 8px; border: 1px solid var(--line); border-radius: var(--r-xs); }
 .user { display: inline-flex; align-items: center; gap: 8px; padding: 4px 12px 4px 4px; border-radius: var(--r-sm); background: var(--card); border: 1px solid var(--line); font: 600 13px/1 var(--mono); }
 main { padding: 16px 0 96px; }

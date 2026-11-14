@@ -206,7 +206,7 @@ const VV = (() => {
   }
 
   function chrome({ area = '', user = null } = {}) {
-    const logo = '<svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="6" fill="#141414"/><path d="M8 17l5 5 11-12" stroke="#33c47a" stroke-width="3.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    const logo = '<svg class="logo" width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="6" fill="#141414"/><path d="M8 17l5 5 11-12" stroke="#33c47a" stroke-width="3.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>';
     const who = user ? `<span class="user">${avatar(user, user, 'sm')}@${esc(user)}</span>` : '';
     document.body.insertAdjacentHTML('afterbegin', `<header class="top"><div class="wrap">
       <a class="brand" href="index.html" aria-label="Vaga Viva, início">${logo}Vaga Viva${area ? `<small>${esc(area)}</small>` : ''}</a>${who}</div></header>`);
