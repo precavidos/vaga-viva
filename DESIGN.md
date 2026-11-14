@@ -57,7 +57,7 @@ Os valores são tokens CSS em `:root`. O modo escuro troca os tokens neutros; as
 | `--night`, `--night-2`, `--night-3` | `#121212`, `#1e1e1e`, `#2a2a2a` | `#0b0b0a`, `#1a1917`, `#26241f` | painéis escuros (código, GitHub, demos, sistema trabalhando) |
 
 Regras:
-- Sobre amarelo, verde ou coral, o texto é sempre `#141414`, nos dois modos. Sobre roxo, o texto é sempre branco.
+- Sobre amarelo, verde, coral ou o cinza de parado (`--idle`), o texto é sempre `#141414`, nos dois modos. Sobre roxo, o texto é sempre branco.
 - Texto colorido sobre papel usa as variantes `-ink`. Nunca use `--green` ou `--coral` como cor de texto pequeno.
 - Cor nunca é o único sinal. Toda situação tem também um ícone e uma palavra, e toda linha da grade de testes tem a contagem em texto.
 - `--dot-empty` tem pelo menos 3:1 sobre `--card` e `--paper` nos dois modos. O ponto vazio é desenhado só com contorno nessa cor; `--line` é claro demais para um ponto que precisa ser visto.

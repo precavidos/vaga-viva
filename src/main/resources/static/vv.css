@@ -74,7 +74,7 @@ h1 mark, h2 mark { color: inherit; }
 
 /* Top bar */
 .top .wrap { display: flex; align-items: center; justify-content: space-between; gap: 16px; height: 76px; }
-.brand { display: flex; align-items: center; gap: 10px; font: 600 21px/1 var(--display); letter-spacing: -.025em; text-decoration: none; }
+.brand { display: flex; align-items: center; gap: 10px; min-height: 44px; font: 600 21px/1 var(--display); letter-spacing: -.025em; text-decoration: none; }
 /* The logo: an ink square with a green check; in dark mode the square turns light and the check dark green. */
 .logo rect { fill: var(--ink); }
 .logo path { stroke: var(--logo-check); }
@@ -102,6 +102,8 @@ main { padding: 16px 0 96px; }
 .btn .status-timer { color: #fff; opacity: .8; }
 .btn [data-dot-matrix] { --dm-color: #fff; }
 .link { background: none; border: 0; padding: 0; font: inherit; font-weight: 600; color: var(--ink); text-decoration: underline; text-underline-offset: 4px; text-decoration-thickness: 2px; text-decoration-color: var(--purple); cursor: pointer; }
+/* A small link on its own line is still a 44 px target (DESIGN.md 7); links inside a sentence keep the line height. */
+.link.small { display: inline-flex; align-items: center; min-height: 44px; }
 .ico, .glyph { width: 1.15em; height: 1.15em; }
 .btn .arrow .glyph { width: 16px; height: 16px; }
 .big-check .glyph { width: 30px; height: 30px; color: #141414; }
@@ -146,7 +148,8 @@ main { padding: 16px 0 96px; }
 [data-status="ADVANCING"] { --st: var(--green); }
 [data-status="COMPLETED"] { --st: var(--purple); }
 .status { background: var(--st); }
-.status[data-status="COMPLETED"], .status[data-status="IDLE"] { color: #fff; }
+.status[data-status="COMPLETED"] { color: #fff; }
+.status[data-status="IDLE"] { color: #141414; } /* white on --idle is 3.6:1; ink is 5.1:1 */
 
 /* Fields */
 .field { display: grid; gap: 6px; }
@@ -311,7 +314,7 @@ a.classroom:hover { border-color: var(--ink); }
 .sees > div { padding: 16px; border-radius: var(--r-md); border: 1px solid var(--line); }
 .sees h3 { display: flex; align-items: center; gap: 8px; font-size: 16px; margin-bottom: 8px; }
 .sees ul { margin: 0; padding-left: 18px; font-size: 14.5px; color: var(--ink-2); display: grid; gap: 4px; }
-.empty { text-align: center; display: grid; gap: 16px; justify-items: center; padding: 48px 16px; }
+.empty { text-align: center; display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; justify-items: center; padding: 48px 16px; } /* one column no wider than the board: the invite link shortens instead of pushing the page */
 
 /* Toast */
 .toast { position: fixed; left: 50%; bottom: 24px; transform: translate(-50%, 80px); background: #141414; color: #f4f1ea; padding: 12px 18px; border-radius: var(--r-sm); font-weight: 600; font-size: 14px; display: flex; gap: 8px; align-items: center; opacity: 0; transition: transform var(--t-base) var(--ease-out), opacity var(--t-base) var(--ease-out); z-index: 40; }
