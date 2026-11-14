@@ -23,7 +23,11 @@
       --line: #dcd7ca;
 
       --purple: #5b3df5;
+      --purple-hover: #5639e6;
       --purple-soft: #e6e0ff;
+      --focus: #5b3df5;
+      --dot-empty: #8f8a7c;
+      --on-color: #141414;
       --yellow: #ffd23f;
       --green: #33c47a;
       --green-ink: #0e6b3c;
@@ -43,6 +47,11 @@
 
       --radius: 28px;
       --radius-sm: 16px;
+
+      /* Direction B (DESIGN.md 2.4, 3): 4 chips and seals, 6 buttons, 8 panels, 12 the screen's main block. */
+      --r-xs: 4px; --r-sm: 6px; --r-md: 8px; --r-lg: 12px;
+      --t-fast: 150ms; --t-base: 280ms; --t-slow: 520ms;
+      --ease-out: cubic-bezier(.2, .8, .2, 1);
     }
     @media (prefers-color-scheme: dark) {
       :root {
@@ -53,6 +62,8 @@
         --ink-2: #b4afa3;
         --line: #34312c;
         --purple-soft: #2c2266;
+        --focus: #8a75ff;
+        --dot-empty: #767166;
         --green-ink: #5ee39c;
         --coral-ink: #ff9a82;
         --night: #0b0b0a;
@@ -73,7 +84,7 @@
     }
     img, svg { display: block; }
     a { color: inherit; }
-    :focus-visible { outline: 3px solid var(--purple); outline-offset: 3px; border-radius: 8px; }
+    :focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
     .wrap { max-width: 1160px; margin: 0 auto; padding: 0 24px; }
     .skip { position: absolute; left: -9999px; }
     .skip:focus { left: 16px; top: 16px; background: var(--card); padding: 8px 12px; z-index: 20; }
@@ -90,17 +101,20 @@
     .eyebrow::before { content: ""; width: 10px; height: 10px; border-radius: 50%; background: var(--purple); }
 
     /* Buttons */
+    /* DESIGN.md 4.1: purple primary (one per screen), outlined secondary, 6 px corners, 1 px lift on hover. */
     .btn {
-      display: inline-flex; align-items: center; gap: 10px;
-      padding: 14px 22px; border-radius: 999px; font: 700 16px/1 var(--body); text-decoration: none;
-      border: 2px solid var(--ink); background: var(--ink); color: var(--paper);
-      transition: transform .15s ease, box-shadow .15s ease;
+      display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 48px;
+      padding: 12px 22px; border-radius: var(--r-sm); font: 700 16px/1.1 var(--body); text-decoration: none;
+      border: 1px solid var(--purple); background: var(--purple); color: #fff;
+      transition: transform var(--t-fast) var(--ease-out), background-color var(--t-fast) var(--ease-out), border-color var(--t-fast) var(--ease-out);
       cursor: pointer;
     }
-    .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 0 var(--purple); }
-    .btn.ghost { background: transparent; color: var(--ink); }
-    .btn.ghost:hover { box-shadow: 0 6px 0 var(--yellow); }
-    .btn .arrow { display: grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; background: var(--yellow); color: #141414; }
+    .btn:hover { transform: translateY(-1px); background: var(--purple-hover); border-color: var(--purple-hover); }
+    .btn:active { transform: none; }
+    .btn.ghost { background: transparent; border-color: var(--line); color: var(--ink); }
+    .btn.ghost:hover { background: transparent; border-color: var(--ink); }
+    .btn .arrow { display: grid; place-items: center; transition: transform var(--t-fast) var(--ease-out); }
+    .btn:hover .arrow { transform: translateX(3px); }
 
     /* Header */
     .top { position: relative; z-index: 5; }
@@ -109,73 +123,115 @@
     .top nav { display: flex; gap: 28px; }
     .top nav a { text-decoration: none; font-weight: 500; font-size: 15px; color: var(--ink-2); }
     .top nav a:hover { color: var(--ink); text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 6px; }
-    .top .btn { padding: 11px 18px; font-size: 15px; }
+    .top .btn { min-height: 44px; padding: 8px 16px; font-size: 15px; }
 
-    /* Hero */
-    .hero { position: relative; padding: 40px 0 120px; overflow-x: clip; }
-    .hero h1, .hero .lead, .hero .actions { position: relative; z-index: 2; }
-    .float-card, .float-chip, .stamp { z-index: 3; }
-    .hero-board {
-      position: relative; background: var(--card); border-radius: 36px; border: 1px solid var(--line);
-      padding: clamp(48px, 8vw, 96px) 24px clamp(64px, 9vw, 110px); text-align: center;
-      box-shadow: 0 30px 60px -30px rgba(20, 20, 20, .25);
+    /* Hero: the title in text only, one paragraph, two buttons, the dot field behind and, beside the title,
+       the posting turning into a plan on a dark panel (DESIGN.md 1, 2.6, 3.1, 3.3, 4.6, 4.12). */
+    .hero { padding: clamp(16px, 4vh, 48px) 0 clamp(48px, 9vh, 96px); }
+    /* The field fades out towards the next section instead of ending on a hard edge. */
+    .hero .dot-field-canvas { -webkit-mask-image: linear-gradient(#000 62%, transparent); mask-image: linear-gradient(#000 62%, transparent); }
+    .hero-grid { display: grid; grid-template-columns: minmax(0, .95fr) minmax(0, 1.05fr); gap: clamp(32px, 5vw, 72px); align-items: center; }
+    .hero h1 { font-size: clamp(34px, 5vw, 48px); line-height: 1.04; font-weight: 600; letter-spacing: -.025em; max-width: 12em; }
+    .hero .lead { font-size: 18px; line-height: 1.55; color: var(--ink-2); max-width: 31em; margin: 20px 0 32px; }
+    .hero .actions { display: flex; flex-wrap: wrap; gap: 12px; }
+
+    .demo { margin: 0; min-width: 0; display: grid; gap: 16px; padding: 20px; background: var(--night-2); color: var(--night-text); border: 1px solid var(--night-3); border-radius: var(--r-md); }
+    .demo-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 18px; font: 600 12px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--night-muted); }
+    .demo-state { display: inline-flex; align-items: center; gap: 8px; font: 600 12.5px/1 var(--mono); letter-spacing: 0; text-transform: none; color: var(--night-text); }
+    .demo-label { margin: 0 0 8px; font: 600 11px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--night-muted); }
+
+    /* The posting clip: paper in both modes, a dashed cut line, the scissors label, never tilted. */
+    .demo-clip { position: relative; overflow: hidden; margin: 0; padding: 38px 18px 16px; background: #f4f1ea; color: #141414; border-radius: var(--r-md); }
+    .demo-clip::before { content: ""; position: absolute; inset: 6px; border: 1px dashed #a9a393; border-radius: var(--r-xs); pointer-events: none; }
+    .demo-clip .clip-tag { position: absolute; left: 18px; top: 14px; display: flex; align-items: center; gap: 6px; padding: 0 6px; margin-left: -6px; background: #f4f1ea; font: 600 11px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: #4a4740; }
+    .demo-clip .clip-tag svg { width: 14px; height: 14px; }
+    .demo-clip .demo-job { position: relative; font: 600 17px/1.3 var(--display); letter-spacing: -.015em; margin: 0 0 6px; }
+    .demo-clip p { position: relative; margin: 0; font-size: 15px; line-height: 1.6; }
+    .demo mark { color: inherit; padding: 0 .1em; border-radius: var(--r-xs); background: linear-gradient(transparent 10%, var(--hl, var(--yellow)) 10%, var(--hl, var(--yellow)) 92%, transparent 92%) no-repeat 0 0 / 100% 100%; transition: background-size var(--t-slow) var(--ease-out); }
+    .demo mark[data-kind="level"] { --hl: #c9bdff; }
+    .demo-scan { position: absolute; left: 6px; right: 6px; top: 6px; height: 40px; border-bottom: 2px solid var(--yellow); background: rgba(255, 210, 63, .28); opacity: 0; pointer-events: none; }
+
+    .demo-skills { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+    .demo-skills li { display: inline-flex; align-items: baseline; gap: 6px; padding: 7px 10px; border-radius: var(--r-xs); background: var(--night-3); font: 600 12.5px/1.1 var(--mono); transition: opacity var(--t-base) var(--ease-out), transform var(--t-base) var(--ease-out); }
+    .demo-skills small { font: 500 11px/1 var(--body); color: var(--night-muted); }
+    .demo .dc-noise { color: var(--night-muted); }
+
+    .demo-plan ol { list-style: none; margin: 0; padding: 0; }
+    .demo-plan li { display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; align-items: center; gap: 12px; padding: 9px 0; border-top: 1px solid var(--night-3); font-size: 14.5px; line-height: 1.3; transition: opacity var(--t-base) var(--ease-out), transform var(--t-base) var(--ease-out); }
+    .demo-plan .num { display: inline-grid; place-items: center; min-width: 30px; height: 22px; padding: 0 6px; border-radius: var(--r-xs); border: 1px solid #4a4740; font: 600 11.5px/1 var(--mono); color: var(--night-text); }
+    .demo-dots { display: flex; gap: 5px; }
+    .demo-dots i { width: 10px; height: 10px; border-radius: 50%; background: var(--coral); }
+    .demo-count { min-width: 3ch; text-align: right; font: 600 12px/1 var(--mono); color: var(--night-muted); }
+    .demo-note { margin: 10px 0 0; font-size: 13.5px; color: var(--night-muted); transition: opacity var(--t-base) var(--ease-out); }
+
+    /* Before the run (.is-armed, set only when it will play): no marks, no chips, no missions. Without JS or with
+       reduced motion the panel is already in its final state. Off screen (.is-paused) the run waits. */
+    .demo.is-armed mark:not(.on) { background-size: 0% 100%; }
+    .demo.is-armed .demo-skills li:not(.on) { opacity: 0; transform: scale(.92); }
+    .demo.is-armed .demo-plan li:not(.on) { opacity: 0; transform: translateY(10px); }
+    .demo.is-armed .demo-note:not(.on) { opacity: 0; }
+    .demo-scan.run { animation: demo-sweep .9s var(--ease-out); }
+    .demo.is-paused .demo-scan { animation-play-state: paused; }
+    @keyframes demo-sweep { 0% { opacity: 1; transform: translateY(0); } 85% { opacity: 1; } 100% { opacity: 0; transform: translateY(var(--sweep, 160px)); } }
+    @media (prefers-reduced-motion: reduce) { .demo *, .demo mark { transition: none !important; animation: none !important; } }
+    @media (max-width: 900px) {
+      .hero-grid { grid-template-columns: minmax(0, 1fr); gap: 32px; }
+      .hero h1 { max-width: 14em; }
     }
-    .hero h1 {
-      font-size: clamp(40px, 8.4vw, 104px); line-height: 1.04; font-weight: 800; letter-spacing: -.04em;
-      max-width: 12.5em; margin: 0 auto;
+    /* On a phone the whole top fits the first screen: a shorter bar, both buttons on one line, two missions. */
+    @media (max-width: 520px) {
+      .top .wrap { height: 68px; }
+      .hero { padding: 4px 0 40px; }
+      .hero-grid { gap: 24px; }
+      .hero .lead { font-size: 16px; margin: 12px 0 20px; }
+      .hero .actions { gap: 8px; }
+      .hero .actions { flex-wrap: nowrap; }
+      .hero .actions .btn { flex: 1 1 auto; min-width: 0; padding: 12px 10px; font-size: 15px; gap: 6px; white-space: nowrap; }
+      .demo { padding: 14px; gap: 12px; }
+      .demo-clip { padding: 32px 12px 12px; }
+      .demo-clip .clip-tag { left: 12px; top: 12px; }
+      .demo-clip .demo-job { font-size: 16px; }
+      .demo-clip p { font-size: 14px; line-height: 1.5; }
+      .demo-skills li { padding: 6px 8px; font-size: 12px; }
+      .demo-plan li { gap: 10px; padding: 7px 0; font-size: 14px; }
+      .demo-plan li:nth-child(n + 3) { display: none; }
+      .demo-note { margin-top: 6px; font-size: 13px; }
     }
-    .pill {
-      display: inline-flex; align-items: center; justify-content: center; gap: .14em;
-      height: .86em; padding: 0 .28em; border-radius: 999px; vertical-align: -.06em;
-      font-size: 1em; margin: 0 .04em;
-    }
-    .pill.job { background: var(--yellow); padding: 0 .22em; }
-    .pill.job { display: inline-grid; }
-    .swap { grid-area: 1 / 1; display: inline-flex; align-items: center; justify-content: center; gap: .14em; }
-    .swap.a { animation: swap-a 9s infinite var(--ease, ease); }
-    .swap.b { animation: swap-b 9s infinite var(--ease, ease); }
-    @keyframes swap-a { 0%, 42% { opacity: 1; transform: none; } 50%, 92% { opacity: 0; transform: translateY(-35%); } 100% { opacity: 1; transform: none; } }
-    @keyframes swap-b { 0%, 42% { opacity: 0; transform: translateY(35%); } 50%, 92% { opacity: 1; transform: none; } 100% { opacity: 0; transform: translateY(35%); } }
-    @media (prefers-reduced-motion: reduce) { .swap.a, .swap.b { animation: none; } .swap.b { display: none; } }
-    .pill.job .swap > span {
-      font: 600 .2em/1 var(--mono); letter-spacing: 0; background: #141414; color: var(--yellow);
-      padding: .45em .7em; border-radius: 999px;
-    }
-    .pill.tests { background: #141414; gap: .1em; padding: 0 .2em; }
-    .pill.tests i { width: .42em; height: .42em; border-radius: 50%; background: var(--green); }
-    .pill.tests i.fail { background: var(--coral); }
-    .pill.ask { background: var(--purple); color: #fff; width: .86em; padding: 0; font-size: 1em; }
-    .pill.ask b { font: 800 .62em/1 var(--display); }
-    .hero .lead { font-size: clamp(18px, 2vw, 21px); color: var(--ink-2); max-width: 36em; margin: 28px auto 34px; }
-    .hero .actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; }
+    @media (max-width: 380px) { .hero .actions { flex-wrap: wrap; } }
 
     .zig { position: absolute; pointer-events: none; }
     .zig path { fill: none; stroke-linecap: round; stroke-linejoin: round; }
-    .zig-a { left: -80px; bottom: 150px; width: 260px; z-index: 1; }
-    .zig-b { right: -90px; bottom: 210px; width: 240px; z-index: 1; }
-    .doodle { position: absolute; pointer-events: none; color: var(--ink); }
-    .doodle-a { left: 4%; top: 7%; width: 46px; }
-    .doodle-b { right: 6%; top: 10%; width: 44px; transform: scaleX(-1); }
-    @media (max-width: 1240px) { .zig-b, .float-chip { display: none !important; } }
 
-    .float-card {
-      position: absolute; left: 4%; bottom: -70px; width: 270px; text-align: left;
-      background: #141414; color: #f4f1ea; border-radius: var(--radius-sm); padding: 16px 18px; font-size: 14px;
-      box-shadow: 0 20px 40px -20px rgba(0,0,0,.5); transform: rotate(-3deg);
+    /* copied from docs/design/prototipos/vv-motion.* */
+    /* Only the components the landing uses: the dot matrix (scan and wave), the dot field and decrypt. */
+    [data-dot-matrix] {
+      --dm-dot: 4px; --dm-gap: 2px; --dm-cycle: 1.6s;
+      display: inline-grid; grid-template-columns: repeat(4, var(--dm-dot)); gap: var(--dm-gap);
+      flex: none; vertical-align: middle;
     }
-    .float-card .who { display: flex; align-items: center; gap: 8px; font: 700 13px/1 var(--display); padding-bottom: 12px; margin-bottom: 12px; border-bottom: 1px solid #333; }
-    .float-card .who i { width: 22px; height: 22px; border-radius: 50%; background: var(--purple); display: grid; place-items: center; font: 800 13px/1 var(--display); font-style: normal; color: #fff; }
-    .float-card p { margin: 0; line-height: 1.45; color: #d9d5cb; }
-    .float-chip {
-      position: absolute; right: 5%; bottom: 13%;
-      display: flex; align-items: center; gap: 8px;
-      background: #141414; color: #fff; font: 700 15px/1 var(--body); padding: 14px 20px; border-radius: 999px;
+    [data-dot-matrix] i { position: relative; display: block; width: var(--dm-dot); height: var(--dm-dot); border-radius: 50%; background: var(--dm-color); }
+    [data-dot-matrix="scan"] { --dm-color: var(--yellow); }
+    [data-dot-matrix="wave"] { --dm-color: var(--purple); }
+    [data-dot-matrix="scan"].is-running i { animation: vvm-dot-pulse var(--dm-cycle) var(--ease-out) infinite both; animation-delay: calc(var(--r) * var(--dm-cycle) / 4); }
+    [data-dot-matrix="wave"].is-running i { animation: vvm-dot-pulse var(--dm-cycle) var(--ease-out) infinite both; animation-delay: calc((var(--r) + var(--c)) * var(--dm-cycle) / 10); }
+    [data-dot-matrix].is-offscreen i { animation-play-state: paused; }
+    @keyframes vvm-dot-pulse {
+      0% { opacity: .22; transform: scale(.7); }
+      12% { opacity: 1; transform: scale(1); }
+      34%, 100% { opacity: .22; transform: scale(.7); }
     }
-    .float-chip svg { position: absolute; left: -26px; top: -22px; }
-    .stamp { position: absolute; right: 6%; bottom: -54px; width: 118px; height: 118px; }
-    .stamp .ring { animation: spin 22s linear infinite; transform-origin: 50% 50%; }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    @media (prefers-reduced-motion: reduce) { .stamp .ring { animation: none; } }
+    [data-dot-field] { --df-dot: var(--dot-empty); --df-hot: var(--green); position: relative; isolation: isolate; }
+    .dot-field-canvas { position: absolute; inset: 0; z-index: -1; width: 100%; height: 100%; border-radius: inherit; pointer-events: none; }
+    [data-decrypt].is-decrypting { position: relative; }
+    .dc-ghost { visibility: hidden; }
+    .dc-run { position: absolute; inset: 0; overflow: hidden; overflow-wrap: anywhere; }
+    .dc-noise { color: var(--ink-2); font-family: var(--mono); font-weight: 600; }
+    .dc-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+    [data-dot-matrix].is-still i { animation: none !important; transition: none !important; }
+    @media (prefers-reduced-motion: reduce) {
+      [data-dot-matrix] i { animation: none !important; transition: none !important; }
+    }
+    /* end of the copy */
 
     /* Showcase (dark) */
     .night { background: var(--night); color: var(--night-text); position: relative; overflow: hidden; }
@@ -377,18 +433,6 @@
     .ico { width: 1.15em; height: 1.15em; fill: currentColor; flex: none; }
     .hb-word { font: 600 1em/1 var(--mono); letter-spacing: -.02em; }
     .hb-word b { font-weight: 600; color: #00a845; }
-    .hb-badge {
-      display: inline-flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: center;
-      margin: 0 auto 28px; padding: 8px 16px 8px 8px; border-radius: 999px;
-      background: #000; color: #ededed; text-decoration: none; font-size: 14px;
-      position: relative; z-index: 2; transition: transform .15s ease;
-    }
-    .hb-badge:hover { transform: translateY(-2px); }
-    .hb-badge img { width: 28px; height: 28px; border-radius: 50%; background: #0b3b21; padding: 4px; image-rendering: pixelated; }
-    .hb-badge .hb-word { font-size: 15px; }
-    .hb-badge .hb-word b { color: #00d95a; }
-    .hb-badge .sep { width: 1px; height: 16px; background: #444; }
-    .hb-badge .trail { color: #c9c9c9; }
 
     .stack { padding: 0 0 96px; }
     .stack-inner { display: flex; align-items: center; gap: 20px 40px; flex-wrap: wrap; justify-content: center; }
@@ -430,13 +474,7 @@
     @media (max-width: 760px) {
       .top nav { display: none; }
       .aud-grid { grid-template-columns: 1fr; }
-      .hero { padding: 16px 0 96px; }
-      .hero-board { border-radius: 28px; }
-      .float-card { position: relative; left: auto; bottom: auto; margin: 40px auto -110px; transform: rotate(-2deg); }
-      .stamp { display: none; }
       .night .zig-c { top: -190px; right: -220px; }
-      .doodle, .zig-b { display: none; }
-      .zig-a { left: -90px; bottom: 120px; width: 220px; }
       .showcase, .how, .principles, .status { padding: 88px 0; }
       .b2 .mini-plan, .b3 .dots { position: static; margin-bottom: 8px; }
       .b2 .mini-plan { width: 70%; }
@@ -446,7 +484,6 @@
     @media (max-width: 520px) {
       body { font-size: 16px; }
       .wrap { padding: 0 16px; }
-      .hero-board { padding-left: 16px; padding-right: 16px; }
       .top .btn span.long { display: none; }
       .bento li { padding: 22px; }
       .bento h3 { font-size: 26px; margin-top: 28px; }
@@ -455,9 +492,6 @@
       .rules li { grid-template-columns: 1fr; gap: 12px; padding: 18px; }
       .thread, .pr-bar, .pr-foot { padding-left: 16px; padding-right: 16px; }
       .dash-cols { grid-template-columns: 1fr; }
-      .hb-badge { border-radius: 18px; padding: 10px 14px; gap: 6px 10px; }
-      .hb-badge .sep { display: none; }
-      .hb-badge .trail { width: 100%; font-size: 13px; }
     }
   </style>
   <script>document.documentElement.className += ' js';</script>
@@ -497,53 +531,53 @@
 
   <main id="conteudo">
     <!-- Hero -->
-    <section class="hero" aria-labelledby="titulo">
-      <div class="wrap">
-        <div class="hero-board">
-          <svg class="doodle doodle-a" viewBox="0 0 50 50" aria-hidden="true"><path d="M8 40 C 4 26, 8 14, 20 6 M24 44 C 22 32, 26 22, 36 16" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round"/></svg>
-          <svg class="doodle doodle-b" viewBox="0 0 50 50" aria-hidden="true"><path d="M6 14 C 18 22, 30 22, 44 12 M10 30 C 20 36, 32 36, 40 30" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round"/></svg>
-
-          <a class="hb-badge" href="https://hackbrasil.com">
-            <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAACXBIWXMAAAsTAAALEwEAmpwYAAABA0lEQVR4nO2XwRHDIAwEt053rmqUCuzEBBBw97gvI5aVAIAUDykeUjykeEjx0GehuO7zdh0DwAawZAvEg9pPLdAaA2BxA2JwDABxA2KKFRgAOxnQ3wT2BNAPDgbACafebgUGwMkn/90EDACFk//ZgFigSAO4PAMYr77YEPzrJRgPi1ZvzACuCQaw+VO522eIzcB0/w1iALkVhFIDMIC0AaHeAhS1xLu6MABsAG4BPAPwEMS3AHtfg211Me8WGAmjvRYMgCoIb00YUwMGwOoGjK0BA8AGsKb6R7dAKAOIJTZuAOu3wLEGYAB5C2L+YVBjwJ0RBoCoAZSFFA8pHlI8VBdQmg+Bf+ruJ0+RPgAAAABJRU5ErkJggg==" width="28" height="28" alt="">
-            <span class="hb-word" aria-label="Hack Brasil">hack<b>brasil</b></span>
-            <span class="sep" aria-hidden="true"></span>
-            <span class="trail">2026 · Trilha Acesso à educação</span>
-          </a>
-          <h1 id="titulo">
-            Cole uma vaga <span class="pill job" aria-hidden="true"><span class="swap a"><span>Java</span><span>Spring</span></span><span class="swap b"><span>TypeScript</span><span>Nest</span></span></span>
-            ganhe <span class="pill tests" aria-hidden="true"><i></i><i></i><i class="fail"></i></span> um projeto
-            que te faz <span class="pill ask" aria-hidden="true"><b>?</b></span> pensar.
-          </h1>
-          <p class="lead">O aluno cola uma vaga de emprego real e recebe no próprio GitHub um projeto de estudo sob medida: missões, testes que falham até ele implementar e um revisor que faz perguntas em vez de dar a resposta.</p>
+    <section class="hero" aria-labelledby="titulo" data-dot-field>
+      <div class="wrap hero-grid">
+        <div class="hero-copy">
+          <h1 id="titulo">Uma vaga real vira um projeto no seu GitHub.</h1>
+          <p class="lead">Cole o texto de uma vaga de emprego. Você recebe um repositório com missões, testes que falham até você implementar e um revisor que faz perguntas em vez de dar a resposta.</p>
           <div class="actions">
-            <a class="btn" href="#como-funciona">Como funciona <span class="arrow" aria-hidden="true">↓</span></a>
+            <a class="btn" href="#como-funciona">Ver como funciona <span class="arrow" aria-hidden="true">↓</span></a>
             <a class="btn ghost" href="https://github.com/precavidos/vaga-viva"><svg class="ico" aria-hidden="true"><use href="#i-github"/></svg>Código no GitHub</a>
           </div>
+        </div>
 
-          <aside class="float-card" aria-label="Exemplo de pergunta do revisor">
-            <div class="who"><i aria-hidden="true">?</i> Revisor do Vaga Viva</div>
-            <p>O teste espera 10 consultas na página 2, mas vieram 20. Onde o tamanho da página é definido?</p>
-          </aside>
+        <!-- Fictional posting in the product's format: every mark is a recognized term, every competency
+             names the term that is its evidence, and the missions are the first ones of the plan. -->
+        <figure class="demo" id="demo" aria-labelledby="demo-titulo">
+          <figcaption class="demo-head">
+            <span id="demo-titulo">Vaga de exemplo</span>
+            <span class="demo-state" id="demo-state" aria-hidden="true">Plano pronto</span>
+          </figcaption>
 
-          <div class="float-chip" aria-hidden="true">
-            <svg width="30" height="30" viewBox="0 0 24 24"><path d="M3 2l18 8-8 2-3 8z" fill="currentColor" style="color: var(--ink)"/></svg>
-            Modo turma
+          <article class="demo-clip">
+            <span class="clip-tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="6" r="2.5"/><circle cx="6" cy="18" r="2.5"/><path d="M8 7.5L20 18M8 16.5L20 6"/></svg>vaga</span>
+            <p class="demo-job">Pessoa desenvolvedora backend <mark data-kind="level">Júnior</mark></p>
+            <p>Buscamos quem tenha experiência com <mark>Java</mark> e <mark>Spring Boot</mark>, construção de <mark>APIs REST</mark> e banco de dados <mark>SQL</mark>. Trabalho híbrido, em equipe pequena.</p>
+            <span class="demo-scan" aria-hidden="true"></span>
+          </article>
+
+          <div>
+            <p class="demo-label">Competências</p>
+            <ul class="demo-skills">
+              <li><span data-demo-decrypt>Programação em Java</span> <small>por "Java"</small></li>
+              <li><span data-demo-decrypt>Spring Framework</span> <small>por "Spring Boot"</small></li>
+              <li><span data-demo-decrypt>Design de APIs</span> <small>por "APIs REST"</small></li>
+              <li><span data-demo-decrypt>SQL</span> <small>por "SQL"</small></li>
+            </ul>
           </div>
 
-          <svg class="stamp" viewBox="0 0 120 120" aria-hidden="true">
-            <circle cx="60" cy="60" r="58" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/>
-            <g class="ring">
-              <path id="ring-path" d="M60,60 m-44,0 a44,44 0 1,1 88,0 a44,44 0 1,1 -88,0" fill="none"/>
-              <text font-family="JetBrains Mono, monospace" font-size="10.5" font-weight="600" letter-spacing="2.2" fill="var(--ink)">
-                <textPath href="#ring-path">HACK BRASIL 2026 · ACESSO À EDUCAÇÃO ·</textPath>
-              </text>
-            </g>
-            <path d="M52 50l10 10 10-10M62 60v14" stroke="var(--purple)" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round" transform="rotate(-45 62 62)"/>
-          </svg>
-        </div>
+          <div class="demo-plan">
+            <p class="demo-label">Primeiras missões de 6</p>
+            <ol>
+              <li><span class="num" aria-hidden="true">01</span><span>Cadastro de pacientes</span><span class="demo-dots" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span class="demo-count"><span aria-hidden="true">0/4</span><span class="sr">: 4 testes, nenhum passando ainda</span></span></li>
+              <li><span class="num" aria-hidden="true">02</span><span>Pacientes no banco de dados</span><span class="demo-dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="demo-count"><span aria-hidden="true">0/3</span><span class="sr">: 3 testes, nenhum passando ainda</span></span></li>
+              <li><span class="num" aria-hidden="true">03</span><span>Listagem paginada de consultas</span><span class="demo-dots" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span class="demo-count"><span aria-hidden="true">0/4</span><span class="sr">: 4 testes, nenhum passando ainda</span></span></li>
+            </ol>
+            <p class="demo-note">Os testes ficam vermelhos até você implementar.</p>
+          </div>
+        </figure>
       </div>
-      <svg class="zig zig-a" viewBox="0 0 300 120" aria-hidden="true"><path d="M10 100 L70 40 L95 90 L150 20 L175 80 L240 30 L290 60" stroke="var(--green)" stroke-width="26"/></svg>
-      <svg class="zig zig-b" viewBox="0 0 280 120" aria-hidden="true"><path d="M10 80 L60 30 L90 90 L140 30 L170 70 L270 40" stroke="var(--green)" stroke-width="24"/></svg>
     </section>
 
     <!-- Stack -->
@@ -856,6 +890,359 @@
     </div>
   </footer>
 
+  <script>
+    /* copied from docs/design/prototipos/vv-motion.* */
+    // Only the components the landing uses: the dot matrix, the dot field and decrypt. Keep in sync with the source.
+    (() => {
+      const REDUCED = '(prefers-reduced-motion: reduce)';
+      const reduced = () => window.matchMedia(REDUCED).matches;
+      const easeOutCubic = (p) => 1 - (1 - p) ** 3;
+
+      // ---------- Registry ----------
+      const components = [];
+      const bound = new WeakMap(); // element -> Set of component indexes already bound to it
+      const register = (selector, bind) => components.push({ selector, bind });
+
+      function init(root = document) {
+        components.forEach(({ selector, bind }, index) => {
+          const matches = [...root.querySelectorAll(selector)];
+          if (root instanceof Element && root.matches(selector)) matches.unshift(root);
+          for (const el of matches) {
+            let done = bound.get(el);
+            if (!done) bound.set(el, (done = new Set()));
+            if (done.has(index)) continue;
+            done.add(index);
+            bind(el);
+          }
+        });
+      }
+
+      // ---------- Dot matrix ----------
+      // The element is empty in the HTML; 16 dots are injected with their row and column as custom properties.
+      // scan and wave are CSS loops (.is-running); flip is stepped here because each dot stays green until the reset.
+      const FLIP_ORDER = [5, 0, 10, 3, 12, 7, 1, 14, 9, 4, 15, 2, 11, 6, 13, 8];
+      const FLIP_STEP = 90; // 16 dots × 90 ms = 1.44 s, then all green until the 1.6 s cycle resets.
+      const CYCLE = 1600;
+      const matrices = new WeakMap();
+
+      function bindMatrix(el) {
+        el.setAttribute('aria-hidden', 'true');
+        el.innerHTML = Array.from({ length: 16 }, (_, i) => `<i style="--r:${Math.floor(i / 4)};--c:${i % 4}"></i>`).join('');
+        const dots = [...el.children];
+        let timer = 0;
+        // Off screen the loop pauses: the CSS animations through .is-offscreen, the flip steps through `visible`.
+        // The element is watched only while the loop runs, so a stopped matrix that leaves the page is not kept alive.
+        let visible = true;
+        const watcher = 'IntersectionObserver' in window ? new IntersectionObserver((entries) => {
+          if (!el.isConnected) { watcher.disconnect(); return; } // replaced, as a busy button's content is
+          visible = entries[entries.length - 1].isIntersecting; // the newest entry wins when several are queued
+          el.classList.toggle('is-offscreen', !visible);
+        }) : null;
+
+        const clear = () => { clearInterval(timer); timer = 0; watcher?.disconnect(); };
+        const ctrl = {
+          start() {
+            clear();
+            watcher?.observe(el);
+            el.classList.remove('is-done');
+            dots.forEach((d) => d.classList.remove('is-on'));
+            if (reduced()) { el.classList.add('is-still'); el.classList.remove('is-running'); return; }
+            el.classList.remove('is-still');
+            el.classList.add('is-running');
+            if (el.dataset.dotMatrix !== 'flip') return;
+            const t0 = performance.now();
+            let lit = 0;
+            let cycle = 0;
+            timer = setInterval(() => {
+              if (!visible) return;
+              const elapsed = performance.now() - t0;
+              const t = elapsed % CYCLE;
+              const want = t >= CYCLE - FLIP_STEP ? 0 : Math.min(16, Math.floor(t / FLIP_STEP) + 1);
+              const turn = Math.floor(elapsed / CYCLE);
+              if (want === lit && turn === cycle) return;
+              if (want < lit || turn !== cycle) { // a new cycle: reset without the fade, so the grid snaps back to coral
+                cycle = turn;
+                el.classList.add('is-reset');
+                dots.forEach((d) => d.classList.remove('is-on'));
+                void el.offsetWidth;
+                el.classList.remove('is-reset');
+                lit = 0;
+              }
+              for (; lit < want; lit++) dots[FLIP_ORDER[lit]].classList.add('is-on');
+            }, 30);
+          },
+          // Ends the loop. done: the final state of the pattern (flip all green); otherwise still as it is drawn at rest.
+          stop(done) {
+            clear();
+            el.classList.remove('is-running');
+            el.classList.toggle('is-still', reduced());
+            el.classList.toggle('is-done', !!done);
+            if (!done) dots.forEach((d) => d.classList.remove('is-on'));
+          },
+        };
+        matrices.set(el, ctrl);
+        // Inside a status line the loop waits for statusLine(); a matrix on its own runs from the start.
+        if (el.closest('.status-line')) ctrl.stop(false);
+        else ctrl.start();
+      }
+      register('[data-dot-matrix]', bindMatrix);
+
+      // ---------- Dot field ----------
+      // The only <canvas> of a page, inserted behind the wrapper's content. Near the cursor the dots turn green and
+      // move a few px away, then drift back slowly. The rAF loop runs only while something moves and the field is
+      // on screen; with touch (pointer: coarse) or reduced motion the grid is drawn once and stays still.
+      const FIELD = { gap: 22, radius: 1.6, reach: 96, push: 6, baseAlpha: 0.5, tauIn: 70, tauOut: 650 };
+      const COARSE = '(pointer: coarse)';
+      const DARK = '(prefers-color-scheme: dark)';
+
+      function bindDotField(el) {
+        if (document.querySelector('canvas.dot-field-canvas')) return; // one canvas per page (DESIGN.md 3.2)
+        const canvas = document.createElement('canvas');
+        canvas.className = 'dot-field-canvas';
+        canvas.setAttribute('aria-hidden', 'true');
+        el.prepend(canvas);
+        const ctx = canvas.getContext('2d');
+        let width = 0, height = 0, dots = [], base = [0, 0, 0], hot = [0, 0, 0];
+        let pointer = null, raf = 0, last = 0, visible = false;
+        const still = () => reduced() || window.matchMedia(COARSE).matches;
+
+        // Reads a CSS colour through the canvas, which normalises any notation to #rrggbb.
+        const rgb = (value) => {
+          ctx.fillStyle = '#000';
+          ctx.fillStyle = value.trim() || '#000';
+          const hex = ctx.fillStyle.startsWith('#') ? ctx.fillStyle : '#000000';
+          return [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
+        };
+        const readColors = () => {
+          const style = getComputedStyle(el);
+          base = rgb(style.getPropertyValue('--df-dot'));
+          hot = rgb(style.getPropertyValue('--df-hot'));
+        };
+
+        const layout = () => {
+          const box = el.getBoundingClientRect();
+          width = box.width; height = box.height;
+          const dpr = Math.min(2, window.devicePixelRatio || 1);
+          canvas.width = Math.round(width * dpr); canvas.height = Math.round(height * dpr);
+          ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+          const cols = Math.floor(width / FIELD.gap), rows = Math.floor(height / FIELD.gap);
+          const x0 = (width - (cols - 1) * FIELD.gap) / 2, y0 = (height - (rows - 1) * FIELD.gap) / 2;
+          dots = [];
+          for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) dots.push({ x: x0 + c * FIELD.gap, y: y0 + r * FIELD.gap, dx: 0, dy: 0, heat: 0 });
+        };
+
+        const draw = () => {
+          ctx.clearRect(0, 0, width, height);
+          const [br, bg, bb] = base;
+          ctx.fillStyle = `rgba(${br},${bg},${bb},${FIELD.baseAlpha})`; // the resting dots in one path
+          ctx.beginPath();
+          for (const d of dots) if (d.heat < 0.01) { ctx.moveTo(d.x + FIELD.radius, d.y); ctx.arc(d.x, d.y, FIELD.radius, 0, Math.PI * 2); }
+          ctx.fill();
+          for (const d of dots) {
+            if (d.heat < 0.01) continue;
+            const h = d.heat, mix = (a, b) => Math.round(a + (b - a) * h);
+            ctx.fillStyle = `rgba(${mix(br, hot[0])},${mix(bg, hot[1])},${mix(bb, hot[2])},${FIELD.baseAlpha + (1 - FIELD.baseAlpha) * h})`;
+            ctx.beginPath();
+            ctx.arc(d.x + d.dx, d.y + d.dy, FIELD.radius + h * 0.8, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        };
+
+        const stopLoop = () => { cancelAnimationFrame(raf); raf = 0; };
+        const frame = (now) => {
+          raf = 0;
+          if (!el.isConnected) return teardown();
+          // A frame's timestamp can precede the performance.now() read in wake(): never step with a negative dt.
+          const dt = now > last ? Math.min(64, now - last) : 16; last = now;
+          let moving = 0;
+          for (const d of dots) {
+            let tx = 0, ty = 0, th = 0;
+            if (pointer) {
+              const vx = d.x - pointer.x, vy = d.y - pointer.y, dist = Math.hypot(vx, vy);
+              if (dist < FIELD.reach) {
+                const f = 1 - dist / FIELD.reach, s = f * f * (3 - 2 * f);
+                th = s;
+                if (dist > 0.01) { tx = (vx / dist) * FIELD.push * s; ty = (vy / dist) * FIELD.push * s; }
+              }
+            }
+            const k = 1 - Math.exp(-dt / (th > d.heat ? FIELD.tauIn : FIELD.tauOut)); // fast towards the cursor, slow back
+            const ndx = d.dx + (tx - d.dx) * k, ndy = d.dy + (ty - d.dy) * k, nh = d.heat + (th - d.heat) * k;
+            moving = Math.max(moving, Math.abs(ndx - d.dx), Math.abs(ndy - d.dy), Math.abs(nh - d.heat) * 10);
+            d.dx = ndx; d.dy = ndy; d.heat = nh < 0.002 && th === 0 ? 0 : nh;
+          }
+          draw();
+          if (moving > 0.01) raf = requestAnimationFrame(frame); // settled: the loop ends until the next pointer move
+        };
+        const wake = () => {
+          if (raf || !visible || still()) return;
+          last = performance.now();
+          raf = requestAnimationFrame(frame);
+        };
+        const rest = () => { stopLoop(); for (const d of dots) { d.dx = 0; d.dy = 0; d.heat = 0; } draw(); };
+
+        const onMove = (event) => {
+          if (event.pointerType === 'touch' || still()) return;
+          const box = el.getBoundingClientRect();
+          pointer = { x: event.clientX - box.left, y: event.clientY - box.top };
+          wake();
+        };
+        const onLeave = () => { pointer = null; wake(); };
+        const onScheme = () => { readColors(); draw(); };
+        const onMotion = () => { if (still()) { pointer = null; rest(); } };
+        const media = [[DARK, onScheme], [REDUCED, onMotion], [COARSE, onMotion]].map(([q, fn]) => {
+          const mq = window.matchMedia(q);
+          mq.addEventListener?.('change', fn);
+          return () => mq.removeEventListener?.('change', fn);
+        });
+        const sizer = new ResizeObserver(() => { layout(); draw(); wake(); });
+        const watcher = new IntersectionObserver(([entry]) => {
+          if (!el.isConnected) return teardown();
+          visible = entry.isIntersecting;
+          if (visible) wake(); else { stopLoop(); pointer = null; } // off screen: no frames at all, and no stale cursor on return
+        });
+        function teardown() {
+          stopLoop(); sizer.disconnect(); watcher.disconnect(); media.forEach((off) => off());
+          el.removeEventListener('pointermove', onMove); el.removeEventListener('pointerleave', onLeave);
+        }
+        el.addEventListener('pointermove', onMove);
+        el.addEventListener('pointerleave', onLeave);
+        readColors(); layout(); draw();
+        sizer.observe(el);
+        watcher.observe(el);
+      }
+      register('[data-dot-field]', bindDotField);
+
+      // ---------- Decrypt ----------
+      // The name resolves left to right from symbols in up to 600 ms. The final text in the DOM is the source of truth:
+      // during the run the noise is aria-hidden and a visually hidden copy holds the final text; at the end the element
+      // holds the plain final text. No aria-label, which screen readers ignore or double-read on a generic span.
+      const GLYPHS = '·:•+×#%&/<>=*';
+      const decrypting = new WeakMap(); // element -> { raf, resolve }
+      const noise = () => GLYPHS[Math.floor(Math.random() * GLYPHS.length)];
+
+      function decrypt(el, text) {
+        const final = String(text ?? '');
+        const prev = decrypting.get(el);
+        if (prev) { cancelAnimationFrame(prev.raf); prev.resolve(); decrypting.delete(el); }
+        el.classList.remove('is-decrypting');
+        if (reduced() || !final.trim()) { el.textContent = final; return Promise.resolve(); }
+
+        el.classList.add('is-decrypting');
+        el.innerHTML = '<span class="dc-ghost" aria-hidden="true"></span><span class="dc-run" aria-hidden="true"><span class="dc-done"></span><span class="dc-noise"></span></span><span class="dc-sr"></span>';
+        const [ghost, , sr] = el.children;
+        const done = el.querySelector('.dc-done'), rest = el.querySelector('.dc-noise');
+        ghost.textContent = final; sr.textContent = final; // the ghost alone sizes the box; the run layer sits over it
+        const chars = [...final];
+        rest.textContent = chars.map((c) => (c.trim() ? noise() : c)).join(''); // all noise from the first paint, never a blank
+        const duration = Math.min(580, 180 + chars.length * 22); // 580 leaves a frame of slack inside the 600 ms
+        const t0 = performance.now();
+        let shown = -1, tick = -1;
+        return new Promise((resolve) => {
+          const job = { raf: 0, resolve };
+          decrypting.set(el, job);
+          const frame = (now) => {
+            const p = Math.min(1, (now - t0) / duration);
+            const resolvedCount = Math.floor(p * chars.length);
+            const step = Math.floor((now - t0) / 45); // the noise changes about 22 times a second, not every frame
+            if (resolvedCount !== shown || step !== tick) {
+              shown = resolvedCount; tick = step;
+              done.textContent = chars.slice(0, resolvedCount).join('');
+              rest.textContent = chars.slice(resolvedCount).map((c) => (c.trim() ? noise() : c)).join('');
+            }
+            if (p < 1) { job.raf = requestAnimationFrame(frame); return; }
+            el.classList.remove('is-decrypting');
+            el.textContent = final;
+            decrypting.delete(el);
+            resolve();
+          };
+          job.raf = requestAnimationFrame(frame);
+        });
+      }
+      register('[data-decrypt]', (el) => { decrypt(el, el.dataset.decrypt || el.textContent.trim()); });
+
+      window.VVMotion = { init, decrypt };
+    })();
+    // end of the copy
+  </script>
+  <script>
+    // The hero demo: the posting is read (sweep), its recognized terms light up, the competencies resolve from
+    // the terms, and the first missions of the plan come in. It runs once, when the panel enters the screen;
+    // off screen the run waits where it is. Without JS or with reduced motion the panel is already final.
+    (function () {
+      if (window.VVMotion) window.VVMotion.init(); // binds the dot field behind the hero
+      var demo = document.getElementById('demo');
+      if (!demo) return;
+      var state = document.getElementById('demo-state');
+      var scan = demo.querySelector('.demo-scan');
+      var marks = Array.prototype.slice.call(demo.querySelectorAll('mark'));
+      var skills = Array.prototype.slice.call(demo.querySelectorAll('.demo-skills li'));
+      var missions = Array.prototype.slice.call(demo.querySelectorAll('.demo-plan li'));
+      var note = demo.querySelector('.demo-note');
+      var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      function on(el) { el.classList.add('on'); }
+
+      function setState(label, pattern) {
+        state.textContent = '';
+        if (pattern) {
+          var matrix = document.createElement('span');
+          matrix.setAttribute('data-dot-matrix', pattern);
+          state.appendChild(matrix);
+          window.VVMotion.init(state);
+        }
+        state.appendChild(document.createTextNode(label)); // the old matrix leaves the page, and its loop with it
+      }
+      function finalState() {
+        marks.concat(skills, missions, [note]).forEach(on);
+        setState('Plano pronto');
+        demo.classList.remove('is-armed', 'is-paused');
+      }
+      if (reduced || !window.VVMotion || !('IntersectionObserver' in window)) { finalState(); return; }
+
+      // The run as a list of [time in ms, step]. A pausable clock walks it, so leaving the screen stops it.
+      var steps = [[0, function () { setState('Lendo a vaga', 'scan'); scan.style.setProperty('--sweep', (scan.parentNode.offsetHeight - 52) + 'px'); scan.classList.add('run'); }]];
+      marks.forEach(function (m, i) { steps.push([900 + i * 240, function () { on(m); }]); });
+      skills.forEach(function (li, i) {
+        steps.push([2000 + i * 130, function () {
+          var name = li.querySelector('[data-demo-decrypt]');
+          on(li);
+          window.VVMotion.decrypt(name, name.textContent.trim());
+        }]);
+      });
+      steps.push([2750, function () { setState('Montando o plano', 'wave'); }]);
+      missions.forEach(function (li, i) { steps.push([3350 + i * 60, function () { on(li); }]); });
+      steps.push([3600, function () { on(note); }]);
+      steps.push([3700, function () { scan.classList.remove('run'); finalState(); }]);
+
+      var next = 0, elapsed = 0, since = 0, timer = 0, running = false;
+      function tick() {
+        timer = 0;
+        var now = elapsed + (performance.now() - since);
+        while (next < steps.length && steps[next][0] <= now) steps[next++][1]();
+        if (next < steps.length) timer = setTimeout(tick, steps[next][0] - now);
+        else { running = false; io.disconnect(); }
+      }
+      function resume() {
+        if (running || next >= steps.length) return;
+        running = true; since = performance.now();
+        demo.classList.remove('is-paused');
+        tick();
+      }
+      function pause() {
+        if (!running) return;
+        running = false; clearTimeout(timer); timer = 0;
+        elapsed += performance.now() - since;
+        demo.classList.add('is-paused');
+      }
+
+      demo.classList.add('is-armed');
+      setState('');
+      var io = new IntersectionObserver(function (entries) {
+        var e = entries[entries.length - 1];
+        if (e.isIntersecting && e.intersectionRatio >= 0.35) resume(); else pause();
+      }, { threshold: 0.35 });
+      io.observe(demo);
+    })();
+  </script>
   <script>
     (function () {
       // The example posting: each recognized term lights up and flies to its chip when the panel scrolls into view.
