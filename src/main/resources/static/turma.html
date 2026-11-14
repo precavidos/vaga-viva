@@ -6,17 +6,18 @@
   <title>Vaga Viva — Convite da turma</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/vv.css">
+  <link rel="stylesheet" href="/vv-motion.css">
 </head>
 <body>
 <main>
   <div class="wrap narrow stack lg">
     <p id="status" class="sr" role="status" aria-live="polite"></p>
 
-    <!-- Loading the invite -->
+    <!-- Loading the invite: a real wait, shown as the scan status line (DESIGN.md 4.14) -->
     <section class="board" id="loading" aria-busy="true">
-      <div class="skeleton" aria-hidden="true"><i class="tall"></i><i></i><i></i><i class="tall"></i></div>
+      <p class="status-line" id="loading-line" hidden><span data-dot-matrix="scan"></span><span class="status-label"></span><span class="status-timer"></span></p>
     </section>
 
     <!-- The invite could not be loaded -->
@@ -27,20 +28,22 @@
     <!-- Unknown code -->
     <section class="board empty" id="unknown" hidden>
       <div class="art" id="unknown-art"></div>
-      <h1 id="unknown-title" tabindex="-1" style="font-size:28px;line-height:1.1;letter-spacing:-.025em">Este convite não existe.</h1>
+      <h1 id="unknown-title" tabindex="-1" style="font-size:28px;line-height:1.1">Este convite não existe.</h1>
       <p class="muted">Confira o link com quem convidou você. Ele termina com 10 letras e números.</p>
     </section>
 
+    <!-- The invite and the result share one block: the dot swap covers it when the student joins. -->
+    <div id="flow" data-dot-swap>
     <!-- Invite -->
     <section class="board stack lg" id="invite" hidden aria-labelledby="invite-title">
       <div class="stack">
-        <span class="eyebrow">Convite</span>
+        <span class="seal">Convite</span>
         <h1 id="invite-title" tabindex="-1">Você foi convidado(a) para a <mark id="class-name"></mark>.</h1>
         <p class="row"><span id="teacher-avatar"></span><span>com <b class="mono" id="teacher"></b></span></p>
       </div>
 
       <div class="stack">
-        <div class="chips"><span class="chip dark"><span data-icon="stack"></span><span id="stack"></span></span><span class="chip yellow"><span data-icon="mission"></span><span id="count"></span></span></div>
+        <div class="chips"><span class="chip dark"><span data-icon="stack"></span><span id="stack"></span></span><span class="chip"><span data-icon="mission"></span><span id="count"></span></span></div>
         <p class="muted">Todos da turma recebem o mesmo projeto, cada um no seu repositório do GitHub. São estas missões, nesta ordem:</p>
         <ol class="trail stagger" id="trail"></ol>
       </div>
@@ -49,11 +52,11 @@
         <h2 id="sees-title">O que o professor vê</h2>
         <div class="sees">
           <div>
-            <h3><span style="color:var(--green-ink)" data-icon="eye"></span>Vê</h3>
+            <h3><span data-icon="eye"></span>Vê</h3>
             <ul><li>O nome que você escrever aqui</li><li>Em qual missão você está</li><li>Os testes que falham</li><li>As perguntas do revisor</li><li>Quantas dicas você pediu</li></ul>
           </div>
           <div>
-            <h3><span style="color:var(--coral-ink)" data-icon="eyeOff"></span>Não vê</h3>
+            <h3><span data-icon="eyeOff"></span>Não vê</h3>
             <ul><li>O seu código</li><li>Os seus comentários</li><li>Nada fora deste projeto</li></ul>
           </div>
         </div>
@@ -72,7 +75,7 @@
         <div class="banner error" id="join-error" role="alert" tabindex="-1" hidden><span data-icon="warning"></span><div id="join-error-text"></div></div>
         <div class="row between">
           <span class="muted small" id="why" aria-live="polite">Falta o seu nome e o aceite.</span>
-          <button type="submit" class="btn brand-btn" id="b-join" aria-disabled="true" aria-describedby="why"><span data-icon="github"></span><span id="join-label">Entrar com o GitHub e criar meu repositório</span></button>
+          <button type="submit" class="btn" id="b-join" aria-disabled="true" aria-describedby="why"><span data-icon="github"></span><span id="join-label">Entrar com o GitHub e criar meu repositório</span></button>
         </div>
       </form>
     </section>
@@ -80,16 +83,19 @@
     <!-- Creating and done -->
     <section class="board stack lg" id="result" hidden aria-labelledby="creating-title">
       <div id="creating" class="stack lg">
-        <h2 id="creating-title">Criando o seu repositório…</h2>
-        <ol class="progress" id="progress">
-          <li><span class="dot"></span>Copiando o repositório-modelo</li>
-          <li><span class="dot"></span>Gravando o plano da turma</li>
-          <li><span class="dot"></span>Abrindo as missões</li>
-          <li><span class="dot"></span>Colocando você na turma</li>
-        </ol>
+        <h2 id="creating-title">Seu repositório no GitHub</h2>
+        <div class="night-panel creating">
+          <p class="status-line" id="repo-line" hidden><span data-dot-matrix="flip"></span><span class="status-label"></span><span class="status-timer"></span></p>
+          <ol class="stage-list" id="progress">
+            <li><span class="step-mark is-todo"></span><span>Copiando o modelo</span></li>
+            <li><span class="step-mark is-todo"></span><span>Gravando o plano da turma</span></li>
+            <li><span class="step-mark is-todo"></span><span>Abrindo as missões</span></li>
+            <li><span class="step-mark is-todo"></span><span>Colocando você na turma</span></li>
+          </ol>
+        </div>
+        <p class="muted small">Isso leva alguns segundos. Pode deixar esta página aberta.</p>
       </div>
       <div id="done" class="stack lg" hidden>
-        <svg class="zig" viewBox="0 0 460 260" aria-hidden="true"><path d="M20 230 L110 60 L170 200 L260 40 L320 180 L440 50" stroke="var(--green)"/></svg>
         <div class="stack">
           <span class="big-check" data-icon="check"></span>
           <h1 id="done-title" tabindex="-1"></h1>
@@ -99,18 +105,22 @@
         <div class="row"><a class="btn" id="open-missions" href="#" rel="noopener">Abrir as missões <span class="arrow" data-icon="arrow"></span></a><a class="btn ghost" id="open-repo" href="#" rel="noopener">Ver o repositório</a></div>
       </div>
     </section>
+    </div>
   </div>
 </main>
 
 <script src="/vv.js"></script>
+<script src="/vv-motion.js"></script>
 <script>
-  const { $, ICON, esc } = VV;
+  const { $, $$, ICON, esc } = VV;
   document.querySelectorAll('[data-icon]').forEach((el) => { el.innerHTML = ICON[el.dataset.icon]; });
-  $('#unknown-art').innerHTML = VV.ic('link', 'coral', 'lg');
+  $('#unknown-art').innerHTML = VV.ic('link', '', 'lg');
   VV.chrome();
+  VVMotion.init();
 
   const say = (text) => { $('#status').textContent = text; };
-  const show = (id) => { ['loading', 'failed', 'unknown', 'invite', 'result'].forEach((p) => { $(`#${p}`).hidden = p !== id; }); };
+  const PARTS = ['loading', 'failed', 'unknown', 'invite', 'result'];
+  const show = (id) => { PARTS.forEach((p) => { $(`#${p}`).hidden = p !== id; }); };
 
   const code = (location.pathname.match(/^\/turma\/([^/]+)\/?$/) ?? [])[1] ?? '';
   const name = $('#display-name'), consent = $('#consent'), button = $('#b-join');
@@ -129,23 +139,30 @@
   // ---- The invite ----
   async function load() {
     show('loading');
-    if (!/^[a-z0-9]{10}$/.test(code)) { showUnknown(); return; }
+    const line = VVMotion.statusLine($('#loading-line'), 'Abrindo o convite');
+    if (!/^[a-z0-9]{10}$/.test(code)) { line.stop(); showUnknown(); return; }
     let response;
     try {
       response = await fetch(`/api/classrooms/${encodeURIComponent(code)}`);
     } catch {
+      line.stop();
       $('#failed-text').textContent = 'Sem conexão com o Vaga Viva. Tente de novo.';
       show('failed'); say('Sem conexão com o Vaga Viva.');
       return;
     }
-    if (response.status === 404) { showUnknown(); return; }
+    if (response.status === 404) { line.stop(); showUnknown(); return; }
     if (!response.ok) {
+      line.stop();
       $('#failed-text').textContent = 'O Vaga Viva não respondeu como esperado. Tente de novo em instantes.';
       show('failed'); say('Não deu para abrir o convite.');
       return;
     }
-    classroom = await response.json();
-    await refreshMe();
+    try {
+      classroom = await response.json();
+      await refreshMe();
+    } finally {
+      line.done();
+    }
     render(classroom);
   }
 
@@ -185,16 +202,17 @@
 
   $('#join').addEventListener('submit', (e) => {
     e.preventDefault();
+    if (button.getAttribute('aria-busy') === 'true') return;
     if (!signedIn) { say('Levando você para entrar com o GitHub…'); VV.signIn(); return; }
     const hasName = name.value.trim().length > 0;
-    $('#name-error').hidden = hasName; name.toggleAttribute('aria-invalid', !hasName);
-    $('#consent-error').hidden = consent.checked; consent.toggleAttribute('aria-invalid', !consent.checked);
+    $('#name-error').hidden = hasName; VV.invalid(name, !hasName);
+    $('#consent-error').hidden = consent.checked; VV.invalid(consent, !consent.checked);
     if (!hasName) { name.focus(); return; }
     if (!consent.checked) { consent.focus(); return; }
     join();
   });
 
-  // ---- Joining: one request; the progress list is shown only if GitHub takes a while ----
+  // ---- Joining: one request; the creation panel is shown only if GitHub takes a while ----
   const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
   function post(displayName) {
@@ -215,35 +233,52 @@
     return post(displayName);
   }
 
+  const joined = (status) => status === 201 || status === 200;
+  let swapped = false; // the dot swap runs once per flow
+  async function toResult(swap) {
+    if (swapped) { swap(); return; }
+    swapped = true;
+    await VVMotion.dotSwap($('#flow'), swap);
+  }
+
+  // The button's flip line measures the first half second; a slower answer moves to the creation panel, whose line
+  // keeps counting from the same request and whose last stage turns green only when the server answers.
   async function join() {
     const displayName = name.value.trim();
     $('#join-error').hidden = true;
-    VV.busy(button, 'Criando o repositório');
-    say('Criando o seu repositório no GitHub.');
+    const since = performance.now();
+    VV.busy(button, 'Criando o repositório', 'flip');
     const request = send(displayName);
     const early = await Promise.race([request, sleep(500).then(() => null)]);
-    if (early) { VV.idle(button); settle(early, displayName); return; }
+    if (early) { VV.idle(button, joined(early.status)); await settle(early, displayName); return; }
 
     // New students wait for GitHub to copy the template: show the sequence while it happens.
-    VV.idle(button);
-    $('#creating').hidden = false; $('#done').hidden = true;
-    show('result');
-    $('#progress').querySelectorAll('li').forEach((li) => li.classList.remove('now', 'ok'));
-    const succeeded = request.then((outcome) => { if (outcome.status !== 201 && outcome.status !== 200) throw outcome; });
-    succeeded.catch(() => {}); // handled below; keeps an early failure from logging as unhandled
+    VV.idle(button, false);
+    await toResult(() => {
+      $('#creating').hidden = false; $('#done').hidden = true;
+      VV.paintStages($$('#progress li'), -1);
+      show('result');
+      window.scrollTo({ top: 0 });
+    });
+    say('Criando o seu repositório no GitHub.');
+    // The line ends when the server answers; a failure stops the stages at once.
+    const line = VVMotion.statusLine($('#repo-line'), 'Criando o repositório', since);
+    request.then((outcome) => { if (joined(outcome.status)) line.done(); else line.stop(); });
+    const succeeded = request.then((outcome) => { if (!joined(outcome.status)) throw outcome; });
     try {
       await VV.runProgress($('#progress'), succeeded);
     } catch (outcome) {
+      $('#repo-line').hidden = true;
       show('invite');
-      settle(outcome, displayName);
+      await settle(outcome, displayName);
       return;
     }
-    settle(await request, displayName);
+    await settle(await request, displayName);
   }
 
-  function settle(outcome, displayName) {
+  async function settle(outcome, displayName) {
     const { status, body } = outcome;
-    if (status === 201 || status === 200) { finish(body, displayName, status === 200); return; }
+    if (joined(status)) { await toResult(() => finish(body, displayName, status === 200)); return; }
     if (status === 401) {
       say('Levando você para entrar com o GitHub…');
       VV.signIn();
@@ -264,19 +299,20 @@
     $('#join-error').focus();
   }
 
-  function finish(joined, displayName, already) {
+  function finish(result, displayName, already) {
     const title = $('#done-title');
     if (already) {
       title.replaceChildren('Você já está nesta ', Object.assign(document.createElement('mark'), { textContent: 'turma' }), '.');
     } else {
       title.replaceChildren('Bem-vindo(a) à turma, ', Object.assign(document.createElement('mark'), { textContent: displayName }), '.');
     }
-    const url = typeof joined.htmlUrl === 'string' && joined.htmlUrl.startsWith('https://github.com/') ? joined.htmlUrl : '#';
-    $('#repo-panel').innerHTML = VV.repoPanel(joined.fullName, url, classroom.missions ?? []);
+    const url = VV.gitHubUrl(result.htmlUrl);
+    $('#repo-panel').innerHTML = VV.repoPanel(result.fullName, url, classroom.missions ?? []);
     $('#open-repo').href = url;
     $('#open-missions').href = url === '#' ? '#' : `${url}/issues`;
-    $('#creating').hidden = true; $('#done').hidden = false;
+    $('#creating').hidden = true; $('#repo-line').hidden = true; $('#done').hidden = false;
     show('result');
+    window.scrollTo({ top: 0 });
     say(already ? 'Você já está nesta turma. Seu repositório está pronto.' : 'Seu repositório está pronto.');
     title.focus();
   }

@@ -1,4 +1,6 @@
-// Vaga Viva — helpers shared by the teacher and invite pages. Nothing here holds data of its own.
+// Vaga Viva — helpers shared by the real pages. Nothing here holds data of its own.
+// Built from docs/design/prototipos/vv.js (icons, tiles, status line, step marks, test grid) plus what the real
+// pages need to talk to the server (CSRF token, error bodies, GitHub sign-in, the signed-in user).
 const VV = (() => {
   const $ = (selector, root = document) => root.querySelector(selector);
   const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
@@ -7,7 +9,7 @@ const VV = (() => {
   const wait = (ms) => new Promise((resolve) => setTimeout(resolve, reducedMotion() ? Math.min(ms, 150) : ms));
 
   // One icon family, drawn for this product: 24 px grid, 2.2 px ink stroke, round joins, no fills.
-  // Icons never carry colour themselves; colour comes from the tile behind them (see `ic`).
+  // Icons are ink; only an icon that stands for a situation takes that situation's colour (see `ic`).
   const svg = (d) => `<svg class="glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
   const ICON = {
     arrow: svg('<path d="M5 12h14M13 6l6 6-6 6"/>'),
@@ -43,24 +45,70 @@ const VV = (() => {
     ADVANCING: svg('<path d="M7 17L17 7M9 7h8v8"/>'),
     COMPLETED: svg('<path d="M5 12.5l4.5 4.5 9.5-10"/>'),
   };
-
-  // An icon on a coloured tile: the product's icon treatment, taken from the landing page.
-  const ic = (name, color = 'yellow', size = '') => `<span class="ic ${esc(size)} ${esc(color)}" aria-hidden="true">${ICON[name] ?? ''}</span>`;
+  const STATUS = {
+    STUCK: { label: 'travado', plural: 'Travados' },
+    IDLE: { label: 'parado', plural: 'Parados' },
+    ADVANCING: { label: 'avançando', plural: 'Avançando' },
+    COMPLETED: { label: 'concluído', plural: 'Concluídos' },
+  };
+  // An icon tile: a 28 px outlined square with an ink glyph (DESIGN.md 2.5). `status` names a situation (STUCK, IDLE,
+  // ADVANCING, COMPLETED, or the older colour names coral, idle, green, purple) and is the only way to colour it;
+  // any other value (an older tile colour such as yellow) leaves the glyph ink.
+  const TONES = { coral: 'STUCK', idle: 'IDLE', green: 'ADVANCING', purple: 'COMPLETED' };
+  const ic = (name, status = '', size = '') => {
+    const situation = STATUS[status] ? status : TONES[status];
+    return `<span class="ic ${esc(size)}"${situation ? ` data-status="${situation}"` : ''} aria-hidden="true">${ICON[name] ?? ''}</span>`;
+  };
   const LEVELS = { INTERN: 'estágio', JUNIOR: 'júnior', MID: 'pleno', SENIOR: 'sênior' };
   const REASONS = { CORE: ['central', 'core'], SKILL_MATCH: ['pela vaga', 'match'], DEFAULT: ['padrão', ''] };
-  const AVATAR_COLORS = ['#ffd23f', '#ff6b4a', '#b8a8ff', '#33c47a', '#8fb0ff'];
 
-  const initials = (name) => String(name).split(/\s+/).filter(Boolean).slice(0, 2).map((word) => [...word][0]).join('').toUpperCase();
-  const avatar = (name, size = '') => {
-    const color = AVATAR_COLORS[[...String(name)].reduce((sum, c) => sum + c.charCodeAt(0), 0) % AVATAR_COLORS.length];
-    return `<span class="avatar ${esc(size)}" style="background:${color}" aria-hidden="true">${esc(initials(name))}</span>`;
-  };
+  const initials = (name) => String(name ?? '').split(/\s+/).filter(Boolean).slice(0, 2).map((word) => [...word][0]).join('').toUpperCase();
+  // A neutral circle with the initials in mono, with no colour per person (DESIGN.md 4.11).
+  const avatar = (name, size = '') => `<span class="avatar ${esc(size)}" aria-hidden="true">${esc(initials(name))}</span>`;
+  const statusBadge = (status, label = STATUS[status]?.label ?? '') => `<span class="status" data-status="${esc(status)}">${ICON[status] ?? ''}${esc(label)}</span>`;
 
-  // One mission of a plan: the server's strings are untrusted, so every one is escaped.
-  const missionItem = (m) => {
+  // The test grid: one row per plan mission, one square dot per test (DESIGN.md 4.16). Missions up to the current one
+  // show passing (green) and failing (coral) dots with "passed/total"; missions after it show empty dots and "—", even
+  // when the report has them failing, because the whole suite runs on every push. A mission without a tally shows only
+  // its number and "—". A completed student is all green. The dots are decorative; each row carries its sentence.
+  // The data comes from test reports: a total that is not a positive integer counts as no tally, and so does a
+  // current or past mission whose `passed` is missing; `passed` is kept within 0..total.
+  function testGrid(tests, missionOrder, completed = false) {
+    const current = typeof missionOrder === 'number' && Number.isFinite(missionOrder) ? missionOrder : 0;
+    const row = (t) => {
+      const order = esc(t.order ?? '');
+      const total = Number.isInteger(t.total) && t.total > 0 ? t.total : 0;
+      const future = !completed && Number(t.order) > current;
+      const hasPassed = typeof t.passed === 'number' && Number.isFinite(t.passed);
+      const hasTotal = total > 0 && (completed || future || hasPassed);
+      const passed = completed ? total : Math.max(0, Math.min(total, Math.floor(hasPassed ? t.passed : 0)));
+      let dots = '';
+      let count = '—';
+      let text;
+      if (!hasTotal) text = future ? 'ainda não começou' : 'ainda sem contagem de testes';
+      else if (future) {
+        dots = '<i class="td is-empty"></i>'.repeat(total);
+        text = 'ainda não começou';
+      } else {
+        dots = '<i class="td is-pass"></i>'.repeat(passed) + '<i class="td is-fail"></i>'.repeat(total - passed);
+        count = `${passed}/${total}`;
+        text = `${passed} de ${total} ${total === 1 ? 'teste passando' : 'testes passando'}`;
+      }
+      const state = !hasTotal ? 'none' : future ? 'future' : 'counted';
+      return `<span class="test-row" data-order="${order}" data-state="${state}"><span class="sr">Missão ${order}: ${text}.</span>`
+        + `<span class="test-mission" aria-hidden="true">${esc(String(t.order ?? '').padStart(2, '0'))}</span>`
+        + `<span class="test-dots" aria-hidden="true">${dots}</span>`
+        + `<span class="test-count" aria-hidden="true">${count}</span></span>`;
+    };
+    return `<span class="test-grid">${(Array.isArray(tests) ? tests : []).map(row).join('')}</span>`;
+  }
+
+  // One mission of a plan: the server's strings are untrusted, so every one is escaped. `skillLabels` maps a skill
+  // id from `matchedSkills` to the name the extraction gave it; without it the id is shown.
+  const missionItem = (m, skillLabels = {}) => {
     const [label, cls] = REASONS[m.reason] ?? REASONS.DEFAULT;
     const skills = Array.isArray(m.matchedSkills) ? m.matchedSkills : [];
-    const chips = skills.length ? `<div class="chips">${skills.map((s) => `<span class="chip">${esc(s)}</span>`).join('')}</div>` : '';
+    const chips = skills.length ? `<div class="chips">${skills.map((s) => `<span class="chip">${esc(skillLabels[s] ?? s)}</span>`).join('')}</div>` : '';
     const level = Math.max(0, Math.min(3, Number(m.difficulty) || 0));
     const bars = [1, 2, 3].map((n) => `<i class="${n <= level ? 'on' : ''}"></i>`).join('');
     return `<li class="mission"><span class="num">${String(Number(m.order) || 0).padStart(2, '0')}</span>
@@ -68,25 +116,46 @@ const VV = (() => {
       <div class="side"><span class="tag ${cls}">${label}</span><span class="diff" role="img" aria-label="Dificuldade ${level} de 3">${bars}</span></div></li>`;
   };
 
-  // The repository card of the invite's last step. The name, the link and the missions come from the server.
+  // The repository card of the last step. The name, the link and the missions come from the server.
   const repoPanel = (fullName, htmlUrl, missions) => `<div class="night-panel rise">
       <div class="panel-tag"><span>Seu repositório</span><b>${missions.length} ${missions.length === 1 ? 'missão aberta' : 'missões abertas'}</b></div>
       <div class="repo-name">${ICON.github}<a href="${esc(htmlUrl)}" rel="noopener">${esc(fullName)}</a></div>
-      <ul class="issues stagger">${missions.map((m) => `<li><span class="dot"></span>Missão ${Number(m.order) || ''}: ${esc(m.title)}</li>`).join('')}</ul>
+      <ul class="issues stagger">${missions.map((m) => `<li><span class="dot" aria-hidden="true"></span>Missão ${Number(m.order) || ''}${m.title ? `: ${esc(m.title)}` : ''}</li>`).join('')}</ul>
       <p class="muted small" style="margin-top:14px">Os testes ficam vermelhos até você implementar cada missão.</p>
     </div>`;
 
-  // The stages advance on a timer and are illustrative; the one before the last waits for `done` (the server's answer).
-  // If `done` rejects, the sequence stops and the rejection reaches the caller.
+  // The stages advance on a timer and are illustrative; the last one only turns done when `done` (the server's
+  // answer) resolves, so a slow answer keeps it waiting (DESIGN.md 3.2). If `done` rejects, the sequence stops at once
+  // on the stage it reached and the rejection reaches the caller. Each <li> holds a .step-mark and its name; the state
+  // is also written in text for screen readers.
+  const STAGE_TEXT = { 'is-done': 'feito', 'is-current': 'em andamento', 'is-todo': 'a fazer' };
+  function paintStages(items, current) {
+    items.forEach((li, i) => {
+      const state = i < current ? 'is-done' : i === current ? 'is-current' : 'is-todo';
+      const mark = $('.step-mark', li);
+      if (mark && !mark.classList.contains(state)) { mark.classList.remove('is-done', 'is-current', 'is-todo'); mark.classList.add(state); }
+      li.classList.remove('is-done', 'is-current', 'is-todo'); li.classList.add(state);
+      let sr = $('.sr', li);
+      if (!sr) li.append(sr = Object.assign(document.createElement('span'), { className: 'sr' }));
+      sr.textContent = `, ${STAGE_TEXT[state]}`;
+    });
+  }
   async function runProgress(list, done) {
     const items = $$('li', list);
+    const failed = Promise.resolve(done).then(() => new Promise(() => {})); // settles only by rejecting
+    window.VVMotion?.init(list);
     for (let i = 0; i < items.length; i++) {
-      items[i].classList.add('now');
-      if (i === items.length - 2) await Promise.all([done, wait(850)]);
-      else await wait(i === items.length - 1 ? 500 : 850);
-      items[i].classList.replace('now', 'ok');
+      paintStages(items, i);
+      await Promise.race([failed, i === items.length - 1 ? Promise.all([done, wait(600)]) : wait(850)]);
     }
-    await wait(350);
+    paintStages(items, items.length);
+    await wait(450);
+  }
+
+  // The count-up lives in vv-motion.js; without it the number is written directly.
+  function countUp(el, to) {
+    if (window.VVMotion) { window.VVMotion.countUp(el, to); return; }
+    el.textContent = to;
   }
 
   let toastTimer;
@@ -104,7 +173,7 @@ const VV = (() => {
   }
 
   function copyField(text) {
-    return `<div class="copy"><code>${esc(text)}</code><button type="button" class="btn sm" data-copy="${esc(text)}">${ICON.copy}<span>Copiar</span></button></div>`;
+    return `<div class="copy"><code>${esc(text)}</code><button type="button" class="btn ghost sm" data-copy="${esc(text)}">${ICON.copy}<span>Copiar</span></button></div>`;
   }
   document.addEventListener('click', async (event) => {
     const button = event.target.closest('[data-copy]');
@@ -124,15 +193,29 @@ const VV = (() => {
     setTimeout(() => { label.textContent = 'Copiar'; }, 2000);
   });
 
-  function busy(button, text) {
+  // Loading: the button's content becomes the status line, "Lendo a vaga · 1,2 s" (DESIGN.md 4.1 and 4.14), with
+  // the matrix pattern of the stage (scan, wave or flip). The width is kept so the layout does not jump. The line
+  // measures the real wait: call busy() when the request is sent and idle() when it settles; idle(button, false)
+  // ends it as stopped (an error or a redirect) rather than done.
+  const lines = new WeakMap();
+  function busy(button, label, pattern = 'scan') {
+    if (lines.has(button)) idle(button, false);
     button.dataset.label = button.innerHTML;
+    button.style.minWidth = `${button.offsetWidth}px`;
     button.disabled = true;
     button.setAttribute('aria-busy', 'true');
-    button.innerHTML = `${esc(text)}<span class="dots3" aria-hidden="true"><i></i><i></i><i></i></span>`;
+    button.innerHTML = `<span class="status-line"><span data-dot-matrix="${esc(pattern)}"></span><span class="status-label"></span><span class="status-timer"></span></span>`;
+    const line = $('.status-line', button);
+    if (window.VVMotion) lines.set(button, window.VVMotion.statusLine(line, label));
+    else { $('.status-label', line).textContent = label; lines.set(button, null); }
   }
-  function idle(button) {
+  function idle(button, ok = true) {
+    const line = lines.get(button);
+    if (ok) line?.done(); else line?.stop();
+    lines.delete(button);
     button.disabled = false;
     button.removeAttribute('aria-busy');
+    button.style.minWidth = '';
     if (button.dataset.label !== undefined) button.innerHTML = button.dataset.label;
   }
 
@@ -142,6 +225,11 @@ const VV = (() => {
       if (i + 1 === n) li.setAttribute('aria-current', 'step'); else li.removeAttribute('aria-current');
       $('.n', li).innerHTML = i + 1 < n ? ICON.check : String(i + 1);
     });
+  }
+
+  // Marks a field as invalid or not. aria-invalid must read "true": an empty value means false to assistive tech.
+  function invalid(field, on) {
+    if (on) field.setAttribute('aria-invalid', 'true'); else field.removeAttribute('aria-invalid');
   }
 
   // The CSRF token Spring sets in a cookie; the API wants it back in a header on every write.
@@ -155,6 +243,9 @@ const VV = (() => {
     try { return await response.json(); } catch { return {}; }
   }
 
+  // A link from the server is followed only when it points at GitHub.
+  const gitHubUrl = (url) => (typeof url === 'string' && url.startsWith('https://github.com/') ? url : '#');
+
   // After GitHub signs the person in (or after installing the app), the start page reads this key and sends them back.
   const RETURN_KEY = 'vagaviva.voltar';
   function rememberReturn() {
@@ -167,7 +258,7 @@ const VV = (() => {
 
   // The top bar; `setUser` fills in who is signed in once the page knows.
   function chrome(area = '') {
-    const logo = '<svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="10" fill="#141414"/><path d="M8 17l5 5 11-12" stroke="#33c47a" stroke-width="3.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    const logo = '<svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="6" fill="#141414"/><path d="M8 17l5 5 11-12" stroke="#33c47a" stroke-width="3.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>';
     document.body.insertAdjacentHTML('afterbegin', `<header class="top"><div class="wrap">
       <a class="brand" href="/" aria-label="Vaga Viva, início">${logo}Vaga Viva${area ? `<small>${esc(area)}</small>` : ''}</a><span id="who"></span></div></header>`);
   }
@@ -175,5 +266,5 @@ const VV = (() => {
     $('#who').innerHTML = login ? `<span class="user">${avatar(login, 'sm')}@${esc(login)}</span>` : '';
   }
 
-  return { $, $$, esc, wait, ICON, ic, LEVELS, avatar, missionItem, repoPanel, runProgress, toast, copyField, busy, idle, setStep, csrfToken, problemDetail, rememberReturn, signIn, chrome, setUser };
+  return { $, $$, esc, wait, ICON, ic, STATUS, LEVELS, avatar, statusBadge, testGrid, missionItem, repoPanel, runProgress, paintStages, countUp, toast, copyField, busy, idle, setStep, invalid, csrfToken, problemDetail, gitHubUrl, rememberReturn, signIn, chrome, setUser };
 })();

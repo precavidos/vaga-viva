@@ -6,8 +6,9 @@
   <title>Vaga Viva — Professor</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/vv.css">
+  <link rel="stylesheet" href="/vv-motion.css">
 </head>
 <body>
 <main>
@@ -15,7 +16,7 @@
 
   <!-- Looking up who is signed in -->
   <div class="wrap narrow" id="loading" aria-busy="true">
-    <div class="board skeleton" aria-hidden="true"><i class="tall"></i><i></i><i></i></div>
+    <div class="board"><p class="status-line" id="loading-line" hidden><span data-dot-matrix="scan"></span><span class="status-label"></span><span class="status-timer"></span></p></div>
   </div>
 
   <!-- The session could not be checked -->
@@ -32,9 +33,9 @@
       </div>
       <div class="banner info" id="out-note" role="alert" hidden><span data-icon="info"></span><div id="out-note-text"></div></div>
       <ul class="benefits">
-        <li><span data-tile="users|yellow"></span>Todos recebem o mesmo projeto, a partir de uma vaga-base.</li>
-        <li><span data-tile="board|green"></span>O painel mostra a missão de cada aluno e quem vale uma conversa.</li>
-        <li><span data-tile="mail|lilac"></span>Toda segunda, um resumo chega no seu e-mail.</li>
+        <li><span data-tile="users"></span>Todos recebem o mesmo projeto, a partir de uma vaga-base.</li>
+        <li><span data-tile="board"></span>O painel mostra a missão de cada aluno e quem vale uma conversa.</li>
+        <li><span data-tile="mail"></span>Toda segunda, um resumo chega no seu e-mail.</li>
       </ul>
       <div class="row"><button type="button" class="btn" id="sign-in"><span data-icon="github"></span>Entrar com o GitHub</button></div>
     </section>
@@ -98,7 +99,7 @@
           <div class="banner error" id="create-error" role="alert" hidden><span data-icon="warning"></span><div id="create-error-text"></div></div>
           <div class="row between">
             <button type="button" class="link" id="back-plan">Voltar ao plano</button>
-            <button type="submit" class="btn brand-btn" id="b-create">Criar a turma</button>
+            <button type="submit" class="btn" id="b-create">Criar a turma</button>
           </div>
         </form>
 
@@ -123,13 +124,15 @@
 </main>
 
 <script src="/vv.js"></script>
+<script src="/vv-motion.js"></script>
 <script>
   const { $, ICON, LEVELS, esc } = VV;
 
   // Static icons.
   document.querySelectorAll('[data-icon]').forEach((el) => { el.innerHTML = ICON[el.dataset.icon]; });
-  document.querySelectorAll('[data-tile]').forEach((el) => { const [name, color] = el.dataset.tile.split('|'); el.innerHTML = VV.ic(name, color); });
+  document.querySelectorAll('[data-tile]').forEach((el) => { el.innerHTML = VV.ic(el.dataset.tile); });
   VV.chrome('Professor');
+  VVMotion.init();
 
   const say = (text) => { $('#status').textContent = text; };
   const show = (id) => { ['loading', 'failed', 'signed-out', 'signed-in'].forEach((p) => { $('#' + p).hidden = p !== id; }); };
@@ -137,16 +140,20 @@
   // ---- Who is signed in ----
   async function start() {
     show('loading');
+    const line = VVMotion.statusLine($('#loading-line'), 'Abrindo a área do professor');
     let response;
     try {
       response = await fetch('/api/me');
     } catch {
+      line.stop();
       show('failed'); say('Sem conexão com o Vaga Viva.');
       return;
     }
-    if (response.status === 401) { showSignedOut(); return; }
-    if (!response.ok) { $('#failed-text').textContent = 'O Vaga Viva não respondeu como esperado.'; show('failed'); return; }
-    const me = await response.json();
+    if (response.status === 401) { line.done(); showSignedOut(); return; }
+    if (!response.ok) { line.stop(); $('#failed-text').textContent = 'O Vaga Viva não respondeu como esperado.'; show('failed'); return; }
+    let me;
+    try { me = await response.json(); } catch { line.stop(); $('#failed-text').textContent = 'O Vaga Viva não respondeu como esperado.'; show('failed'); return; }
+    line.done();
     VV.setUser(me.login);
     show('signed-in');
     loadClassrooms();
@@ -176,7 +183,7 @@
   function fieldError(input, error, message) {
     error.hidden = !message;
     if (message) error.textContent = message;
-    input.toggleAttribute('aria-invalid', Boolean(message));
+    VV.invalid(input, Boolean(message));
   }
 
   $('#f-posting').addEventListener('submit', async (e) => {
@@ -188,8 +195,8 @@
       return;
     }
     fieldError($('#posting'), $('#posting-error'), '');
-    VV.busy($('#b-plan'), 'Lendo a vaga');
-    say('Lendo a vaga-base…');
+    VV.busy($('#b-plan'), 'Montando o plano', 'wave');
+    let ok = false;
     try {
       const response = await fetch('/api/project-plans', {
         method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text }),
@@ -201,21 +208,24 @@
         $('#posting').focus();
         return;
       }
-      showPlan(await response.json());
+      const plan = await response.json();
+      ok = true;
+      VV.idle($('#b-plan'));
+      showPlan(plan);
     } catch {
       const message = 'Sem conexão com o Vaga Viva. Tente de novo.';
       fieldError($('#posting'), $('#posting-error'), message);
       say(message);
     } finally {
-      VV.idle($('#b-plan'));
+      if (!ok) VV.idle($('#b-plan'), false);
     }
   });
 
   function showPlan(plan) {
     const missions = Array.isArray(plan.missions) ? plan.missions : [];
     $('#plan-chips').innerHTML = `<span class="chip dark">${ICON.stack}${esc(plan.archetypeName)}</span>`
-      + `<span class="chip purple">${ICON.level}Nível ${esc(LEVELS[plan.seniorityLevel] ?? plan.seniorityLevel)}</span>`
-      + `<span class="chip yellow">${ICON.mission}${missions.length} ${missions.length === 1 ? 'missão' : 'missões'}</span>`;
+      + `<span class="chip">${ICON.level}Nível ${esc(LEVELS[plan.seniorityLevel] ?? plan.seniorityLevel)}</span>`
+      + `<span class="chip">${ICON.mission}${missions.length} ${missions.length === 1 ? 'missão' : 'missões'}</span>`;
     const fit = fitText(plan.archetypeFit, plan.archetypeName);
     $('#plan-fit').hidden = !fit;
     $('#plan-fit-text').textContent = fit;
@@ -239,14 +249,14 @@
     fieldError($('#name'), $('#name-error'), noName ? 'Dê um nome para a turma.' : '');
     fieldError($('#email'), $('#email-error'), badEmail ? $('#email-error').textContent : '');
     $('#consent-error').hidden = !noConsent;
-    $('#consent').toggleAttribute('aria-invalid', noConsent);
+    VV.invalid($('#consent'), noConsent);
     $('#create-error').hidden = true;
     if (noName) { $('#name').focus(); return; }
     if (badEmail) { $('#email').focus(); return; }
     if (noConsent) { $('#consent').focus(); return; }
 
-    VV.busy($('#b-create'), 'Criando a turma');
-    say('Criando a turma…');
+    VV.busy($('#b-create'), 'Criando a turma', 'wave');
+    let ok = false;
     try {
       const response = await fetch('/api/classrooms', {
         method: 'POST',
@@ -260,11 +270,13 @@
       const body = await VV.problemDetail(response);
       if (response.status === 403) { showForbidden(body.detail); return; }
       if (!response.ok) { showCreateError(body.detail ?? 'Não foi possível criar a turma agora. Tente de novo em instantes.'); return; }
+      ok = true;
+      VV.idle($('#b-create'));
       showCreated(body);
     } catch {
       showCreateError('Sem conexão com o Vaga Viva. Tente de novo.');
     } finally {
-      VV.idle($('#b-create'));
+      if (!ok) VV.idle($('#b-create'), false);
     }
   });
 
@@ -304,7 +316,7 @@
   // ---- The teacher's classrooms ----
   function renderClassrooms(list) {
     if (!list.length) {
-      $('#classrooms').innerHTML = `<div class="card empty"><div class="art">${VV.ic('users', 'plain', 'lg')}</div>
+      $('#classrooms').innerHTML = `<div class="card empty"><div class="art">${VV.ic('users', '', 'lg')}</div>
         <h3>Nenhuma turma ainda</h3><p class="muted small">A primeira aparece aqui assim que você criar.</p></div>`;
       return;
     }
@@ -319,13 +331,17 @@
 
   async function loadClassrooms() {
     $('#classrooms').className = 'stack';
-    $('#classrooms').innerHTML = '<div class="card skeleton" aria-hidden="true"><i class="tall"></i><i></i></div>';
+    $('#classrooms').innerHTML = '<div class="card"><p class="status-line" hidden><span data-dot-matrix="scan"></span><span class="status-label"></span><span class="status-timer"></span></p></div>';
+    const line = VVMotion.statusLine($('#classrooms .status-line'), 'Carregando as turmas');
     try {
       const response = await fetch('/api/classrooms');
-      if (response.status === 401) { showSignedOut('Sua sessão terminou. Entre de novo para ver as suas turmas.'); return; }
+      if (response.status === 401) { line.stop(); showSignedOut('Sua sessão terminou. Entre de novo para ver as suas turmas.'); return; }
       if (!response.ok) throw new Error('status ' + response.status);
-      renderClassrooms(await response.json());
+      const list = await response.json();
+      line.done();
+      renderClassrooms(list);
     } catch {
+      line.stop();
       $('#classrooms').innerHTML = `<div class="banner error" role="alert"><span>${ICON.warning}</span><div><b>Não deu para carregar as turmas.</b> <button type="button" class="link" id="retry-list">Tentar de novo</button></div></div>`;
       $('#retry-list').addEventListener('click', loadClassrooms);
     }
