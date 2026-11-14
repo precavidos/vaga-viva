@@ -403,8 +403,3 @@ a.classroom:hover { border-color: var(--ink); }
   .duo > .sticky { position: static; }
   .clip-text { max-height: 220px; }
 }
-
-/* The dashboard's loading placeholder, kept until painel.html moves to the status line (DESIGN.md 4.14). */
-.skeleton { display: grid; gap: 10px; position: relative; overflow: hidden; border-radius: var(--r-md); }
-.skeleton i { display: block; height: 14px; border-radius: var(--r-xs); background: var(--paper-2); }
-.skeleton i.tall { height: 64px; border-radius: var(--r-md); }
