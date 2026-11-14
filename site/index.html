@@ -317,7 +317,7 @@
     .issues .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--coral); }
     .issues .n { font: 600 12px/1 var(--mono); color: var(--night-muted); }
 
-    /* Reviewer: a pull request on a dark panel, the question in soft purple, hints asked for with /dica (DESIGN.md 4.10). */
+    /* Reviewer: a pull request on a dark panel, the question in soft purple (DESIGN.md 4.10). */
     .reviewer-grid { display: grid; grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr); gap: 16px 48px; align-items: start; }
     .reviewer-copy { position: sticky; top: 24px; }
     .reviewer-copy p { margin: 16px 0 0; color: var(--ink-2); max-width: 30em; }
@@ -334,18 +334,6 @@
     .bubble .meta { display: block; margin-bottom: 6px; font: 600 12px/1 var(--mono); color: var(--night-muted); }
     .bubble.bot .meta { color: #c9bdff; }
     .bubble code { font: 600 .9em var(--mono); padding: 1px 5px; border-radius: var(--r-xs); background: rgba(244, 241, 234, .12); }
-    .hint-pair { display: grid; gap: 14px; }
-    .hint-pair.reveal { animation: rise var(--t-base) var(--ease-out) both; }
-    @keyframes rise { from { opacity: 0; transform: translateY(10px); } }
-    .pr-foot { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding-top: 16px; border-top: 1px solid var(--night-3); }
-    .hint-dots { display: flex; gap: 6px; }
-    .hint-dots i { width: 10px; height: 10px; border-radius: 50%; box-shadow: inset 0 0 0 2px var(--night-muted); }
-    .hint-dots i.on { background: var(--night-text); box-shadow: none; }
-    .pr-foot small { margin-right: auto; font-size: 14px; color: var(--night-muted); }
-    .btn.on-night { min-height: 44px; padding: 8px 16px; font-size: 15px; background: transparent; border-color: var(--night-muted); color: var(--night-text); }
-    .btn.on-night:hover { background: transparent; border-color: var(--night-text); }
-    .btn:disabled, .btn[aria-disabled="true"] { opacity: .4; cursor: not-allowed; transform: none; }
-    .btn.on-night[aria-disabled="true"]:hover { border-color: var(--night-muted); }
 
     /* Teachers: the class dashboard with the test grid, fictitious data in alphabetical order (DESIGN.md 2.2, 4.8, 4.9, 4.16). */
     [data-status="STUCK"] { --st: var(--coral); }
@@ -539,7 +527,7 @@
           <li><span class="n" aria-hidden="true">1</span><h3>Cole a vaga</h3><p>O texto de uma vaga real. Ele é lido em memória e não fica guardado.</p></li>
           <li><span class="n" aria-hidden="true">2</span><h3>Confira o plano</h3><p>De 5 a 6 missões, em ordem de dificuldade e no nível que a vaga pede.</p></li>
           <li><span class="n" aria-hidden="true">3</span><h3>Crie o repositório</h3><p>Cada missão vira uma tarefa no GitHub, com testes que falham até você implementar.</p></li>
-          <li><span class="n" aria-hidden="true">4</span><h3>Abra um pull request</h3><p>O revisor comenta com uma pergunta. Travou? Comente <code>/dica</code>.</p></li>
+          <li><span class="n" aria-hidden="true">4</span><h3>Abra um pull request</h3><p>O revisor comenta com uma pergunta sobre os testes que falharam.</p></li>
         </ol>
 
         <!-- Fictional data in the product's format: the plan of the hero's posting (prototype PLAN) and the stages of the
@@ -588,12 +576,13 @@
       </div>
     </section>
 
-    <!-- Reviewer: a pull request on mission 3, the reviewer's question, and the hints asked for with /dica. -->
+    <!-- Reviewer: a pull request on mission 3 and the reviewer's question. Hints (/dica) are not built yet: announced as next. -->
     <section class="section" id="revisor" aria-labelledby="revisor-titulo">
       <div class="wrap reviewer-grid">
         <div class="reviewer-copy">
           <h2 id="revisor-titulo">O revisor responde com uma pergunta.</h2>
-          <p>A cada pull request, ele lê os testes que falharam e aponta onde olhar. Se você travar, comente <code>/dica</code>: vem uma dica por vez, até três por missão, e nenhuma traz o código da solução.</p>
+          <p>A cada pull request, ele lê os testes que falharam e aponta onde olhar, sem o código da solução.</p>
+          <p>A seguir: dicas pedidas com <code>/dica</code> no pull request, uma por vez.</p>
         </div>
 
         <div class="demo" role="group" aria-label="Exemplo de pull request com o revisor">
@@ -601,28 +590,11 @@
           <pre class="term" aria-label="Saída dos testes"><span class="d">$ ./mvnw test</span>
 <span class="r">FAIL</span> devolveASegundaPagina
   esperava 10 consultas na página 2, veio 20</pre>
-          <div class="thread" aria-live="polite">
+          <div class="thread">
             <div class="msg">
               <span class="avatar bot" aria-hidden="true">?</span>
               <div class="bubble bot"><span class="meta">revisor · pergunta</span>O teste <code>devolveASegundaPagina</code> espera 10 consultas na página 2, e a sua resposta trouxe 20. Onde a sua consulta define o tamanho da página?</div>
             </div>
-            <div class="hint-pair">
-              <div class="msg"><span class="avatar" aria-hidden="true">M</span><div class="bubble"><span class="meta">maria</span><code>/dica</code></div></div>
-              <div class="msg"><span class="avatar bot" aria-hidden="true">?</span><div class="bubble bot"><span class="meta">revisor · dica 1 de 3</span>Releia o teste: que parâmetros ele manda na URL da requisição?</div></div>
-            </div>
-            <div class="hint-pair">
-              <div class="msg"><span class="avatar" aria-hidden="true">M</span><div class="bubble"><span class="meta">maria</span><code>/dica</code></div></div>
-              <div class="msg"><span class="avatar bot" aria-hidden="true">?</span><div class="bubble bot"><span class="meta">revisor · dica 2 de 3</span>O Spring monta um objeto de paginação a partir desses parâmetros. O método do seu controller recebe esse objeto?</div></div>
-            </div>
-            <div class="hint-pair">
-              <div class="msg"><span class="avatar" aria-hidden="true">M</span><div class="bubble"><span class="meta">maria</span><code>/dica</code></div></div>
-              <div class="msg"><span class="avatar bot" aria-hidden="true">?</span><div class="bubble bot"><span class="meta">revisor · dica 3 de 3</span>Procure <code>Pageable</code> na documentação do Spring Data. O que acontece se ele não chega até o repositório?</div></div>
-            </div>
-          </div>
-          <div class="pr-foot">
-            <span class="hint-dots" aria-hidden="true"><i class="on"></i><i class="on"></i><i class="on"></i></span>
-            <small id="hint-status">3 de 3 dicas nesta missão</small>
-            <button class="btn on-night" id="hint-btn" type="button" hidden>Comentar /dica</button>
           </div>
         </div>
       </div>
@@ -634,7 +606,7 @@
       <div class="wrap">
         <div class="sec-head">
           <h2 id="professores-titulo">O painel mostra onde cada aluno está e por quê.</h2>
-          <p>O professor cria uma turma a partir de uma vaga e manda um link. Cada aluno recebe o mesmo projeto no próprio GitHub e aparece no painel na missão em que está. Travado e parado são avisos para uma conversa, sempre com o motivo. Toda segunda, um resumo chega por e-mail.</p>
+          <p>O professor cria uma turma a partir de uma vaga e manda um link. Cada aluno recebe o mesmo projeto no próprio GitHub e aparece no painel na missão em que está. Travado e parado são avisos para uma conversa, sempre com o motivo.</p>
         </div>
 
         <figure class="demo board-demo" id="board-demo" aria-labelledby="painel-titulo">
@@ -675,7 +647,6 @@
               <li>O nome que o aluno escolheu ao entrar</li>
               <li>A missão atual e os testes que falham</li>
               <li>As perguntas do revisor</li>
-              <li>Quantas dicas o aluno pediu</li>
             </ul>
           </div>
           <div>
@@ -700,7 +671,7 @@
         <ul class="rules">
           <li><h3>Competências com nome</h3><p>Cada termo marcado na vaga vira uma competência de um vocabulário fechado, baseado na ESCO. Um termo que o vocabulário não tem fica sem marca.</p></li>
           <li><h3>Regras fixas para o plano</h3><p>A escolha e a ordem das missões seguem regras fixas. Se a IA falhar ao escrever os textos, o projeto sai com os textos padrão.</p></li>
-          <li><h3>A vaga não fica guardada</h3><p>O texto da vaga é lido em memória e descartado. Do aluno, ficam o usuário do GitHub e, com consentimento, o e-mail.</p></li>
+          <li><h3>A vaga não fica guardada</h3><p>O texto da vaga é lido em memória e descartado. Do aluno que entra numa turma, ficam o usuário do GitHub, o nome que ele escolheu e o nome do repositório.</p></li>
         </ul>
       </div>
     </section>
@@ -711,15 +682,16 @@
         <div>
           <h2 id="status-titulo">Feito durante o Hack Brasil 2026.</h2>
           <p>Na trilha Acesso à educação, com submissão em 30/11. O código é aberto desde o primeiro commit.</p>
-          <p class="stack-line">Construído com Java 21, Spring Boot, PostgreSQL, Flyway, JUnit 5, Docker, um GitHub App, GitHub Actions, Resend e o vocabulário ESCO; os projetos dos alunos saem em Java com Spring Boot ou em TypeScript com NestJS.</p>
+          <p class="stack-line">Construído com Java 21, Spring Boot, PostgreSQL, Flyway, JUnit, Docker, um GitHub App, GitHub Actions e o vocabulário ESCO; os projetos dos alunos saem em Java com Spring Boot ou em TypeScript com NestJS.</p>
         </div>
         <ol class="roadmap">
           <li><span class="state">pronto</span><div><h3>Leitura da vaga</h3><p>Nível, tecnologias e competências reconhecidos no texto.</p></div></li>
           <li><span class="state">pronto</span><div><h3>Plano do projeto</h3><p>Missões escolhidas e ordenadas pelas competências da vaga, em Java e Spring Boot ou em TypeScript e NestJS.</p></div></li>
           <li><span class="state">pronto</span><div><h3>Repositório do aluno</h3><p>Criado pelo GitHub App na conta do aluno, com cada missão aberta como tarefa.</p></div></li>
           <li><span class="state">pronto</span><div><h3>Revisor de pull requests</h3><p>Lê os testes que falham e comenta com perguntas, sem o código da solução.</p></div></li>
+          <li><span class="state">pronto</span><div><h3>Modo turma</h3><p>Convite por link e painel da turma, com a missão e os testes de cada aluno.</p></div></li>
           <li><span class="state next">a seguir</span><div><h3>Dicas em 3 níveis</h3><p>Uma dica por vez, quando o aluno comenta <code>/dica</code>.</p></div></li>
-          <li><span class="state next">a seguir</span><div><h3>Modo turma</h3><p>Convite por link, painel por missão e resumo semanal por e-mail.</p></div></li>
+          <li><span class="state next">a seguir</span><div><h3>Resumo semanal</h3><p>Um e-mail para o professor com quem vale uma conversa.</p></div></li>
         </ol>
       </div>
     </section>
@@ -1269,31 +1241,6 @@
         playOnce(board, steps, 0.35);
       })();
 
-      // The reviewer: each "Comentar /dica" shows the comment and the next hint, up to three. Without JS all show.
-      (function () {
-        var pairs = all(document, '.hint-pair');
-        var btn = document.getElementById('hint-btn');
-        var status = document.getElementById('hint-status');
-        var dots = all(document, '.hint-dots i');
-        if (!btn || !pairs.length) return;
-        var shown = 0;
-        pairs.forEach(function (p) { p.hidden = true; });
-        btn.hidden = false;
-        function update() {
-          var left = pairs.length - shown;
-          dots.forEach(function (d, i) { d.classList.toggle('on', i < shown); });
-          status.textContent = left ? shown + ' de ' + pairs.length + ' dicas nesta missão' : 'Sem mais dicas nesta missão. O próximo passo é seu.';
-          btn.setAttribute('aria-disabled', left ? 'false' : 'true');
-        }
-        btn.addEventListener('click', function () {
-          if (shown >= pairs.length) return;
-          var p = pairs[shown++];
-          p.hidden = false;
-          p.classList.add('reveal');
-          update();
-        });
-        update();
-      })();
     })();
   </script>
 </body>
