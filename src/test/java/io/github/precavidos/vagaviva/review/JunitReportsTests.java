@@ -2,6 +2,7 @@ package io.github.precavidos.vagaviva.review;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.entry;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -120,6 +121,37 @@ class JunitReportsTests {
 		TestReport report = JunitReports.read(zip(Map.of("TEST-a.xml", skipped)));
 
 		assertThat(report.missionsRun()).doesNotContain("pagination");
+	}
+
+	@Test
+	void countsPassedAndTotalTestsPerMission() {
+		String xml = """
+				<testsuite name="x">
+				  <testcase name="a" classname="Missão persistence: p"/>
+				  <testcase name="b" classname="Missão persistence: p"><failure message="m"/></testcase>
+				  <testcase name="c" classname="Missão persistence: p"><error message="e"/></testcase>
+				  <testcase name="d" classname="Missão persistence: p"><skipped/></testcase>
+				  <testcase name="e" classname="Outra coisa"/>
+				</testsuite>
+				""";
+
+		TestReport report = JunitReports.read(zip(Map.of("TEST-a.xml", xml)));
+
+		assertThat(report.tallies()).containsExactly(entry("persistence", new MissionTally(1, 3)));
+	}
+
+	@Test
+	void tallySumsTheSameMissionAcrossFiles() {
+		String one = """
+				<testsuite name="x"><testcase name="a" classname="Missão persistence: p"/></testsuite>
+				""";
+		String two = """
+				<testsuite name="y"><testcase name="b" classname="Missão persistence: p"><failure message="m"/></testcase></testsuite>
+				""";
+
+		TestReport report = JunitReports.read(zip(Map.of("TEST-a.xml", one, "TEST-b.xml", two)));
+
+		assertThat(report.tallies().get("persistence")).isEqualTo(new MissionTally(1, 2));
 	}
 
 	@Test

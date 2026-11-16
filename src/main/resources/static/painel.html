@@ -6,8 +6,9 @@
   <title>Vaga Viva — Painel da turma</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/vv.css">
+  <link rel="stylesheet" href="/vv-motion.css">
 </head>
 <body>
 <main>
@@ -28,22 +29,15 @@
       </div>
     </div>
 
-    <!-- Loading -->
-    <div id="loading" class="stack" aria-hidden="true">
-      <div class="skeleton"><i class="tall" style="height:110px"></i></div>
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px">
-        <div class="skeleton"><i class="tall" style="height:260px"></i></div>
-        <div class="skeleton"><i class="tall" style="height:260px"></i></div>
-        <div class="skeleton"><i class="tall" style="height:260px"></i></div>
-      </div>
-    </div>
+    <!-- Loading: the status line runs while the dashboard request is out (DESIGN.md 4.14) -->
+    <p id="loading" class="status-line" role="status" hidden><span data-dot-matrix="scan"></span><span class="status-label"></span><span class="status-timer"></span></p>
 
     <!-- Error -->
     <div class="banner error" id="error" role="alert" hidden><span data-icon="warning"></span><div><b id="error-title">Não foi possível carregar a turma.</b> <span id="error-text"></span> <button type="button" class="link" id="retry">Tentar de novo</button></div></div>
 
     <!-- Signed out or session over -->
     <section class="board stack" id="signed-out" aria-labelledby="out-title" hidden>
-      <h2 id="out-title" tabindex="-1">Entre para ver a turma.</h2>
+      <h1 id="out-title" tabindex="-1" style="font-size:28px;line-height:1.1">Entre para ver a turma.</h1>
       <p class="muted">O painel é só do professor da turma. Entre com o GitHub e você volta para cá.</p>
       <div class="row"><button type="button" class="btn" id="sign-in"><span data-icon="github"></span>Entrar com o GitHub</button></div>
     </section>
@@ -86,14 +80,16 @@
 </dialog>
 
 <script src="/vv.js"></script>
+<script src="/vv-motion.js"></script>
 <script>
   const { $, $$, ICON, esc } = VV;
 
+  // `one` labels a card's badge; `many` follows a count other than 1; `plural` names a counter.
   const STATUS = {
-    STUCK: { one: 'travado', many: 'travados', plural: 'Travados', tile: 'coral' },
-    IDLE: { one: 'parado', many: 'parados', plural: 'Parados', tile: 'idle' },
-    ADVANCING: { one: 'avançando', many: 'avançando', plural: 'Avançando', tile: 'green' },
-    COMPLETED: { one: 'concluído', many: 'concluídos', plural: 'Concluídos', tile: 'purple' },
+    STUCK: { one: 'travado', many: 'travados', plural: 'Travados' },
+    IDLE: { one: 'parado', many: 'parados', plural: 'Parados' },
+    ADVANCING: { one: 'avançando', many: 'avançando', plural: 'Avançando' },
+    COMPLETED: { one: 'concluído', many: 'concluídos', plural: 'Concluídos' },
   };
   const ORDER = ['STUCK', 'IDLE', 'ADVANCING', 'COMPLETED'];
 
@@ -101,7 +97,8 @@
   const say = (text) => { $('#status').textContent = text; };
   const num = (value) => Math.max(0, Math.floor(Number(value) || 0));
   const statusOf = (value) => (STATUS[value] ? value : 'ADVANCING');
-  const statusBadge = (status) => `<span class="status" data-status="${status}">${ICON[status]}${esc(STATUS[status].one)}</span>`;
+  const statusBadge = (status) => VV.statusBadge(status, STATUS[status].one);
+  const testsOf = (s) => (Array.isArray(s?.tests) ? s.tests : []);
 
   // The server's links are followed only when they point at GitHub.
   function githubUrl(value) {
@@ -114,7 +111,7 @@
   VV.chrome('Professor');
   $$('[data-icon]').forEach((el) => { el.innerHTML = ICON[el.dataset.icon]; });
   $('#drawer-close').innerHTML = ICON.close;
-  $('#empty-art').innerHTML = VV.ic('link', 'yellow', 'lg') + VV.ic('users', 'plain', 'lg');
+  $('#empty-art').innerHTML = VV.ic('link', '', 'lg') + VV.ic('users', '', 'lg');
 
   // ---- What is on screen: one panel at a time ----
   const PANELS = ['loading', 'error', 'signed-out', 'empty', 'dashboard'];
@@ -154,42 +151,41 @@
   }
   setInterval(() => { if (loadedAt) $('#updated').textContent = ago(); }, 30000);
 
+  // The status line measures the real request: it starts before the fetch and ends on every way out of it.
   async function load() {
     if (!CLASSROOM_ID) { showError('Esta turma não existe ou não é sua.', '', false); return; }
     show('loading');
-    say('Carregando a turma…');
+    say('');
+    const line = VVMotion.statusLine($('#loading'), 'Carregando a turma');
     let response;
     try {
       response = await fetch(`/api/classrooms/${CLASSROOM_ID}/dashboard`, { headers: { Accept: 'application/json' } });
     } catch {
+      line.stop();
       showError('Não foi possível carregar a turma.', 'Confira a sua conexão.', true);
       return;
     }
-    if (response.status === 401) { showSignedOut(); return; }
-    if (response.status === 404) { showError('Esta turma não existe ou não é sua.', '', false); return; }
-    if (!response.ok) { showError('Não foi possível carregar a turma.', 'O Vaga Viva não respondeu como esperado.', true); return; }
+    if (response.status === 401) { line.stop(); showSignedOut(); return; }
+    if (response.status === 404) { line.stop(); showError('Esta turma não existe ou não é sua.', '', false); return; }
+    if (!response.ok) { line.stop(); showError('Não foi possível carregar a turma.', 'O Vaga Viva não respondeu como esperado.', true); return; }
     try {
       data = await response.json();
     } catch {
+      line.stop();
       showError('Não foi possível carregar a turma.', 'O Vaga Viva não respondeu como esperado.', true);
       return;
     }
+    line.done();
     loadedAt = Date.now();
-    render();
+    try {
+      render();
+    } catch (e) {
+      console.error(e);
+      showError('Não foi possível mostrar a turma.', 'O Vaga Viva respondeu algo que o painel não entende.', true);
+    }
   }
 
-  function countUp(el, to) {
-    if (matchMedia('(prefers-reduced-motion: reduce)').matches) { el.textContent = to; return; }
-    const start = performance.now();
-    const tick = (now) => {
-      const t = Math.min(1, (now - start) / 600);
-      el.textContent = Math.round(to * (1 - Math.pow(1 - t, 3)));
-      if (t < 1) requestAnimationFrame(tick);
-    };
-    requestAnimationFrame(tick);
-  }
-
-  const columnsOf = () => (Array.isArray(data.columns) ? data.columns : []).map((c) => ({
+  const columnsOf = () => (Array.isArray(data?.columns) ? data.columns : []).map((c) => ({
     order: c.order ?? null,
     title: String(c.title ?? ''),
     students: (Array.isArray(c.students) ? c.students : []).map((s) => ({ ...s, status: statusOf(s.status) })),
@@ -214,19 +210,28 @@
       return;
     }
 
-    // One bar for the whole class, then a counter per situation that also filters the board.
+    // One bar for the whole class, then a counter per situation that also filters the board (DESIGN.md 4.8).
     const summary = ORDER.map((s) => `${counts[s]} ${counts[s] === 1 ? STATUS[s].one : STATUS[s].many}`);
     $('#meter').setAttribute('role', 'img');
     $('#meter').setAttribute('aria-label', summary.join(', '));
     $('#meter').innerHTML = ORDER.filter((s) => counts[s]).map((s) => `<i data-status="${s}" style="flex:${counts[s]}"></i>`).join('');
-    $('#stats').innerHTML = ORDER.map((status) => `<button type="button" class="stat" data-status="${status}" aria-pressed="false" aria-label="${counts[status]} ${counts[status] === 1 ? STATUS[status].one : STATUS[status].many}">
-      ${VV.ic(status, STATUS[status].tile)}<span class="value" aria-hidden="true">0</span>
-      <span class="name" aria-hidden="true">${esc(STATUS[status].plural)}</span></button>`).join('');
-    $$('#stats .value').forEach((el, i) => countUp(el, counts[ORDER[i]]));
+    $('#stats').innerHTML = ORDER.map((status, i) => `<button type="button" class="stat" data-status="${status}" aria-pressed="false" aria-label="${esc(summary[i])}">
+      <span class="value" data-count-up="${counts[status]}" aria-hidden="true">${counts[status]}</span>
+      <span class="name" aria-hidden="true"><i></i>${esc(STATUS[status].plural)}</span></button>`).join('');
 
-    const card = (s) => `<button type="button" class="student" data-status="${s.status}" data-login="${esc(s.login)}">
+    // The card's name is short: who, the situation, the current mission's tests and the reason. The whole grid
+    // stays visible on the card and is read in the drawer, row by row.
+    const cardLabel = (s) => {
+      const row = testsOf(s).find((t) => t && t.order === s.missionOrder);
+      const counted = s.status !== 'COMPLETED' && row && Number.isInteger(row.total) && row.total > 0 && typeof row.passed === 'number';
+      const tests = counted ? `, missão ${num(s.missionOrder)}: ${Math.min(row.total, num(row.passed))} de ${row.total} testes passando` : '';
+      return `${s.displayName ?? s.login}, ${STATUS[s.status].one}${tests}, ${s.reason ?? ''}`;
+    };
+    // The card: initials, name, badge, the test grid (DESIGN.md 4.16), then the reason under a thin line.
+    const card = (s) => `<button type="button" class="student" data-status="${s.status}" data-login="${esc(s.login)}" aria-label="${esc(cardLabel(s))}">
       ${VV.avatar(s.displayName)}
       <span class="name">${esc(s.displayName)} ${statusBadge(s.status)}</span>
+      ${VV.testGrid(testsOf(s), s.missionOrder, s.status === 'COMPLETED')}
       <span class="reason">${esc(s.reason)}</span></button>`;
     const column = (c) => {
       const done = c.order === null;
@@ -242,6 +247,8 @@
     $('#filter-note').textContent = 'Clique num aluno para ver o que está segurando ele.';
 
     show('dashboard');
+    // The counters are new elements on every render, and render runs once per load: they count up once.
+    VVMotion.init($('#stats'));
     const last = summary.pop();
     say(`Painel carregado: ${summary.join(', ')} e ${last}.`);
   }
@@ -263,6 +270,7 @@
   let opener = null;
   let closing = false;
   let request = 0;
+  let studentLine = null;
 
   function studentIn(login) {
     return columnsOf().flatMap((c) => c.students).find((s) => s.login === login);
@@ -288,10 +296,16 @@
     loadStudent(login);
   }
 
+  // The drawer's own status line measures the student request; it ends on every way out, superseded ones included.
   async function loadStudent(login) {
     const mine = ++request;
-    $('#drawer-body').innerHTML = '<div class="skeleton" aria-hidden="true"><i class="tall" style="height:90px"></i><i class="tall" style="height:120px"></i></div>';
+    studentLine?.stop();
+    // The body is already a polite live region, so the line inside it takes no role of its own.
+    $('#drawer-body').innerHTML = '<p class="status-line" role="none" hidden><span data-dot-matrix="scan"></span><span class="status-label"></span><span class="status-timer"></span></p>';
+    const line = VVMotion.statusLine($('#drawer-body .status-line'), 'Abrindo a ficha');
+    studentLine = line;
     const fail = (title, text, retry) => {
+      line.stop();
       if (mine !== request) return;
       $('#drawer-body').innerHTML = `<div class="banner error" role="alert"><span>${ICON.warning}</span><div><b>${esc(title)}</b> ${esc(text)}${retry ? ' <button type="button" class="link" id="retry-student">Tentar de novo</button>' : ''}</div></div>`;
       if (retry) $('#retry-student').addEventListener('click', () => loadStudent(login));
@@ -303,13 +317,14 @@
       fail('Não foi possível abrir a ficha.', 'Confira a sua conexão.', true);
       return;
     }
-    if (mine !== request) return;
-    if (response.status === 401) { closeDrawer(true); showSignedOut(); return; }
+    if (mine !== request) { line.stop(); return; }
+    if (response.status === 401) { line.stop(); closeDrawer(true); showSignedOut(); return; }
     if (response.status === 404) { fail('Esta ficha não existe mais.', 'Atualize a página para ver a turma como está.', false); return; }
     if (!response.ok) { fail('Não foi possível abrir a ficha.', 'O Vaga Viva não respondeu como esperado.', true); return; }
     let student;
     try { student = await response.json(); } catch { fail('Não foi possível abrir a ficha.', 'O Vaga Viva não respondeu como esperado.', true); return; }
-    if (mine !== request) return;
+    if (mine !== request) { line.stop(); return; }
+    line.done();
     renderStudent(student);
   }
 
@@ -320,9 +335,13 @@
     const failing = Array.isArray(s.failingTests) ? s.failingTests : [];
     drawerHead(String(s.displayName ?? s.login), String(s.login), status);
 
+    // The top of "Testes que falham" is the current mission's row of the grid (DESIGN.md 4.10).
+    const current = testsOf(s).filter((t) => t && t.order === s.missionOrder);
+    const grid = current.length ? VV.testGrid(current, s.missionOrder, completed) : '';
+    const counted = current.some((t) => Number.isInteger(t.total) && t.total > 0 && typeof t.passed === 'number');
     const tests = failing.length
       ? `<ul class="tests">${failing.map((t) => `<li><span class="dot"></span><div><code>${esc(t?.name)}</code>${t?.message ? `<span>${esc(t.message)}</span>` : ''}</div></li>`).join('')}</ul>`
-      : `<p class="muted">${completed ? 'Nenhum. Todos os testes do plano passam.' : 'Nenhum teste falhando registrado ainda.'}</p>`;
+      : `<p class="muted">${completed ? 'Nenhum. Todos os testes do plano passam.' : counted ? 'Nenhum teste falhando registrado ainda.' : 'Ainda não há um relatório de testes desta missão.'}</p>`;
     const question = s.lastReviewerQuestion
       ? `<div class="question"><span class="avatar bot" aria-hidden="true">?</span><p class="bubble">${esc(s.lastReviewerQuestion)}</p></div>`
       : '<p class="muted">O revisor ainda não fez perguntas.</p>';
@@ -340,7 +359,7 @@
         <p style="font-size:18px;font-weight:600;overflow-wrap:anywhere">${completed ? 'Projeto concluído' : esc(s.missionTitle)}</p>
         <p class="muted">${esc(reason.charAt(0).toUpperCase() + reason.slice(1))}.</p>
       </div>
-      <div class="block rise" style="animation-delay:60ms"><h3>${ICON.tests}Testes que falham</h3>${tests}</div>
+      <div class="block rise" style="animation-delay:60ms"><h3>${ICON.tests}Testes que falham</h3>${grid}${tests}</div>
       <div class="block rise" style="animation-delay:120ms"><h3>${ICON.question}Última pergunta do revisor</h3>${question}</div>
       <div class="block rise" style="animation-delay:180ms"><h3>${ICON.hint}Dicas pedidas</h3>${hints}</div>`;
     const pr = githubUrl(s.lastPullRequestUrl);
@@ -353,6 +372,7 @@
     if (closing || !drawer.open) return;
     closing = true;
     request++;
+    studentLine?.stop();
     drawer.classList.remove('in');
     const finish = () => { drawer.close(); closing = false; if (opener?.isConnected) opener.focus(); };
     now || matchMedia('(prefers-reduced-motion: reduce)').matches ? finish() : setTimeout(finish, 320);

@@ -6,8 +6,9 @@
   <title>Vaga Viva — Aluno</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="vv.css?v=3">
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="vv.css?v=8">
+  <link rel="stylesheet" href="vv-motion.css?v=5">
 </head>
 <body>
 <main>
@@ -57,6 +58,8 @@
       </form>
     </section>
 
+    <!-- Steps 2 and 3 share one block: the dot swap covers it on the way from the plan to the repository. -->
+    <div id="flow" data-dot-swap>
     <!-- Step 2: reading the posting, then the plan -->
     <section id="step-plan" class="duo" aria-labelledby="read-title" hidden>
       <div class="sticky stack">
@@ -71,10 +74,14 @@
       <div class="stack lg">
         <div class="card stack">
           <div class="row between">
-            <h2 id="read-title" tabindex="-1">Lendo a vaga…</h2>
+            <h1 id="read-title" tabindex="-1" style="font-size:28px;line-height:1.1">Lendo a vaga</h1>
             <button type="button" class="link small" id="skip">Pular a animação</button>
           </div>
           <div class="findings" id="findings"></div>
+        </div>
+
+        <div id="plan-wait" class="night-panel plan-wait" hidden>
+          <p class="status-line" hidden><span data-dot-matrix="wave"></span><span class="status-label"></span><span class="status-timer"></span></p>
         </div>
 
         <div id="plan-ready" class="stack lg" hidden>
@@ -84,7 +91,7 @@
           </div>
           <ol class="missions stagger" id="missions"></ol>
           <div class="row" style="justify-content:flex-end">
-            <button type="button" class="btn brand-btn" id="create-button"><span id="gh"></span>Criar meu repositório no GitHub</button>
+            <button type="button" class="btn" id="create-button"><span id="gh"></span>Criar meu repositório no GitHub</button>
           </div>
         </div>
       </div>
@@ -94,17 +101,19 @@
     <div class="wrap narrow" id="step-repo" hidden style="padding:0;width:100%">
       <section class="board stack lg" aria-labelledby="repo-title">
         <div id="repo-creating" class="stack lg">
-          <h2>Criando o seu repositório…</h2>
-          <ol class="progress" id="progress">
-            <li><span class="dot"></span>Copiando o repositório-modelo</li>
-            <li><span class="dot"></span>Gravando o seu plano</li>
-            <li><span class="dot"></span>Abrindo as missões</li>
-            <li><span class="dot"></span>Escrevendo o README do seu projeto</li>
-          </ol>
+          <h2>Seu repositório no GitHub</h2>
+          <div class="night-panel creating">
+            <p class="status-line" id="repo-line" hidden><span data-dot-matrix="flip"></span><span class="status-label"></span><span class="status-timer"></span></p>
+            <ol class="stage-list" id="progress">
+              <li><span class="step-mark is-todo"></span><span>Copiando o modelo</span></li>
+              <li><span class="step-mark is-todo"></span><span>Gravando o plano</span></li>
+              <li><span class="step-mark is-todo"></span><span>Abrindo as missões</span></li>
+              <li><span class="step-mark is-todo"></span><span>Escrevendo o README</span></li>
+            </ol>
+          </div>
           <p class="muted small">Isso leva alguns segundos. Pode deixar esta página aberta.</p>
         </div>
         <div id="repo-ready" class="stack lg" hidden>
-          <svg class="zig" viewBox="0 0 460 260" aria-hidden="true"><path d="M20 230 L110 60 L170 200 L260 40 L320 180 L440 50" stroke="var(--green)"/></svg>
           <div class="stack">
             <span class="big-check" id="big-check"></span>
             <h1 id="repo-title" tabindex="-1">Seu repositório está <mark>pronto</mark>.</h1>
@@ -118,10 +127,12 @@
         </div>
       </section>
     </div>
+    </div>
   </div>
 </main>
 
-<script src="vv.js?v=3"></script>
+<script src="vv.js?v=6"></script>
+<script src="vv-motion.js?v=12"></script>
 <script>
   const { $, $$, ICON, ic, PLAN, LEVELS, esc } = VV;
   window.PROTO_STATES = [['Início', ''], ['Lendo a vaga', 'plano'], ['Repositório pronto', 'pronto']];
@@ -129,7 +140,7 @@
   $('#lock').innerHTML = ICON.lock; $('#arrow').innerHTML = ICON.arrow; $('#arrow2').innerHTML = ICON.arrow;
   $('#gh').innerHTML = ICON.github; $('#big-check').innerHTML = ICON.check;
   $('#scissors').innerHTML = ICON.scissors; $('#scissors2').innerHTML = ICON.scissors;
-  $('#b1').innerHTML = ic('posting', 'yellow'); $('#b2').innerHTML = ic('mission', 'green'); $('#b3').innerHTML = ic('question', 'lilac');
+  $('#b1').innerHTML = ic('posting'); $('#b2').innerHTML = ic('mission'); $('#b3').innerHTML = ic('question');
 
   const SAMPLE = `Pessoa Desenvolvedora Java Júnior
 
@@ -209,10 +220,10 @@ Modelo híbrido, em São Paulo.`;
   }
 
   const GROUPS = [
-    { kind: 'level', icon: 'level', color: 'lilac', what: 'Nível' },
-    { kind: 'tech', icon: 'stack', color: 'yellow', what: 'Tecnologias' },
-    { kind: 'skill', icon: 'skill', color: 'green', what: 'Competências' },
-    { kind: 'out', icon: 'out', color: 'coral', what: 'Fora deste projeto', note: `Este projeto usa ${PLAN.archetypeName}. Estes itens a vaga cita, mas o projeto não pratica.` },
+    { kind: 'level', icon: 'level', what: 'Nível' },
+    { kind: 'tech', icon: 'stack', what: 'Tecnologias' },
+    { kind: 'skill', icon: 'skill', what: 'Competências' },
+    { kind: 'out', icon: 'out', what: 'Fora deste projeto', note: `Este projeto usa ${PLAN.archetypeName}. Estes itens a vaga cita, mas o projeto não pratica.` },
   ];
   const HL = { level: '#c9bdff', tech: 'var(--yellow)', out: '#ffc2b5' };
 
@@ -248,9 +259,10 @@ Modelo híbrido, em São Paulo.`;
     const mine = ++run;
     fast = reduced;
     VV.setStep(2); show('step-plan');
-    $('#plan-ready').hidden = true; $('#skip').hidden = false;
-    $('#read-title').textContent = 'Lendo a vaga…';
-    say('Lendo a vaga…');
+    // The form that held the focus is hidden now: the focus goes to the new step's title, not to the page.
+    $('#plan-ready').hidden = true; $('#plan-wait').hidden = true; $('#skip').hidden = false;
+    $('#read-title').textContent = 'Lendo a vaga';
+    $('#read-title').focus();
 
     const terms = [
       { ...EXTRACTION.level, kind: 'level' },
@@ -260,7 +272,7 @@ Modelo híbrido, em São Paulo.`;
     ];
     $('#clip-text').innerHTML = markUp(text, terms);
     $('#findings').innerHTML = GROUPS.map((g) => `<div class="finding" data-kind="${g.kind}" ${g.kind === 'out' ? 'hidden' : ''}>
-      ${ic(g.icon, g.color)}<span class="what">${g.what}</span><div class="chips"></div>${g.note ? `<p class="note">${esc(g.note)}</p>` : ''}</div>`).join('');
+      ${ic(g.icon)}<span class="what">${g.what}</span><div class="chips"></div>${g.note ? `<p class="note">${esc(g.note)}</p>` : ''}</div>`).join('');
 
     // 1. A reading line sweeps the clipping.
     const line = $('#scanline');
@@ -293,42 +305,61 @@ Modelo híbrido, em São Paulo.`;
     if (mine !== run) return;
     await wait(200);
 
-    // 3. Competências: each one names the term that evidences it.
+    // 3. Competências: each one names the term that evidences it, and its name decrypts from the API's label.
     for (const skill of EXTRACTION.skills) {
       if (mine !== run) return;
       const source = $(`.finding .chip[data-term="${skill.evidence.toLowerCase()}"]`);
       if (source && !fast) { source.classList.remove('pulse'); void source.offsetWidth; source.classList.add('pulse'); }
-      addChip('skill', `${esc(skill.label)} <small>por “${esc(skill.evidence)}”</small>`, 'pop');
+      const chip = addChip('skill', `<span class="skill-name"></span> <small>por “${esc(skill.evidence)}”</small>`, 'pop');
+      const name = $('.skill-name', chip);
+      if (fast) name.textContent = skill.label; else VVMotion.decrypt(name, skill.label);
       await wait(130);
     }
     if (mine !== run) return;
     await wait(350);
-
-    // 4. The plan.
     $('#skip').hidden = true;
     $('#read-title').textContent = 'O que a vaga pede';
-    $('#missions').innerHTML = PLAN.missions.map(VV.missionItem).join('');
+
+    // 4. The plan: a real wait for the plan endpoint, shown as the wave status line on a dark panel.
+    if (!fast) {
+      $('#plan-wait').hidden = false;
+      const line = VVMotion.statusLine($('.status-line', $('#plan-wait')), 'Montando o plano');
+      await wait(1100);
+      line.done();
+      $('#plan-wait').hidden = true;
+      if (mine !== run) return;
+    }
+    $('#missions').innerHTML = PLAN.missions.map((m) => VV.missionItem(m)).join('');
     $('#plan-ready').hidden = false;
     say(`Leitura concluída: nível ${LEVELS[PLAN.seniorityLevel]}, ${EXTRACTION.technologies.length} tecnologias e ${EXTRACTION.skills.length} competências. Plano pronto, com ${PLAN.missions.length} missões.`);
     if (!fast) $('#plan-ready').scrollIntoView({ block: 'nearest', behavior: 'smooth' });
   }
 
+  // The plan becomes the repository under the dot swap, once per flow; then the creation waits on the server.
   async function create() {
-    VV.setStep(3); show('step-repo');
-    $('#repo-creating').hidden = false; $('#repo-ready').hidden = true;
-    say('Criando o seu repositório no GitHub.');
-    await VV.runProgress($('#progress'), VV.wait(2600));
+    $('#create-button').disabled = true;
+    await VVMotion.dotSwap($('#flow'), () => {
+      VV.setStep(3); show('step-repo');
+      $('#repo-creating').hidden = false; $('#repo-ready').hidden = true;
+      window.scrollTo({ top: 0 });
+    });
+    const line = VVMotion.statusLine($('#repo-line'), 'Criando o repositório');
+    // The server's answer (mocked): the last stage turns green only when it arrives.
+    const answer = VV.wait(3200);
+    await VV.runProgress($('#progress'), answer);
+    line.done();
     ready();
   }
 
   function ready() {
     VV.setStep(4); show('step-repo');
-    $('#repo-creating').hidden = true; $('#repo-ready').hidden = false;
+    $('#create-button').disabled = false;
+    $('#repo-creating').hidden = true; $('#repo-line').hidden = true; $('#repo-ready').hidden = false;
     $('#repo-panel').innerHTML = VV.repoPanel('maria/vaga-viva-clinic-scheduling', PLAN.missions);
     say('Seu repositório está pronto.'); $('#repo-title').focus();
   }
 
-  $('#posting-form').addEventListener('submit', (e) => {
+  $('#posting-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     const byText = tabs[0].getAttribute('aria-selected') === 'true';
     if (byText && !$('#posting').value.trim()) {
@@ -336,12 +367,18 @@ Modelo híbrido, em São Paulo.`;
       return;
     }
     // The prototype recognizes the example's terms; with a link, it reads the example posting.
+    // While the extraction endpoint answers (mocked), the button shows the scan status line.
+    const button = $('#plan-button');
+    VV.busy(button, 'Lendo a vaga', 'scan');
+    await VV.wait(1200);
+    VV.idle(button);
     read(byText ? $('#posting').value : SAMPLE);
   });
   $('#skip').addEventListener('click', () => { fast = true; $$('.flyer').forEach((g) => g.getAnimations().forEach((a) => a.finish())); });
-  $('#change').addEventListener('click', () => { run++; VV.setStep(1); show('step-posting'); $('#posting').focus(); });
+  $('#change').addEventListener('click', () => { run++; $('#plan-wait').hidden = true; VV.setStep(1); show('step-posting'); $('#posting').focus(); });
   $('#create-button').addEventListener('click', create);
 
+  VVMotion.init();
   if (VV.state() === 'plano') { $('#posting').value = SAMPLE; read(SAMPLE); }
   if (VV.state() === 'pronto') ready();
 </script>

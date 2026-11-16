@@ -1,12 +1,14 @@
 package io.github.precavidos.vagaviva.classroom;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.entry;
 import static org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase.Replace.NONE;
 
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -22,8 +24,11 @@ import org.springframework.context.annotation.Import;
 import io.github.precavidos.vagaviva.TestcontainersConfiguration;
 import io.github.precavidos.vagaviva.classroom.StoredPlan.StoredMission;
 import io.github.precavidos.vagaviva.review.ReviewContext.FailedTest;
+import io.github.precavidos.vagaviva.review.MissionTally;
 import io.github.precavidos.vagaviva.review.TestReport;
 import jakarta.persistence.EntityManager;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.json.JsonMapper;
 
 /** How the webhook events move a classroom student along the stored plan. */
 @DataJpaTest
@@ -231,6 +236,31 @@ class ProgressRecorderTests {
 		recorder.testsRan("joao/broken-repository", 1, report(BOTH));
 
 		assertThat(recorder.tracks("joao/broken-repository")).isTrue();
+	}
+
+	@Test
+	void recordsTheTallyOfEveryMissionThatRan() {
+		recorder.testsRan(REPO, 3, new TestReport(BOTH, List.of(failed("persistence", "savesIt", "x")),
+				Map.of("patients-api", new MissionTally(4, 4), "persistence", new MissionTally(1, 3))));
+
+		assertThat(tallies(reload())).containsOnly(entry("patients-api", new MissionTally(4, 4)),
+				entry("persistence", new MissionTally(1, 3)));
+	}
+
+	@Test
+	void aPartialReportReplacesOnlyTheMissionsItRan() {
+		recorder.testsRan(REPO, 3, new TestReport(BOTH, List.of(failed("persistence", "savesIt", "x")),
+				Map.of("patients-api", new MissionTally(4, 4), "persistence", new MissionTally(1, 3))));
+		recorder.testsRan(REPO, 4, new TestReport(Set.of("persistence"), List.of(),
+				Map.of("persistence", new MissionTally(3, 3))));
+
+		assertThat(tallies(reload())).containsOnly(entry("patients-api", new MissionTally(4, 4)),
+				entry("persistence", new MissionTally(3, 3)));
+	}
+
+	private static Map<String, MissionTally> tallies(EnrollmentProgress progress) {
+		return JsonMapper.builder().build().readValue(progress.getTestTallies(), new TypeReference<>() {
+		});
 	}
 
 	private EnrollmentProgress reload() {

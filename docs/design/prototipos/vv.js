@@ -7,7 +7,7 @@ const VV = (() => {
   const state = () => new URLSearchParams(location.search).get('estado') ?? '';
 
   // One icon family, drawn for this product: 24 px grid, 2.2 px ink stroke, round joins, no fills.
-  // Icons never carry colour themselves; colour comes from the tile behind them (see `ic`).
+  // Icons are ink; only an icon that stands for a situation takes that situation's colour (see `ic`).
   const svg = (d) => `<svg class="glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
   const ICON = {
     arrow: svg('<path d="M5 12h14M13 6l6 6-6 6"/>'),
@@ -43,24 +43,62 @@ const VV = (() => {
     ADVANCING: svg('<path d="M7 17L17 7M9 7h8v8"/>'),
     COMPLETED: svg('<path d="M5 12.5l4.5 4.5 9.5-10"/>'),
   };
-  // An icon on a coloured tile: the product's icon treatment, taken from the landing page.
-  const ic = (name, color = 'yellow', size = '') => `<span class="ic ${size} ${color}" aria-hidden="true">${ICON[name]}</span>`;
   const STATUS = {
     STUCK: { label: 'travado', plural: 'Travados' },
     IDLE: { label: 'parado', plural: 'Parados' },
     ADVANCING: { label: 'avançando', plural: 'Avançando' },
     COMPLETED: { label: 'concluído', plural: 'Concluídos' },
   };
+  // An icon tile: a 28 px outlined square with an ink glyph (DESIGN.md 2.5). `status` names a situation (STUCK, IDLE,
+  // ADVANCING, COMPLETED, or the older colour names coral, idle, green, purple) and is the only way to colour it.
+  const TONES = { coral: 'STUCK', idle: 'IDLE', green: 'ADVANCING', purple: 'COMPLETED' };
+  const ic = (name, status = '', size = '') => {
+    const situation = STATUS[status] ? status : TONES[status];
+    return `<span class="ic ${size}"${situation ? ` data-status="${situation}"` : ''} aria-hidden="true">${ICON[name]}</span>`;
+  };
   const LEVELS = { INTERN: 'estágio', JUNIOR: 'júnior', MID: 'pleno', SENIOR: 'sênior' };
   const REASONS = { CORE: ['central', 'core'], SKILL_MATCH: ['pela vaga', 'match'], DEFAULT: ['padrão', ''] };
-  const AVATAR_COLORS = ['#ffd23f', '#ff6b4a', '#b8a8ff', '#33c47a', '#8fb0ff'];
 
   const initials = (name) => name.split(/\s+/).filter(Boolean).slice(0, 2).map((word) => word[0]).join('').toUpperCase();
-  const avatar = (name, seed = name, size = '') => {
-    const color = AVATAR_COLORS[[...seed].reduce((sum, c) => sum + c.charCodeAt(0), 0) % AVATAR_COLORS.length];
-    return `<span class="avatar ${size}" style="background:${color}" aria-hidden="true">${esc(initials(name))}</span>`;
-  };
+  // A neutral circle with the initials in mono, with no colour per person (DESIGN.md 4.11). `seed` stays for callers.
+  const avatar = (name, seed = name, size = '') => `<span class="avatar ${size}" aria-hidden="true">${esc(initials(name))}</span>`;
   const statusBadge = (status, label = STATUS[status].label) => `<span class="status" data-status="${status}">${ICON[status]}${esc(label)}</span>`;
+
+  // The test grid: one row per plan mission, one square dot per test (DESIGN.md 4.16). Missions up to the current one
+  // show passing (green) and failing (coral) dots with "passed/total"; missions after it show empty dots and "—", even
+  // when the report has them failing, because the whole suite runs on every push. A mission without a tally shows only
+  // its number and "—". A completed student is all green. The dots are decorative; each row carries its sentence.
+  // The data comes from test reports: a total that is not a positive integer counts as no tally, and so does a
+  // current or past mission whose `passed` is missing; `passed` is kept within 0..total.
+  function testGrid(tests, missionOrder, completed = false) {
+    const current = typeof missionOrder === 'number' && Number.isFinite(missionOrder) ? missionOrder : 0;
+    const row = (t) => {
+      const order = esc(t.order ?? '');
+      const total = Number.isInteger(t.total) && t.total > 0 ? t.total : 0;
+      const future = !completed && Number(t.order) > current;
+      const hasPassed = typeof t.passed === 'number' && Number.isFinite(t.passed);
+      const hasTotal = total > 0 && (completed || future || hasPassed);
+      const passed = completed ? total : Math.max(0, Math.min(total, Math.floor(hasPassed ? t.passed : 0)));
+      let dots = '';
+      let count = '—';
+      let text;
+      if (!hasTotal) text = future ? 'ainda não começou' : 'ainda sem contagem de testes';
+      else if (future) {
+        dots = '<i class="td is-empty"></i>'.repeat(total);
+        text = 'ainda não começou';
+      } else {
+        dots = '<i class="td is-pass"></i>'.repeat(passed) + '<i class="td is-fail"></i>'.repeat(total - passed);
+        count = `${passed}/${total}`;
+        text = `${passed} de ${total} ${total === 1 ? 'teste passando' : 'testes passando'}`;
+      }
+      const state = !hasTotal ? 'none' : future ? 'future' : 'counted';
+      return `<span class="test-row" data-order="${order}" data-state="${state}"><span class="sr">Missão ${order}: ${text}.</span>`
+        + `<span class="test-mission" aria-hidden="true">${esc(String(t.order ?? '').padStart(2, '0'))}</span>`
+        + `<span class="test-dots" aria-hidden="true">${dots}</span>`
+        + `<span class="test-count" aria-hidden="true">${count}</span></span>`;
+    };
+    return `<span class="test-grid">${(Array.isArray(tests) ? tests : []).filter((t) => t && typeof t === 'object').map(row).join('')}</span>`;
+  }
 
   const missionItem = (m) => {
     const [label, cls] = REASONS[m.reason];
@@ -74,30 +112,40 @@ const VV = (() => {
   const repoPanel = (repo, missions) => `<div class="night-panel rise">
       <div class="panel-tag"><span>Seu repositório</span><b>${missions.length} missões abertas</b></div>
       <div class="repo-name">${ICON.github}${esc(repo)}</div>
-      <ul class="issues stagger">${missions.map((m) => `<li><span class="dot"></span>Missão ${m.order}: ${esc(m.title)}</li>`).join('')}</ul>
+      <ul class="issues stagger">${missions.map((m) => `<li><span class="dot" aria-hidden="true"></span>Missão ${m.order}: ${esc(m.title)}</li>`).join('')}</ul>
       <p class="muted small" style="margin-top:14px">Os testes ficam vermelhos até você implementar cada missão.</p>
     </div>`;
 
-  // The stages advance on a timer; the last one waits for `done` (the server's answer).
+  // The stages advance on a timer and are illustrative; the last one only turns done when `done` (the server's
+  // answer) resolves, so a slow answer keeps it waiting (DESIGN.md 3.2). Each <li> holds a .step-mark and its name;
+  // the state is also written in text for screen readers.
+  const STAGE_TEXT = { 'is-done': 'feito', 'is-current': 'em andamento', 'is-todo': 'a fazer' };
+  function paintStages(items, current) {
+    items.forEach((li, i) => {
+      const state = i < current ? 'is-done' : i === current ? 'is-current' : 'is-todo';
+      const mark = $('.step-mark', li);
+      if (!mark.classList.contains(state)) { mark.classList.remove('is-done', 'is-current', 'is-todo'); mark.classList.add(state); }
+      li.classList.remove('is-done', 'is-current', 'is-todo'); li.classList.add(state);
+      let sr = $('.sr', li);
+      if (!sr) li.append(sr = Object.assign(document.createElement('span'), { className: 'sr' }));
+      sr.textContent = `, ${STAGE_TEXT[state]}`;
+    });
+  }
   async function runProgress(list, done) {
     const items = $$('li', list);
+    window.VVMotion?.init(list);
     for (let i = 0; i < items.length; i++) {
-      items[i].classList.add('now');
-      await (i === items.length - 1 ? Promise.all([done, wait(700)]) : wait(850));
-      items[i].classList.replace('now', 'ok');
+      paintStages(items, i);
+      await (i === items.length - 1 ? Promise.all([done, wait(600)]) : wait(850));
     }
-    await wait(350);
+    paintStages(items, items.length);
+    await wait(450);
   }
 
+  // The count-up lives in vv-motion.js; without it the number is written directly.
   function countUp(el, to) {
-    if (matchMedia('(prefers-reduced-motion: reduce)').matches) { el.textContent = to; return; }
-    const start = performance.now();
-    const tick = (now) => {
-      const t = Math.min(1, (now - start) / 600);
-      el.textContent = Math.round(to * (1 - Math.pow(1 - t, 3)));
-      if (t < 1) requestAnimationFrame(tick);
-    };
-    requestAnimationFrame(tick);
+    if (window.VVMotion) { window.VVMotion.countUp(el, to); return; }
+    el.textContent = to;
   }
 
   let toastTimer;
@@ -115,7 +163,7 @@ const VV = (() => {
   }
 
   function copyField(text) {
-    return `<div class="copy"><code>${esc(text)}</code><button type="button" class="btn sm" data-copy="${esc(text)}">${ICON.copy}<span>Copiar</span></button></div>`;
+    return `<div class="copy"><code>${esc(text)}</code><button type="button" class="btn ghost sm" data-copy="${esc(text)}">${ICON.copy}<span>Copiar</span></button></div>`;
   }
   document.addEventListener('click', async (event) => {
     const button = event.target.closest('[data-copy]');
@@ -127,15 +175,25 @@ const VV = (() => {
     setTimeout(() => { label.textContent = 'Copiar'; }, 2000);
   });
 
-  function busy(button, text) {
+  // Loading: the button's content becomes the status line, "Lendo a vaga · 1,2 s" (DESIGN.md 4.1 and 4.14), with
+  // the matrix pattern of the stage (scan, wave or flip). The width is kept so the layout does not jump.
+  const lines = new WeakMap();
+  function busy(button, label, pattern = 'scan') {
     button.dataset.label = button.innerHTML;
+    button.style.minWidth = `${button.offsetWidth}px`;
     button.disabled = true;
     button.setAttribute('aria-busy', 'true');
-    button.innerHTML = `${esc(text)}<span class="dots3" aria-hidden="true"><i></i><i></i><i></i></span>`;
+    button.innerHTML = `<span class="status-line"><span data-dot-matrix="${pattern}"></span><span class="status-label"></span><span class="status-timer"></span></span>`;
+    const line = $('.status-line', button);
+    if (window.VVMotion) lines.set(button, window.VVMotion.statusLine(line, label));
+    else $('.status-label', line).textContent = label;
   }
   function idle(button) {
+    lines.get(button)?.done();
+    lines.delete(button);
     button.disabled = false;
     button.removeAttribute('aria-busy');
+    button.style.minWidth = '';
     button.innerHTML = button.dataset.label;
   }
 
@@ -148,7 +206,7 @@ const VV = (() => {
   }
 
   function chrome({ area = '', user = null } = {}) {
-    const logo = '<svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="10" fill="#141414"/><path d="M8 17l5 5 11-12" stroke="#33c47a" stroke-width="3.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    const logo = '<svg class="logo" width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="6" fill="#141414"/><path d="M8 17l5 5 11-12" stroke="#33c47a" stroke-width="3.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>';
     const who = user ? `<span class="user">${avatar(user, user, 'sm')}@${esc(user)}</span>` : '';
     document.body.insertAdjacentHTML('afterbegin', `<header class="top"><div class="wrap">
       <a class="brand" href="index.html" aria-label="Vaga Viva, início">${logo}Vaga Viva${area ? `<small>${esc(area)}</small>` : ''}</a>${who}</div></header>`);
@@ -175,19 +233,27 @@ const VV = (() => {
     ],
   };
   const student = (login, displayName, status, missionOrder, daysOnMission, reason, extra = {}) => ({ login, displayName, status, missionOrder, daysOnMission, reason, ...extra });
+  // One tally per plan mission, in plan order: [passed, total] or null when the mission has no tally (DESIGN.md 4.16).
+  const tally = (...rows) => PLAN.missions.map((m, i) => ({ order: m.order, missionId: m.id, passed: rows[i]?.[0] ?? null, total: rows[i]?.[1] ?? null }));
   const STUDENTS = [
-    student('caio-m', 'Caio', 'IDLE', 1, 6, 'sem atividade há 6 dias', { failingTests: [], lastReviewerQuestion: null, hintsOnMission: 0, lastPullRequestUrl: null }),
+    // Idle with no tally at all: every row shows "—".
+    student('caio-m', 'Caio', 'IDLE', 1, 6, 'sem atividade há 6 dias', { tests: tally(), failingTests: [], lastReviewerQuestion: null, hintsOnMission: 0, lastPullRequestUrl: null }),
     student('joaop', 'João Pedro', 'STUCK', 2, 4, '4 dias na missão 2, 3 PRs nesse período', {
+      tests: tally([4, 4], [1, 3], [0, 4], [0, 3], [0, 3], [0, 2]),
       failingTests: [{ name: 'salvaPacienteERecuperaPeloId', message: 'esperava encontrar o paciente depois de salvar' }, { name: 'rejeitaEmailDuplicado', message: 'esperava status 409 para e-mail repetido' }],
       lastReviewerQuestion: 'O que acontece com o paciente salvo quando a aplicação reinicia? Onde ele fica guardado hoje?', hintsOnMission: 2, lastPullRequestUrl: '#' }),
+    // Stuck on mission 3.
     student('bia-dev', 'Bia', 'STUCK', 3, 3, '3 dias na missão 3, 2 PRs nesse período', {
+      tests: tally([4, 4], [3, 3], [3, 4], [0, 3], [0, 3], [0, 2]),
       failingTests: [{ name: 'devolveASegundaPagina', message: 'esperava 10 consultas na página 2' }],
       lastReviewerQuestion: 'Se a página 1 tem 10 consultas, por onde a página 2 deveria começar?', hintsOnMission: 1, lastPullRequestUrl: '#' }),
-    student('rafa-s', 'Rafa', 'ADVANCING', 3, 1, 'há 1 dia na missão', { failingTests: [{ name: 'ordenaPorData', message: 'esperava a consulta mais antiga primeiro' }], lastReviewerQuestion: 'Qual campo decide a ordem quando duas consultas são no mesmo dia?', hintsOnMission: 0, lastPullRequestUrl: '#' }),
-    student('luiza-c', 'Luiza', 'ADVANCING', 4, 2, 'há 2 dias na missão', { failingTests: [{ name: 'recusaHorarioEmConflito', message: 'esperava status 409 para horário ocupado' }], lastReviewerQuestion: 'Como você sabe se dois intervalos de tempo se cruzam?', hintsOnMission: 1, lastPullRequestUrl: '#' }),
-    student('ana-lima', 'Ana', 'COMPLETED', 6, 0, 'todas as missões passando', { failingTests: [], lastReviewerQuestion: null, hintsOnMission: 0, lastPullRequestUrl: '#' }),
+    // Mission 2 did not run in the last report: that row shows "—" with no dots.
+    student('rafa-s', 'Rafa', 'ADVANCING', 3, 1, 'há 1 dia na missão', { tests: tally([4, 4], null, [3, 4], [0, 3], [0, 3], [0, 2]), failingTests: [{ name: 'ordenaPorData', message: 'esperava a consulta mais antiga primeiro' }], lastReviewerQuestion: 'Qual campo decide a ordem quando duas consultas são no mesmo dia?', hintsOnMission: 0, lastPullRequestUrl: '#' }),
+    // The future missions fail in the report (5: 0 of 3, 6: 1 of 2); the grid shows them empty with "—", never coral.
+    student('luiza-c', 'Luiza', 'ADVANCING', 4, 2, 'há 2 dias na missão', { tests: tally([4, 4], [3, 3], [4, 4], [2, 3], [0, 3], [1, 2]), failingTests: [{ name: 'recusaHorarioEmConflito', message: 'esperava status 409 para horário ocupado' }], lastReviewerQuestion: 'Como você sabe se dois intervalos de tempo se cruzam?', hintsOnMission: 1, lastPullRequestUrl: '#' }),
+    student('ana-lima', 'Ana', 'COMPLETED', 6, 0, 'todas as missões passando', { tests: tally([4, 4], [3, 3], [4, 4], [3, 3], [3, 3], [2, 2]), failingTests: [], lastReviewerQuestion: null, hintsOnMission: 0, lastPullRequestUrl: '#' }),
   ];
   const CLASSROOM = { id: '3f1c', name: 'Turma piloto', teacherLogin: 'helena', joinCode: 'k7m2x9qa4t', inviteUrl: 'vagaviva.app/turma/k7m2x9qa4t' };
 
-  return { $, $$, esc, wait, state, ICON, ic, STATUS, LEVELS, avatar, statusBadge, missionItem, repoPanel, runProgress, countUp, toast, copyField, busy, idle, setStep, chrome, PLAN, STUDENTS, CLASSROOM };
+  return { $, $$, esc, wait, state, ICON, ic, STATUS, LEVELS, avatar, statusBadge, testGrid, missionItem, repoPanel, runProgress, paintStages, countUp, toast, copyField, busy, idle, setStep, chrome, PLAN, STUDENTS, CLASSROOM };
 })();
