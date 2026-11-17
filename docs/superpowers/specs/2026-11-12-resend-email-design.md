@@ -179,7 +179,7 @@ A resposta de ajuda explica que a vaga precisa estar no corpo do e-mail, não em
 - O dono do repositório precisa ser o login da sessão (sem diferenciar maiúsculas). Se não for, a resposta é 403.
 - Faz upsert por `student_login`: e-mail, repositório, `consented_at = now()`, `unsubscribe_token` novo e `last_sent_at = null`. A resposta é **204**.
 
-### Tabela (`V3__weekly_email.sql`)
+### Tabela (`V4__weekly_email.sql`)
 
 ```sql
 create table weekly_email_subscription (
