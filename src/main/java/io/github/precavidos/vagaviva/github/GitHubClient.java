@@ -29,6 +29,12 @@ public class GitHubClient implements GitHubApi {
 
 	private static final JsonMapper JSON = JsonMapper.builder().build();
 
+	/** GitHub returns comments oldest first, at most {@value #COMMENTS_PER_PAGE} per page. */
+	static final int COMMENTS_PER_PAGE = 100;
+
+	/** Enough for any student pull request, and a bound on the calls one webhook can trigger. */
+	static final int MAX_COMMENT_PAGES = 10;
+
 	private final RestClient http;
 
 	public GitHubClient(RestClient.Builder builder, GitHubProperties properties) {
@@ -198,17 +204,24 @@ public class GitHubClient implements GitHubApi {
 
 	@Override
 	public List<GitHubComment> issueComments(String token, String repositoryFullName, int number) {
-		JsonNode response = http.get()
-			.uri("/repos/" + repositoryFullName + "/issues/" + number + "/comments?per_page=100")
-			.headers(h -> h.setBearerAuth(token))
-			.retrieve()
-			.body(JsonNode.class);
 		var comments = new ArrayList<GitHubComment>();
-		if (response != null) {
+		for (int page = 1; page <= MAX_COMMENT_PAGES; page++) {
+			JsonNode response = http.get()
+				.uri("/repos/" + repositoryFullName + "/issues/" + number + "/comments?per_page=" + COMMENTS_PER_PAGE
+						+ "&page=" + page)
+				.headers(h -> h.setBearerAuth(token))
+				.retrieve()
+				.body(JsonNode.class);
+			if (response == null) {
+				break;
+			}
 			for (JsonNode comment : response) {
 				JsonNode user = comment.path("user");
 				comments.add(new GitHubComment(comment.path("id").asLong(), user.path("login").asString(""),
 						"Bot".equals(user.path("type").asString("")), comment.path("body").asString("")));
+			}
+			if (response.size() < COMMENTS_PER_PAGE) {
+				break;
 			}
 		}
 		return comments;
