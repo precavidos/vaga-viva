@@ -57,7 +57,7 @@ O texto fixo do revisor citava a mensagem do primeiro teste que falha como estav
 
 O código era do próprio aluno, mas o comentário aparece em nome do app: num print, é o revisor entregando a solução. A dica de nível 3 tinha o mesmo defeito (o bloco de código renderiza mesmo dentro da citação).
 
-**Correção** (`b6e4eba`): os textos fixos só citam a mensagem quando ela tem uma linha e passaria pelo mesmo filtro que vale para o LLM (`ReviewTextFilter.isQuotable`); senão, nomeiam o teste e mandam ler a mensagem na aba Actions. Testes: `ReviewTextsTests.fallbackNeverRendersStudentCodeBlock`, `ReviewTextsTests.fallbackNeverQuotesASingleLineOfCode`, `HintTextsTests.hintFallbackNeverRendersStudentCodeBlock`. Depois da correção, o comentário do caso 10 virou:
+**Issue:** precavidos/vaga-viva#42. **Correção** (`b6e4eba`): os textos fixos só citam a mensagem quando ela tem uma linha e passaria pelo mesmo filtro que vale para o LLM (`ReviewTextFilter.isQuotable`); senão, nomeiam o teste e mandam ler a mensagem na aba Actions. Testes: `ReviewTextsTests.fallbackNeverRendersStudentCodeBlock`, `ReviewTextsTests.fallbackNeverQuotesASingleLineOfCode`, `HintTextsTests.hintFallbackNeverRendersStudentCodeBlock`. Depois da correção, o comentário do caso 10 virou:
 
 > Na missão **Caça ao bug**, 4 testes ainda falham. O primeiro, **endsOnTheNextDay**, falha com uma mensagem que eu não repito aqui; leia-a na aba **Actions** deste PR.
 
