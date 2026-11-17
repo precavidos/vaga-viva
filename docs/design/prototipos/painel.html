@@ -6,8 +6,9 @@
   <title>Vaga Viva — Painel da turma</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="vv.css?v=3">
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="vv.css?v=8">
+  <link rel="stylesheet" href="vv-motion.css?v=5">
 </head>
 <body>
 <main>
@@ -27,10 +28,7 @@
     </div>
 
     <!-- Loading -->
-    <div id="loading" class="stack" hidden aria-hidden="true">
-      <div class="skeleton"><i class="tall" style="height:110px"></i></div>
-      <div class="skeleton"><i class="tall" style="height:260px"></i></div>
-    </div>
+    <p id="loading" class="status-line" role="status" hidden><span data-dot-matrix="scan"></span><span class="status-label"></span><span class="status-timer"></span></p>
 
     <!-- Error -->
     <div class="banner error" id="error" hidden><span id="info"></span><div><b>Não foi possível carregar a turma.</b>Confira a sua conexão. <a href="painel.html">Tentar de novo</a></div></div>
@@ -69,14 +67,15 @@
   <div class="drawer-foot" id="drawer-foot"></div>
 </dialog>
 
-<script src="vv.js?v=3"></script>
+<script src="vv.js?v=6"></script>
+<script src="vv-motion.js?v=12"></script>
 <script>
   const { $, $$, ICON, STATUS, PLAN, STUDENTS, CLASSROOM, esc, wait } = VV;
   window.PROTO_STATES = [['Com alunos', ''], ['Sem alunos', 'vazio'], ['Carregando', 'carregando'], ['Erro', 'erro']];
   const mode = VV.state();
   VV.chrome({ area: 'Professor', user: 'helena' });
   $('#info').innerHTML = ICON.warning; $('#drawer-close').innerHTML = ICON.close;
-  $('#empty-art').innerHTML = VV.ic('link', 'yellow', 'lg') + VV.ic('users', 'plain', 'lg');
+  $('#empty-art').innerHTML = VV.ic('link', '', 'lg') + VV.ic('users', '', 'lg');
 
   const students = mode === 'vazio' ? [] : STUDENTS;
   $('#i-stack').innerHTML = ICON.stack; $('#i-users').innerHTML = ICON.users; $('#i-clock').innerHTML = ICON.clock;
@@ -99,21 +98,20 @@
     return `<button type="button" class="student" data-status="${s.status}" data-login="${esc(s.login)}">
       ${VV.avatar(s.displayName, s.login)}
       <span class="name">${esc(s.displayName)} ${VV.statusBadge(s.status, genderless(s))}</span>
+      ${VV.testGrid(s.tests, s.missionOrder, s.status === 'COMPLETED')}
       <span class="reason">${esc(s.reason)}</span></button>`;
   }
 
   function render() {
     const order = ['STUCK', 'IDLE', 'ADVANCING', 'COMPLETED'];
-    const TILE = { STUCK: 'coral', IDLE: 'idle', ADVANCING: 'green', COMPLETED: 'purple' };
     const count = (status) => students.filter((s) => s.status === status).length;
     // One bar for the whole class, then a counter per situation that also filters the board.
     $('#meter').setAttribute('role', 'img');
     $('#meter').setAttribute('aria-label', order.map((s) => `${count(s)} ${STATUS[s].plural.toLowerCase()}`).join(', '));
     $('#meter').innerHTML = order.filter(count).map((s) => `<i data-status="${s}" style="flex:${count(s)}"></i>`).join('');
     $('#stats').innerHTML = order.map((status) => `<button type="button" class="stat" data-status="${status}" aria-pressed="false">
-      ${VV.ic(status, TILE[status])}<span class="value" data-to="${count(status)}">0</span>
-      <span class="name">${STATUS[status].plural}</span></button>`).join('');
-    $$('#stats .value').forEach((el) => VV.countUp(el, Number(el.dataset.to)));
+      <span class="value" data-count-up="${count(status)}">${count(status)}</span>
+      <span class="name"><i aria-hidden="true"></i>${STATUS[status].plural}</span></button>`).join('');
 
     const column = (c) => `<section class="column ${c.order === null ? 'done band' : ''} ${c.students.length ? '' : 'is-empty'}" aria-label="${esc(c.title)}${c.students.length ? '' : ', ninguém nesta missão'}">
         <div class="column-head">${c.order === null ? `<span class="num" style="background:var(--purple);color:#fff">${ICON.check}</span>` : `<span class="num">${String(c.order).padStart(2, '0')}</span>`}
@@ -123,6 +121,8 @@
     $('#kanban').innerHTML = columns.filter((c) => c.order !== null).map(column).join('');
     const done = columns.find((c) => c.order === null);
     $('#done-band').innerHTML = done.students.length ? column(done) : '';
+    // Binds the count-up once: the board renders once per load, so the counters run once (DESIGN.md 3.3).
+    window.VVMotion?.init($('#dashboard'));
   }
 
   // Counters filter the board; pressing the active one again clears it.
@@ -159,7 +159,8 @@
         <p style="font-size:18px;font-weight:600">${s.status === 'COMPLETED' ? 'Projeto concluído' : esc(mission.title)}</p>
         <p class="muted">${esc(s.reason[0].toUpperCase() + s.reason.slice(1))}.</p>
       </div>
-      <div class="block rise" style="animation-delay:60ms"><h3>${ICON.tests}Testes que falham</h3>${tests}</div>
+      <div class="block rise" style="animation-delay:60ms"><h3>${ICON.tests}Testes que falham</h3>
+        ${VV.testGrid(s.tests.filter((t) => t.order === s.missionOrder), s.missionOrder, s.status === 'COMPLETED')}${tests}</div>
       <div class="block rise" style="animation-delay:120ms"><h3>${ICON.question}Última pergunta do revisor</h3>${question}</div>
       <div class="block rise" style="animation-delay:180ms"><h3>${ICON.hint}Dicas pedidas</h3>
         <div class="hints" role="img" aria-label="${s.hintsOnMission} de 3 dicas">${hints}<span>${s.hintsOnMission} de 3 nesta missão</span></div></div>`;
@@ -184,12 +185,15 @@
   (async () => {
     if (mode === 'erro') { $('#error').hidden = false; return; }
     if (mode === 'vazio') { $('#empty').hidden = false; return; }
-    $('#loading').hidden = false;
+    const line = window.VVMotion ? VVMotion.statusLine($('#loading'), 'Carregando a turma') : null;
+    if (!line) { $('#loading').hidden = false; $('.status-label', $('#loading')).textContent = 'Carregando a turma'; }
     if (mode === 'carregando') return;
     await wait(700);
+    line?.done();
     $('#loading').hidden = true; $('#dashboard').hidden = false;
     render();
-    say('Painel carregado: 2 travados, 1 parado, 2 avançando e 1 concluído.');
+    const part = (status) => { const n = students.filter((s) => s.status === status).length; return `${n} ${n === 1 ? STATUS[status].label : STATUS[status].plural.toLowerCase()}`; };
+    say(`Painel carregado: ${part('STUCK')}, ${part('IDLE')}, ${part('ADVANCING')} e ${part('COMPLETED')}.`);
   })();
 </script>
 </body>

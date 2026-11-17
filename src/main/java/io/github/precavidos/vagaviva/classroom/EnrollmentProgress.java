@@ -64,6 +64,11 @@ class EnrollmentProgress {
 	@Column(name = "hints_by_mission", columnDefinition = "jsonb")
 	private String hintsByMission;
 
+	/** JSON of {@code {missionId: {passed, total}}}. */
+	@JdbcTypeCode(SqlTypes.JSON)
+	@Column(name = "test_tallies", columnDefinition = "jsonb")
+	private String testTallies;
+
 	protected EnrollmentProgress() {
 	}
 
@@ -149,6 +154,14 @@ class EnrollmentProgress {
 
 	void setHintsByMission(String hintsByMission) {
 		this.hintsByMission = hintsByMission;
+	}
+
+	String getTestTallies() {
+		return testTallies;
+	}
+
+	void setTestTallies(String testTallies) {
+		this.testTallies = testTallies;
 	}
 
 }

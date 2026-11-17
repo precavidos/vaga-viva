@@ -41,3 +41,11 @@ node_modules/
 
 ### Brainstorming mockups ###
 .superpowers/
+
+# Local agent skills (installed via npx skills)
+.agents/
+skills-lock.json
+.claude/skills/design-taste-frontend
+
+### Layout checker Chrome profile ###
+.taste-skill/
