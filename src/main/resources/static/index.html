@@ -4,99 +4,150 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Vaga Viva</title>
-  <style>
-    :root {
-      --bg: #fbfaf7; --surface: #ffffff; --ink: #1d1b16; --ink-2: #5b574e; --line: #e4e0d6;
-      --accent: #1f6f4a; --accent-ink: #ffffff; --warn-bg: #fff4dc; --warn-ink: #6b4a00; --error: #a32020;
-    }
-    @media (prefers-color-scheme: dark) {
-      :root {
-        --bg: #16150f; --surface: #1f1d17; --ink: #f1eee6; --ink-2: #b7b2a6; --line: #34312a;
-        --accent: #5cc792; --accent-ink: #0f1a14; --warn-bg: #3a2f12; --warn-ink: #f3d68b; --error: #ff8a8a;
-      }
-    }
-    * { box-sizing: border-box; }
-    body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.55 system-ui, sans-serif; }
-    main { max-width: 760px; margin: 0 auto; padding: 32px 16px 64px; }
-    h1 { font-size: 32px; margin: 0 0 4px; }
-    .lead { color: var(--ink-2); margin: 0 0 28px; }
-    label { display: block; font-weight: 600; margin-bottom: 8px; }
-    textarea { width: 100%; min-height: 220px; padding: 12px; border: 1px solid var(--line); border-radius: 8px;
-      background: var(--surface); color: var(--ink); font: inherit; resize: vertical; }
-    button { margin-top: 12px; padding: 10px 18px; border: 0; border-radius: 8px; background: var(--accent);
-      color: var(--accent-ink); font: inherit; font-weight: 600; cursor: pointer; }
-    button:disabled { opacity: .6; cursor: progress; }
-    button:focus-visible, textarea:focus-visible, a:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
-    section { margin-top: 32px; padding: 20px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
-    h2 { font-size: 20px; margin: 0 0 12px; }
-    ol { padding-left: 22px; margin: 0; }
-    li { margin: 6px 0; }
-    .muted { color: var(--ink-2); }
-    .warning { margin: 0 0 16px; padding: 12px; border-radius: 8px; background: var(--warn-bg); color: var(--warn-ink); }
-    .error { color: var(--error); }
-    a { color: var(--accent); }
-    [hidden] { display: none !important; }
-    input[type=email] { width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px;
-      background: var(--surface); color: var(--ink); font: inherit; }
-    input[type=email]:focus-visible, .check input:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
-    .weekly { margin-top: 20px; }
-    label.check { display: flex; gap: 10px; align-items: flex-start; font-weight: 400; margin: 12px 0 0; cursor: pointer; }
-    label.check input { margin: 5px 0 0; flex: none; }
-  </style>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/vv.css">
+  <link rel="stylesheet" href="/vv-motion.css">
 </head>
 <body>
 <main>
-  <h1>Vaga Viva</h1>
-  <p class="lead">Cole uma vaga real e receba no seu GitHub um projeto de estudo feito para ela.</p>
+  <div class="wrap stack lg">
+    <ol class="steps" aria-label="Etapas">
+      <li aria-current="step"><span class="n">1</span><span class="t">Vaga</span></li>
+      <li><span class="n">2</span><span class="t">Plano</span></li>
+      <li><span class="n">3</span><span class="t">Repositório</span></li>
+    </ol>
 
-  <form id="posting-form">
-    <label for="posting">Texto da vaga</label>
-    <textarea id="posting" name="posting" required maxlength="20000"
-      placeholder="Cole aqui a descrição da vaga: requisitos, nível, tecnologias..."></textarea>
-    <button type="submit" id="plan-button">Montar meu plano</button>
-  </form>
+    <p id="status" class="sr" role="status" aria-live="polite"></p>
 
-  <p id="status" role="status" aria-live="polite" class="muted"></p>
+    <!-- Step 1: the posting -->
+    <section id="step-posting" class="duo" aria-labelledby="posting-title">
+      <div class="stack lg" style="padding-top:clamp(0px,3vw,40px)">
+        <h1 id="posting-title">Cole uma vaga.<br>Receba um <mark>projeto</mark>.</h1>
+        <p class="lead">O Vaga Viva lê o que a vaga pede e monta, no seu GitHub, um projeto com missões e testes para você praticar exatamente isso.</p>
+        <ul class="benefits">
+          <li><span data-tile="posting"></span>Lemos o nível, as tecnologias e as competências.</li>
+          <li><span data-tile="mission"></span>Montamos de 5 a 6 missões, da mais simples à mais difícil.</li>
+          <li><span data-tile="question"></span>Um revisor faz perguntas nos seus PRs, sem dar a resposta.</li>
+        </ul>
+      </div>
 
-  <section id="plan" hidden aria-labelledby="plan-title">
-    <h2 id="plan-title">Seu plano</h2>
-    <p id="fit-warning" class="warning" hidden></p>
-    <p id="plan-summary" class="muted"></p>
-    <ol id="missions"></ol>
-    <div class="weekly">
-      <label for="weekly-email">Seu e-mail</label>
-      <input type="email" id="weekly-email" autocomplete="email" maxlength="254">
-      <label class="check"><input type="checkbox" id="weekly-consent"><span>Quero receber toda segunda a minha missão da semana e o último retorno do revisor. Guardamos o endereço só para isso.</span></label>
+      <form id="posting-form" class="stack" novalidate>
+        <div class="stack" style="gap:8px">
+          <div class="clip">
+            <label class="clip-tag" for="posting"><span data-icon="scissors"></span>Texto da vaga</label>
+            <textarea id="posting" maxlength="20000" aria-describedby="posting-error" placeholder="Cole aqui a descrição da vaga: requisitos, nível, tecnologias…"></textarea>
+          </div>
+          <div class="row between small"><span id="posting-error" class="error-text" hidden></span><span></span><span class="mono muted" id="posting-count">0 / 20.000</span></div>
+        </div>
+        <div class="row between">
+          <button type="button" class="link small" id="sample">Usar uma vaga de exemplo</button>
+          <button type="submit" class="btn" id="plan-button">Montar meu plano <span class="arrow" data-icon="arrow"></span></button>
+        </div>
+        <p class="privacy"><span data-icon="lock"></span><span>O texto da vaga não fica guardado no servidor. Enquanto você entra no GitHub, ele fica só neste navegador e é apagado assim que o repositório é criado.</span></p>
+      </form>
+    </section>
+
+    <!-- Steps 2 and 3 share one block: the dot swap covers it on the way from the plan to the repository. -->
+    <div id="flow" data-dot-swap>
+    <!-- Step 2: reading the posting, then the plan -->
+    <section id="step-plan" class="duo" aria-labelledby="read-title" hidden>
+      <div class="sticky stack">
+        <div class="clip">
+          <span class="clip-tag"><span data-icon="scissors"></span>Sua vaga</span>
+          <span class="scanline" id="scanline"></span>
+          <p class="clip-text" id="clip-text"></p>
+        </div>
+        <button type="button" class="link small" id="change" style="justify-self:start">Trocar a vaga</button>
+      </div>
+
+      <div class="stack lg">
+        <div class="card stack">
+          <div class="row between">
+            <h1 id="read-title" tabindex="-1" style="font-size:28px;line-height:1.1">Lendo a vaga</h1>
+            <button type="button" class="link small" id="skip">Pular a animação</button>
+          </div>
+          <div class="findings" id="findings"></div>
+        </div>
+
+        <div id="plan-wait" class="night-panel plan-wait" hidden>
+          <p class="status-line" hidden><span data-dot-matrix="wave"></span><span class="status-label"></span><span class="status-timer"></span></p>
+        </div>
+
+        <div class="banner error" id="plan-error" role="alert" tabindex="-1" hidden><span data-icon="warning"></span><div><b>Não deu para montar o plano.</b><span id="plan-error-text"></span></div></div>
+
+        <div id="plan-ready" class="stack lg" hidden>
+          <div class="stack">
+            <h2 id="plan-title" tabindex="-1"></h2>
+            <p class="muted" id="plan-summary"></p>
+          </div>
+          <ol class="missions stagger" id="missions"></ol>
+          <div class="stack" id="weekly-email-panel" style="gap:8px">
+            <label for="weekly-email">Seu e-mail</label>
+            <input class="input" type="email" id="weekly-email" autocomplete="email" maxlength="254">
+            <label class="row small" for="weekly-consent" style="justify-content:flex-start;align-items:flex-start">
+              <input type="checkbox" id="weekly-consent">
+              <span>Quero receber toda segunda a minha missão da semana e o último retorno do revisor. Guardamos o endereço só para isso.</span>
+            </label>
+          </div>
+          <div class="banner error" id="create-error" role="alert" tabindex="-1" hidden><span data-icon="warning"></span><div id="create-error-text"></div></div>
+          <div class="row" style="justify-content:flex-end">
+            <button type="button" class="btn" id="create-button"><span data-icon="github"></span>Criar meu repositório no GitHub</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Step 3: the repository -->
+    <div class="wrap narrow" id="step-repo" hidden style="padding:0;width:100%">
+      <section class="board stack lg" aria-labelledby="repo-title">
+        <div id="repo-creating" class="stack lg">
+          <h2>Seu repositório no GitHub</h2>
+          <div class="night-panel creating">
+            <p class="status-line" id="repo-line" hidden><span data-dot-matrix="flip"></span><span class="status-label"></span><span class="status-timer"></span></p>
+            <ol class="stage-list" id="progress">
+              <li><span class="step-mark is-todo"></span><span>Copiando o modelo</span></li>
+              <li><span class="step-mark is-todo"></span><span>Gravando o plano</span></li>
+              <li><span class="step-mark is-todo"></span><span>Abrindo as missões</span></li>
+              <li><span class="step-mark is-todo"></span><span>Escrevendo o README</span></li>
+            </ol>
+          </div>
+          <p class="muted small">Isso leva alguns segundos. Pode deixar esta página aberta.</p>
+        </div>
+        <div id="repo-ready" class="stack lg" hidden>
+          <div class="stack">
+            <span class="big-check" data-icon="check"></span>
+            <h1 id="repo-title" tabindex="-1">Seu repositório está <mark>pronto</mark>.</h1>
+            <p class="lead">Comece pela Missão 1. Quando abrir um PR, o revisor responde com perguntas, e você pode pedir uma dica comentando <span class="mono">/dica</span>.</p>
+          </div>
+          <div id="repo-panel"></div>
+          <div class="row">
+            <a class="btn" id="open-mission" href="#" rel="noopener">Abrir a Missão 1 <span class="arrow" data-icon="arrow"></span></a>
+            <a class="btn ghost" id="open-repo" href="#" rel="noopener">Ver o repositório</a>
+          </div>
+        </div>
+      </section>
     </div>
-    <button type="button" id="create-button">Criar meu repositório no GitHub</button>
-  </section>
-
-  <section id="created" hidden aria-labelledby="created-title">
-    <h2 id="created-title">Seu repositório está pronto</h2>
-    <p><a id="repository-link" href="#"></a></p>
-    <p class="muted">As missões estão nas issues do repositório, em ordem. Comece pela primeira.</p>
-  </section>
-
-  <p class="muted"><small>O texto da vaga não é guardado no servidor. Enquanto você entra no GitHub, ele fica só neste
-    navegador e é apagado assim que o repositório é criado. O e-mail só é guardado se você marcar a caixa acima.</small></p>
+    </div>
+  </div>
 </main>
+
+<script src="/vv.js"></script>
+<script src="/vv-motion.js"></script>
 <script>
+  const { $, $$, ICON, ic, LEVELS, esc } = VV;
+  document.querySelectorAll('[data-icon]').forEach((el) => { el.innerHTML = ICON[el.dataset.icon]; });
+  document.querySelectorAll('[data-tile]').forEach((el) => { el.innerHTML = ic(el.dataset.tile); });
+  VV.chrome();
+
   // The posting text waits here while the student signs in or installs the app; it is removed once the repository exists.
   const STORAGE_KEY = 'vagaviva.posting';
-  const LEVELS = { INTERN: 'estágio', JUNIOR: 'júnior', MID: 'pleno', SENIOR: 'sênior' };
-  const $ = (id) => document.getElementById(id);
-
-  function setStatus(message, isError = false) {
-    $('status').textContent = message;
-    $('status').className = isError ? 'error' : 'muted';
-  }
-
   // Stored as JSON: { text, email, consent }. A value written before the e-mail existed was the bare text.
   function remember(text, email, consent) {
     try { sessionStorage.setItem(STORAGE_KEY, JSON.stringify({ text, email, consent })); }
     catch { /* private mode: the student pastes again */ }
   }
-
   function recall() {
     try {
       const raw = sessionStorage.getItem(STORAGE_KEY);
@@ -110,70 +161,307 @@
       return { text: raw, email: '', consent: false };
     } catch { return null; }
   }
-
   function forget() {
     try { sessionStorage.removeItem(STORAGE_KEY); } catch { /* nothing stored */ }
   }
 
-  function csrfToken() {
-    const match = document.cookie.match(/(?:^|;\s*)XSRF-TOKEN=([^;]+)/);
-    return match ? decodeURIComponent(match[1]) : '';
+  const SAMPLE = `Pessoa Desenvolvedora Java Júnior
+
+Sobre o time
+Você vai trabalhar no time de agendamentos, que cuida das consultas de mais de 200 clínicas.
+
+O que esperamos
+• Conhecimento de Java e Spring Boot
+• Experiência com APIs REST, mesmo em projetos de estudo
+• SQL e noções de PostgreSQL
+• Vontade de aprender Docker no dia a dia
+
+Diferenciais
+• Kafka
+• Inglês para leitura
+
+Modelo híbrido, em São Paulo.`;
+
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let fast = reduced;
+  const wait = (ms) => (fast ? Promise.resolve() : new Promise((resolve) => setTimeout(resolve, ms)));
+  const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+  const say = (text) => { $('#status').textContent = text; };
+  const show = (id) => ['step-posting', 'step-plan', 'step-repo'].forEach((s) => { $('#' + s).hidden = s !== id; });
+  const NO_CONNECTION = 'Sem conexão com o Vaga Viva. Tente de novo.';
+
+  $('#posting').addEventListener('input', (e) => {
+    $('#posting-count').textContent = `${e.target.value.length.toLocaleString('pt-BR')} / 20.000`;
+    postingError('');
+  });
+  $('#sample').addEventListener('click', () => {
+    $('#posting').value = SAMPLE; $('#posting').dispatchEvent(new Event('input')); $('#posting').focus();
+  });
+  function postingError(message) {
+    $('#posting-error').hidden = !message;
+    $('#posting-error').textContent = message;
+    VV.invalid($('#posting'), Boolean(message));
   }
 
-  async function problemDetail(response) {
-    try { return await response.json(); } catch { return {}; }
-  }
+  // ---- Talking to the server ----
 
-  function fitWarning(fit, stack) {
-    if (!fit || fit.status === 'COVERED' || fit.status === 'NOT_STATED') return '';
-    const missing = fit.uncovered.join(', ');
-    if (fit.status === 'PARTIAL') {
-      return `Este projeto usa ${stack}. A vaga também cita ${missing}, que o projeto não pratica.`;
-    }
-    return `A vaga pede ${missing}, e ainda não temos projeto para essa stack. Você pode criar o projeto em ${stack} mesmo assim, para praticar o que vale nas duas.`;
-  }
-
-  function showPlan(plan) {
-    const warning = fitWarning(plan.archetypeFit, plan.archetypeName);
-    $('fit-warning').textContent = warning;
-    $('fit-warning').hidden = warning === '';
-    $('plan-summary').textContent =
-      `${plan.archetypeName} · Nível ${LEVELS[plan.seniorityLevel] ?? plan.seniorityLevel} · ${plan.domain.name} · ${plan.missions.length} missões`;
-    $('missions').replaceChildren(...plan.missions.map((mission) => {
-      const item = document.createElement('li');
-      const title = document.createElement('strong');
-      title.textContent = mission.title;
-      item.append(title, document.createTextNode(` — ${mission.summary}`));
-      return item;
-    }));
-    $('plan').hidden = false;
-  }
-
-  async function plan(text) {
-    $('plan-button').disabled = true;
-    setStatus('Lendo a vaga...');
+  // Both answers are {ok, body} or {ok: false, message}; a dropped connection becomes the "no connection" message.
+  async function postText(url, text, fallback) {
     try {
-      const response = await fetch('/api/project-plans', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text }),
-      });
-      if (!response.ok) {
-        setStatus((await problemDetail(response)).detail ?? 'Não foi possível ler a vaga.', true);
-        return;
-      }
-      showPlan(await response.json());
-      setStatus('');
+      const response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text }) });
+      if (!response.ok) return { ok: false, message: (await VV.problemDetail(response)).detail ?? fallback };
+      return { ok: true, body: await response.json() };
     } catch {
-      setStatus('Sem conexão com o Vaga Viva. Tente de novo.', true);
-    } finally {
-      $('plan-button').disabled = false;
+      return { ok: false, message: NO_CONNECTION };
     }
+  }
+  const extract = (text) => postText('/api/job-postings/extraction', text, 'Não foi possível ler a vaga.');
+  const requestPlan = (text) => postText('/api/project-plans', text, 'Não foi possível ler a vaga.');
+
+  // ---- Step 2: the reading, built only from what the extraction answered (DESIGN.md 3.1) ----
+
+  // Wraps each recognized term in the posting with <mark>, without matching inside other words ("Java" is not "JavaScript").
+  function markUp(text, terms) {
+    if (!terms.length) return esc(text);
+    const pattern = terms.map((t) => t.term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).sort((a, b) => b.length - a.length).join('|');
+    const regex = new RegExp(`(?<![\\p{L}\\p{N}])(${pattern})(?![\\p{L}\\p{N}])`, 'giu');
+    let html = '', last = 0;
+    for (const match of text.matchAll(regex)) {
+      const term = terms.find((t) => t.term.toLowerCase() === match[0].toLowerCase());
+      if (!term) continue; // the regex folds case more widely than toLowerCase (a long "ſ" matches "s"): leave it plain
+      html += esc(text.slice(last, match.index)) + `<mark data-kind="${term.kind}" data-term="${esc(term.term.toLowerCase())}">${esc(match[0])}</mark>`;
+      last = match.index + match[0].length;
+    }
+    return html + esc(text.slice(last));
+  }
+
+  // The terms to mark: each technology's matched terms (in "Fora deste projeto" when the archetype does not practice
+  // it), then the evidence of skills that no technology already marks. The server gives the level without a term,
+  // so the level is a chip and never a mark.
+  function termsOf(extraction) {
+    const uncovered = new Set(extraction.archetypeFit?.uncovered ?? []);
+    const terms = [];
+    const seen = new Set();
+    const add = (term) => {
+      const key = String(term.term ?? '').toLowerCase();
+      if (!key.trim() || seen.has(key)) return;
+      seen.add(key);
+      terms.push(term);
+    };
+    for (const t of extraction.technologies ?? []) {
+      for (const term of t.matchedTerms ?? []) add({ term: String(term), name: t.name, kind: uncovered.has(t.name) ? 'out' : 'tech' });
+    }
+    for (const s of extraction.skills ?? []) {
+      for (const term of s.evidence ?? []) add({ term: String(term), kind: 'tech', own: true });
+    }
+    return terms;
+  }
+
+  const GROUPS = [
+    { kind: 'level', icon: 'level', what: 'Nível' },
+    { kind: 'tech', icon: 'stack', what: 'Tecnologias' },
+    { kind: 'skill', icon: 'skill', what: 'Competências' },
+    { kind: 'out', icon: 'out', what: 'Fora deste projeto', note: 'A vaga cita estes itens, mas o projeto não os pratica.' },
+  ];
+  const HL = { level: '#c9bdff', tech: 'var(--yellow)', out: '#ffc2b5' };
+
+  function addChip(kind, html, cls = '') {
+    const group = $(`.finding[data-kind="${kind}"]`);
+    group.hidden = false;
+    const chip = Object.assign(document.createElement('span'), { className: `chip ${cls}`, innerHTML: html });
+    $('.chips', group).append(chip);
+    return chip;
+  }
+
+  // The word leaves the posting and lands as a chip in its group.
+  async function fly(mark, chip) {
+    if (fast) { chip.classList.remove('waiting'); return; }
+    const from = mark.getBoundingClientRect(), to = chip.getBoundingClientRect();
+    const ghost = Object.assign(document.createElement('span'), { className: 'flyer', textContent: mark.textContent });
+    ghost.style.cssText = `left:${from.left}px;top:${from.top - 4}px;--hl:${HL[mark.dataset.kind]}`;
+    document.body.append(ghost);
+    const dx = to.left - from.left, dy = to.top - from.top + 4;
+    const flight = ghost.animate([
+      { transform: 'translate(0,0) scale(1) rotate(0)' },
+      { transform: `translate(${dx * .45}px, ${dy * .45 - 46}px) scale(1.18) rotate(-4deg)`, offset: .45 },
+      { transform: `translate(${dx}px, ${dy}px) scale(1) rotate(0)` },
+    ], { duration: 520, easing: 'cubic-bezier(.2,.8,.2,1)' });
+    // A background tab pauses animations: the timer makes sure the plan still arrives.
+    await Promise.race([flight.finished, new Promise((resolve) => setTimeout(resolve, 700))]);
+    ghost.remove();
+    chip.classList.remove('waiting'); chip.classList.add('pop');
+  }
+
+  const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
+  let run = 0;
+  let planLine = null; // the plan's status line while it waits
+  let plan = null; // the plan on screen, for the repository card
+
+  // Shows the reading of `text` and then the plan. `planning` is the plan request, already sent; `since` is when.
+  async function read(text, extraction, planning, since) {
+    const mine = ++run;
+    fast = reduced || fast;
+    plan = null;
+    VV.setStep(2); show('step-plan');
+    // The form that held the focus is hidden now: the focus goes to the new step's title, not to the page.
+    $('#plan-ready').hidden = true; $('#plan-wait').hidden = true; $('#plan-error').hidden = true; $('#create-error').hidden = true;
+    $('#skip').hidden = false;
+    $('#read-title').textContent = 'Lendo a vaga';
+    $('#read-title').focus();
+
+    const terms = termsOf(extraction);
+    const levels = (extraction.seniorityLevels ?? []).map((l) => LEVELS[l] ?? l);
+    const technologies = extraction.technologies ?? [];
+    const skills = extraction.skills ?? [];
+    $('#clip-text').innerHTML = markUp(text, terms);
+    $('#findings').innerHTML = GROUPS.map((g) => `<div class="finding" data-kind="${g.kind}" hidden>
+      ${ic(g.icon)}<span class="what">${g.what}</span><div class="chips"></div>${g.note ? `<p class="note">${esc(g.note)}</p>` : ''}</div>`).join('');
+    levels.forEach((label) => addChip('level', esc(label[0].toUpperCase() + label.slice(1)), 'pop'));
+
+    // 1. A reading line sweeps the clipping.
+    const line = $('#scanline');
+    line.style.setProperty('--sweep', `${$('.clip', $('#step-plan')).offsetHeight - 62}px`);
+    line.classList.remove('run');
+    if (!fast) { void line.offsetWidth; line.classList.add('run'); }
+    await wait(900);
+
+    // 2. Each recognized term lights up, in reading order, and flies to its group, once per technology.
+    const chips = new Map(); // technology name -> its chip
+    const byTerm = new Map(); // a marked term -> the chip of its technology
+    const flights = []; let found = 0;
+    const counted = () => {
+      if (mine !== run) return;
+      found += 1;
+      $('#read-title').innerHTML = `<span class="counter">${found}</span> ${found === 1 ? 'termo reconhecido' : 'termos reconhecidos'}`;
+    };
+    for (const mark of $$('#clip-text mark')) {
+      if (mine !== run) return;
+      mark.classList.add('on');
+      const term = terms.find((t) => t.term.toLowerCase() === mark.dataset.term);
+      if (!term || term.own || chips.has(term.name)) continue; // evidence of a skill only, or a technology already flown
+      if (!fast) mark.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      await wait(140);
+      const chip = addChip(term.kind, esc(term.name), `waiting ${term.kind === 'out' ? 'out' : ''}`);
+      chips.set(term.name, chip);
+      // Flights overlap: the next word lights up while this one is still in the air.
+      flights.push(fly(mark, chip).then(counted));
+      await wait(240);
+    }
+    // Technologies the posting names but that matched no mark in this text still get their chip.
+    for (const t of technologies) {
+      if (chips.has(t.name)) continue;
+      const out = (extraction.archetypeFit?.uncovered ?? []).includes(t.name);
+      chips.set(t.name, addChip(out ? 'out' : 'tech', esc(t.name), `pop ${out ? 'out' : ''}`));
+      counted();
+    }
+    for (const name of extraction.archetypeFit?.uncovered ?? []) {
+      if (!chips.has(name)) chips.set(name, addChip('out', esc(name), 'pop out'));
+    }
+    for (const t of technologies) for (const term of t.matchedTerms ?? []) byTerm.set(String(term).toLowerCase(), chips.get(t.name));
+    await Promise.all(flights);
+    if (mine !== run) return;
+    await wait(200);
+
+    // 3. Competências: each one names the term that evidences it, and its name decrypts from the API's label.
+    for (const skill of skills) {
+      if (mine !== run) return;
+      const evidence = (skill.evidence ?? []).map(String);
+      for (const term of evidence) {
+        const source = byTerm.get(term.toLowerCase());
+        if (source && !fast) { source.classList.remove('pulse'); void source.offsetWidth; source.classList.add('pulse'); }
+      }
+      const from = evidence.length ? ` <small>por ${evidence.map((e) => `“${esc(e)}”`).join(', ')}</small>` : '';
+      const chip = addChip('skill', `<span class="skill-name"></span>${from}`, 'pop');
+      const name = $('.skill-name', chip);
+      if (fast) name.textContent = skill.label; else VVMotion.decrypt(name, skill.label);
+      await wait(130);
+    }
+    if (mine !== run) return;
+    await wait(350);
+    $('#skip').hidden = true;
+    $('#read-title').textContent = 'O que a vaga pede';
+    const reading = `Leitura concluída: ${levels.length ? `nível ${levels.join(' ou ')}, ` : ''}${plural(technologies.length, 'tecnologia', 'tecnologias')} e ${plural(skills.length, 'competência', 'competências')}.`;
+
+    // 4. The plan: the request went out with the reading; if it has not answered yet, the wave line counts the wait.
+    let settled = null;
+    planning.then((outcome) => { settled = outcome; });
+    await Promise.resolve();
+    let myLine = null; // this run's line: a stale answer must not end the line of a newer run
+    if (!settled) {
+      $('#plan-wait').hidden = false;
+      myLine = planLine = VVMotion.statusLine($('.status-line', $('#plan-wait')), 'Montando o plano', since);
+    }
+    const outcome = await planning;
+    if (myLine) { if (outcome.ok) myLine.done(); else myLine.stop(); if (planLine === myLine) planLine = null; }
+    if (mine !== run) return;
+    $('#plan-wait').hidden = true;
+    if (!outcome.ok) {
+      $('#plan-error-text').textContent = ` ${outcome.message}`;
+      $('#plan-error').hidden = false;
+      say(`${reading} ${outcome.message}`);
+      $('#plan-error').focus();
+      return;
+    }
+    showPlan(outcome.body, extraction);
+    say(`${reading} Plano pronto, com ${plural(plan.missions.length, 'missão', 'missões')}.`);
+    if (!fast) $('#plan-ready').scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    return true;
+  }
+
+  function showPlan(body, extraction) {
+    const missions = Array.isArray(body.missions) ? body.missions : [];
+    plan = { ...body, missions };
+    const labels = Object.fromEntries((extraction.skills ?? []).map((s) => [s.id, s.label]));
+    const level = LEVELS[body.seniorityLevel] ?? body.seniorityLevel;
+    $('#plan-title').textContent = `Seu plano tem ${plural(missions.length, 'missão', 'missões')}.`;
+    $('#plan-summary').textContent = `${body.archetypeName} · nível ${level} · ${body.domain?.name ?? ''}. Cada missão já vem com testes. Eles ficam vermelhos até você implementar.`;
+    $('#missions').innerHTML = missions.map((m) => VV.missionItem(m, labels)).join('');
+    // What the archetype does not practice is explained in the "Fora deste projeto" group (DESIGN.md 3.1).
+    const fit = body.archetypeFit;
+    const note = $('.finding[data-kind="out"] .note');
+    if (note && fit?.status === 'PARTIAL') note.textContent = `Este projeto usa ${body.archetypeName}. A vaga também cita estes itens, que o projeto não pratica.`;
+    if (note && fit?.status === 'NOT_COVERED') note.textContent = `Ainda não temos projeto para essa stack. Você pode criar o projeto em ${body.archetypeName} mesmo assim, para praticar o que vale nas duas.`;
+    $('#plan-ready').hidden = false;
+  }
+
+  // Step 1 -> 2: the button's scan line measures the extraction; the plan request goes out as soon as it answers.
+  // Resolves to true only when the plan is on screen.
+  async function start(text) {
+    const button = $('#plan-button');
+    postingError('');
+    VV.busy(button, 'Lendo a vaga', 'scan');
+    const extraction = await extract(text);
+    if (!extraction.ok) {
+      VV.idle(button, false);
+      VV.setStep(1); show('step-posting');
+      postingError(extraction.message);
+      say(extraction.message);
+      $('#posting').focus();
+      return;
+    }
+    const since = performance.now();
+    const planning = requestPlan(text);
+    VV.idle(button);
+    return read(text, extraction.body, planning, since);
+  }
+
+  // ---- Step 3: the repository ----
+
+  // The answer is {status, body}; status 0 means the connection dropped.
+  function sendCreate(text) {
+    return fetch('/api/student-repositories', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-XSRF-TOKEN': VV.csrfToken() },
+      body: JSON.stringify({ text }),
+    }).then(async (response) => ({ status: response.status, body: await VV.problemDetail(response) }),
+            () => ({ status: 0, body: {} }));
   }
 
   async function saveWeeklyEmail(email, repositoryFullName) {
     try {
       const response = await fetch('/api/weekly-email', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-XSRF-TOKEN': csrfToken() },
+        headers: { 'Content-Type': 'application/json', 'X-XSRF-TOKEN': VV.csrfToken() },
         body: JSON.stringify({ email, repositoryFullName }),
       });
       return response.ok;
@@ -182,61 +470,128 @@
     }
   }
 
+  let swapped = false; // the dot swap runs once per flow
+  async function toRepository(swap) {
+    if (swapped) { swap(); return; }
+    swapped = true;
+    await VVMotion.dotSwap($('#flow'), swap);
+  }
+
+  // The button's flip line measures the first half second; a slower answer moves to the creation panel, whose
+  // line keeps counting from the same request and whose last stage turns green only when the server answers.
   async function create(text) {
-    const email = $('weekly-email').value.trim();
-    const consent = $('weekly-consent').checked;
-    if (consent && (email === '' || !$('weekly-email').checkValidity())) {
-      setStatus('Informe um e-mail válido para receber o resumo semanal.', true);
-      $('weekly-email').focus();
+    const button = $('#create-button');
+    const email = $('#weekly-email').value.trim();
+    const consent = $('#weekly-consent').checked;
+    if (consent && (email === '' || !$('#weekly-email').checkValidity())) {
+      $('#create-error-text').textContent = 'Informe um e-mail válido para receber o resumo semanal.';
+      $('#create-error').hidden = false;
+      $('#weekly-email').focus();
       return;
     }
-    $('create-button').disabled = true;
-    setStatus('Criando o seu repositório no GitHub. Isso leva alguns segundos...');
+    $('#create-error').hidden = true;
     remember(text, consent ? email : '', consent);
+    const since = performance.now();
+    VV.busy(button, 'Criando o repositório', 'flip');
+    const request = sendCreate(text);
+    const early = await Promise.race([request, sleep(500).then(() => null)]);
+    if (early) {
+      VV.idle(button, early.status === 201);
+      await settle(early);
+      if (early.status === 201 && consent && !(await saveWeeklyEmail(email, early.body.fullName))) {
+        say('Não conseguimos salvar o seu e-mail. Tente de novo mais tarde.');
+      }
+      return;
+    }
+
+    VV.idle(button, false);
+    await toRepository(() => {
+      VV.setStep(3); show('step-repo');
+      $('#repo-creating').hidden = false; $('#repo-ready').hidden = true;
+      VV.paintStages($$('#progress li'), -1);
+      window.scrollTo({ top: 0 });
+    });
+    say('Criando o seu repositório no GitHub. Isso leva alguns segundos.');
+    // The line ends when the server answers; a failure stops the stages at once.
+    const line = VVMotion.statusLine($('#repo-line'), 'Criando o repositório', since);
+    request.then((outcome) => { if (outcome.status === 201) line.done(); else line.stop(); });
+    const succeeded = request.then((outcome) => { if (outcome.status !== 201) throw outcome; });
     try {
-      const response = await fetch('/api/student-repositories', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-XSRF-TOKEN': csrfToken() },
-        body: JSON.stringify({ text }),
-      });
-      if (response.status === 401) {
-        setStatus('Levando você para entrar com o GitHub...');
-        window.location.assign('/oauth2/authorization/github');
-        return;
-      }
-      const body = await problemDetail(response);
-      if (response.status === 409 && body.installUrl) {
-        setStatus('Levando você para instalar o app do Vaga Viva no GitHub...');
-        window.location.assign(body.installUrl);
-        return;
-      }
-      if (!response.ok) {
-        setStatus(body.detail ?? 'Não foi possível criar o repositório. Tente de novo.', true);
-        return;
-      }
-      forget();
-      $('repository-link').href = body.htmlUrl;
-      $('repository-link').textContent = body.fullName;
-      $('plan').hidden = true;
-      $('created').hidden = false;
-      setStatus('');
-      if (consent && !(await saveWeeklyEmail(email, body.fullName))) {
-        setStatus('Não conseguimos salvar o seu e-mail. Tente de novo mais tarde.', true);
-      }
-      $('repository-link').focus();
-    } catch {
-      setStatus('Sem conexão com o Vaga Viva. Tente de novo.', true);
-    } finally {
-      $('create-button').disabled = false;
+      await VV.runProgress($('#progress'), succeeded);
+    } catch (outcome) {
+      $('#repo-line').hidden = true;
+      if (outcome.status !== 401 && !(outcome.status === 409 && outcome.body.installUrl)) { VV.setStep(2); show('step-plan'); }
+      await settle(outcome);
+      return;
+    }
+    await settle(await request);
+  }
+
+  async function settle({ status, body }) {
+    if (status === 401) {
+      say('Levando você para entrar com o GitHub…');
+      window.location.assign('/oauth2/authorization/github');
+      return;
+    }
+    if (status === 409 && body.installUrl) {
+      say('Levando você para instalar o app do Vaga Viva no GitHub…');
+      window.location.assign(body.installUrl);
+      return;
+    }
+    if (status !== 201) {
+      const message = status === 0 ? NO_CONNECTION : body.detail ?? 'Não foi possível criar o repositório. Tente de novo.';
+      $('#create-error-text').textContent = message;
+      $('#create-error').hidden = false;
+      say(message);
+      $('#create-error').focus();
+      return;
+    }
+    forget();
+    await toRepository(() => ready(body));
+    if (consent && !(await saveWeeklyEmail(email, body.fullName))) {
+      $('#create-error-text').textContent = 'Não conseguimos salvar o seu e-mail. Tente de novo mais tarde.';
+      $('#create-error').hidden = false;
+      say('Não conseguimos salvar o seu e-mail. Tente de novo mais tarde.');
     }
   }
 
-  $('posting-form').addEventListener('submit', (event) => {
-    event.preventDefault();
-    plan($('posting').value);
-  });
+  function ready(body) {
+    VV.setStep(4); show('step-repo');
+    $('#repo-creating').hidden = true; $('#repo-line').hidden = true; $('#repo-ready').hidden = false;
+    const url = VV.gitHubUrl(body.htmlUrl);
+    const issues = Array.isArray(body.issues) ? body.issues : [];
+    const missions = plan?.missions.length ? plan.missions : issues.map((_, i) => ({ order: i + 1 }));
+    $('#repo-panel').innerHTML = VV.repoPanel(body.fullName, url, missions);
+    $('#open-repo').href = url;
+    const first = VV.gitHubUrl(issues[0]?.htmlUrl);
+    $('#open-mission').href = first !== '#' ? first : url === '#' ? '#' : `${url}/issues`;
+    window.scrollTo({ top: 0 });
+    say('Seu repositório está pronto.'); $('#repo-title').focus();
+  }
 
-  $('create-button').addEventListener('click', () => create($('posting').value));
+  // ---- Wiring ----
+
+  $('#posting-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const text = $('#posting').value;
+    if (!text.trim()) {
+      postingError('Cole o texto da vaga para montarmos o plano.');
+      $('#posting').focus();
+      return;
+    }
+    fast = reduced;
+    start(text);
+  });
+  $('#skip').addEventListener('click', () => { fast = true; $$('.flyer').forEach((g) => g.getAnimations().forEach((a) => a.finish())); });
+  $('#change').addEventListener('click', () => {
+    run++;
+    planLine?.stop(); planLine = null;
+    $('#plan-wait').hidden = true;
+    VV.setStep(1); show('step-posting'); $('#posting').focus();
+  });
+  $('#create-button').addEventListener('click', () => create($('#posting').value));
+
+  VVMotion.init();
 
   // A posting forwarded by e-mail arrives as #vaga=<base64url of the raw-deflated text>.
   // The fragment never reaches the server; it is cleared from the address bar once read.
@@ -272,17 +627,25 @@
     window.location.replace(returnTo);
   } else if (pending && comingBack) {
     history.replaceState(null, '', '/');
-    $('posting').value = pending.text;
-    $('weekly-email').value = pending.email;
-    $('weekly-consent').checked = pending.consent;
-    plan(pending.text).then(() => create(pending.text));
+    $('#posting').value = pending.text;
+    $('#posting').dispatchEvent(new Event('input'));
+    $('#weekly-email').value = pending.email;
+    $('#weekly-consent').checked = pending.consent;
+    fast = true; // the student already watched the reading: go straight to the plan and the repository
+    // Only a plan on screen goes on to the repository: a failed reading or plan keeps its own error in view.
+    start(pending.text).then((planned) => { if (planned) create(pending.text); });
   } else {
     postingFromLink().then((text) => {
       if (text && text.trim()) {
-        $('posting').value = text;
-        plan(text);
+        $('#posting').value = text;
+        $('#posting').dispatchEvent(new Event('input'));
+        start(text);
       }
-    }).catch(() => setStatus('Não conseguimos abrir a vaga desse link. Cole o texto aqui.', true));
+    }).catch(() => {
+      const message = 'Não conseguimos abrir a vaga desse link. Cole o texto aqui.';
+      postingError(message);
+      say(message);
+    });
   }
 </script>
 </body>

@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
@@ -54,6 +55,7 @@ final class JunitReports {
 	static TestReport read(byte[] zip) {
 		var missionsRun = new LinkedHashSet<String>();
 		var failed = new ArrayList<FailedTest>();
+		var tallies = new LinkedHashMap<String, MissionTally>();
 		long read = 0;
 		try (var entries = new ZipInputStream(new ByteArrayInputStream(zip))) {
 			ZipEntry entry;
@@ -66,12 +68,13 @@ final class JunitReports {
 				TestReport report = reportInXml(xml);
 				missionsRun.addAll(report.missionsRun());
 				failed.addAll(report.failed());
+				report.tallies().forEach((id, tally) -> tallies.merge(id, tally, MissionTally::plus));
 			}
 		}
 		catch (IOException e) {
 			throw new IllegalArgumentException("Unreadable test report");
 		}
-		return new TestReport(missionsRun, failed);
+		return new TestReport(missionsRun, failed, tallies);
 	}
 
 	static TestReport reportInXml(byte[] xml) {
@@ -84,6 +87,7 @@ final class JunitReports {
 		}
 		var missionsRun = new LinkedHashSet<String>();
 		var failed = new ArrayList<FailedTest>();
+		var tallies = new LinkedHashMap<String, MissionTally>();
 		NodeList testCases = document.getElementsByTagName("testcase");
 		for (int i = 0; i < testCases.getLength(); i++) {
 			Element testCase = (Element) testCases.item(i);
@@ -96,11 +100,12 @@ final class JunitReports {
 			if (failure == null) {
 				failure = firstChild(testCase, "error");
 			}
+			tallies.merge(mission.group(1), new MissionTally(failure == null ? 1 : 0, 1), MissionTally::plus);
 			if (failure != null) {
 				failed.add(new FailedTest(mission.group(1), testCase.getAttribute("name"), message(failure)));
 			}
 		}
-		return new TestReport(missionsRun, failed);
+		return new TestReport(missionsRun, failed, tallies);
 	}
 
 	/**

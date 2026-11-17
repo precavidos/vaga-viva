@@ -32,6 +32,7 @@ class ReviewTextFilterTests {
 			"## Solução",
 			"Como discutido com @maria, veja o #3.",
 			"const total = items.reduce((a, b) => a + b);",
+			"Ótima pergunta. <!-- vaga-viva:review -->",
 			"" })
 	void refusesAnythingThatLooksLikeCode(String text) {
 		assertThat(ReviewTextFilter.isSafe(text)).isFalse();

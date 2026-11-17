@@ -63,4 +63,20 @@ class ClassroomPagesTests {
 		assertThat(mvc.get().uri("/vv.js")).hasStatusOk();
 	}
 
+	/**
+	 * "/" is the welcome page and the other two routes forward, so each page is fetched by the name its route
+	 * resolves to.
+	 */
+	@Test
+	void staticPagesLoadTheMotionLayer() {
+		assertThat(mvc.get().uri("/")).hasForwardedUrl("index.html");
+		assertThat(mvc.get().uri("/professor")).hasForwardedUrl("/professor.html");
+		assertThat(mvc.get().uri("/turma/abcdefghij")).hasForwardedUrl("/turma.html");
+		for (String page : new String[] { "/index.html", "/professor.html", "/turma.html" }) {
+			assertThat(mvc.get().uri(page)).hasStatusOk().body().asString().contains("vv-motion.js");
+		}
+		assertThat(mvc.get().uri("/vv-motion.js")).hasStatusOk();
+		assertThat(mvc.get().uri("/vv-motion.css")).hasStatusOk();
+	}
+
 }

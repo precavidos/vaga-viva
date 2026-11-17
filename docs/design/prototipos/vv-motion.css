@@ -1,0 +1,105 @@
+/* Vaga Viva — motion components (DESIGN.md, section 3.3). Loaded after vv.css; driven by vv-motion.js.
+   Only transform and opacity animate, plus the stroke of the drawn check. Every component's base style is
+   its still state, so reduced motion (the media query, or .is-still set by the JS) only has to remove the
+   animation. Prefix for keyframes: vvm-. */
+
+/* --dot-empty and the other colour tokens come from vv.css. */
+
+/* ---------- Dot matrix: [data-dot-matrix="scan|wave|flip"] ---------- */
+/* 4×4 round dots, injected by the JS with --r (row) and --c (column). One cycle is 1.6 s. */
+[data-dot-matrix] {
+  --dm-dot: 4px; --dm-gap: 2px; --dm-cycle: 1.6s;
+  display: inline-grid; grid-template-columns: repeat(4, var(--dm-dot)); gap: var(--dm-gap);
+  flex: none; vertical-align: middle;
+}
+[data-dot-matrix].is-large { --dm-dot: 10px; --dm-gap: 5px; }
+[data-dot-matrix] i { position: relative; display: block; width: var(--dm-dot); height: var(--dm-dot); border-radius: 50%; background: var(--dm-color); }
+
+/* scan: a yellow row sweeps top to bottom. wave: a purple diagonal crosses from the top-left corner.
+   Still state: every dot lit. While running, the dots rest dim and light up when the sweep reaches them. */
+[data-dot-matrix="scan"] { --dm-color: var(--yellow); }
+[data-dot-matrix="wave"] { --dm-color: var(--purple); }
+[data-dot-matrix="scan"].is-running i { animation: vvm-dot-pulse var(--dm-cycle) var(--ease-out) infinite both; animation-delay: calc(var(--r) * var(--dm-cycle) / 4); }
+[data-dot-matrix="wave"].is-running i { animation: vvm-dot-pulse var(--dm-cycle) var(--ease-out) infinite both; animation-delay: calc((var(--r) + var(--c)) * var(--dm-cycle) / 10); }
+[data-dot-matrix].is-offscreen i { animation-play-state: paused; }
+@keyframes vvm-dot-pulse {
+  0% { opacity: .22; transform: scale(.7); }
+  12% { opacity: 1; transform: scale(1); }
+  34%, 100% { opacity: .22; transform: scale(.7); }
+}
+
+/* flip: coral dots turn green one at a time (the JS adds .is-on in a fixed order), then the grid resets.
+   Done: all green. */
+[data-dot-matrix="flip"] { --dm-color: var(--coral); }
+[data-dot-matrix="flip"] i::after { content: ""; position: absolute; inset: 0; border-radius: 50%; background: var(--green); opacity: 0; transform: scale(.4); transition: opacity var(--t-fast) var(--ease-out), transform var(--t-fast) var(--ease-out); }
+[data-dot-matrix="flip"] i.is-on::after,
+[data-dot-matrix="flip"].is-done i::after { opacity: 1; transform: none; }
+[data-dot-matrix="flip"].is-reset i::after { transition: none; }
+
+/* ---------- Status line: .status-line (DESIGN.md 4.14) ---------- */
+/* "Montando o plano · 2,3 s": matrix, gerund label, timer with one decimal and a comma. */
+.status-line { display: inline-flex; align-items: center; gap: 10px; margin: 0; font: 600 13px/1.2 var(--mono); color: var(--ink); }
+.status-timer { color: var(--ink-2); font-variant-numeric: tabular-nums; min-width: 6ch; }
+.status-timer:not(:empty)::before { content: "· "; }
+.night-panel .status-line, .status-line.on-night { color: #f4f1ea; }
+.night-panel .status-timer, .status-line.on-night .status-timer { color: #f4f1ea; opacity: .72; }
+
+/* ---------- Step mark: .step-mark.is-todo|is-current|is-done (DESIGN.md 4.15) ---------- */
+/* An 18 px SVG injected by the JS: a ring (todo), a spinning purple arc (current), a drawn check on green (done). */
+.step-mark { display: inline-block; width: 18px; height: 18px; flex: none; vertical-align: middle; }
+.step-mark svg { width: 18px; height: 18px; overflow: visible; }
+.step-mark .sm-ring, .step-mark .sm-arc { fill: none; stroke-width: 2; }
+.step-mark .sm-ring { stroke: var(--dot-empty); }
+.step-mark .sm-arc { stroke: var(--focus, var(--purple)); stroke-linecap: round; stroke-dasharray: 30 100; opacity: 0; }
+.night-panel .step-mark .sm-arc { stroke: #8a75ff; } /* --focus is purple in light mode: 2.7:1 on a night panel */
+.step-mark .sm-spin { transform-box: view-box; transform-origin: 9px 9px; }
+.step-mark .sm-disc { fill: var(--green); opacity: 0; transform-box: view-box; transform-origin: 9px 9px; }
+.step-mark .sm-check { fill: none; stroke: #141414; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1; stroke-dashoffset: 1; }
+.step-mark:not(.is-done) .sm-check { visibility: hidden; } /* a round cap can draw a dot before the check runs */
+
+.step-mark.is-current .sm-ring { stroke: var(--line); }
+.step-mark.is-current .sm-arc { opacity: 1; }
+.step-mark.is-current .sm-spin { animation: vvm-spin .9s linear infinite; }
+
+.step-mark.is-done .sm-ring { opacity: 0; }
+.step-mark.is-done .sm-disc { opacity: 1; animation: vvm-pop var(--t-base) var(--ease-out) both; }
+.step-mark.is-done .sm-check { stroke-dashoffset: 0; animation: vvm-draw var(--t-base) var(--ease-out) 120ms both; }
+
+@keyframes vvm-spin { to { transform: rotate(360deg); } }
+@keyframes vvm-pop { from { opacity: 0; transform: scale(.92); } }
+@keyframes vvm-draw { from { stroke-dashoffset: 1; } }
+
+/* ---------- Count-up: [data-count-up="N"] ---------- */
+[data-count-up] { font-variant-numeric: tabular-nums; }
+
+/* ---------- Dot field: [data-dot-field] ---------- */
+/* The JS prepends one <canvas> behind the wrapper's content. --df-dot is the resting dot, --df-hot the dot near
+   the cursor; the canvas draws the resting dots at half opacity. */
+[data-dot-field] { --df-dot: var(--dot-empty); --df-hot: var(--green); position: relative; isolation: isolate; }
+.dot-field-canvas { position: absolute; inset: 0; z-index: -1; width: 100%; height: 100%; border-radius: inherit; pointer-events: none; }
+
+/* ---------- Decrypt: [data-decrypt] ---------- */
+/* While it runs, the invisible final text (the ghost) is the only thing in the flow, so it alone sizes the box and
+   wraps like the final text. The run layer is laid over it and clipped to it: the wider mono noise never pushes
+   the line or its neighbours. */
+[data-decrypt].is-decrypting { position: relative; }
+.dc-ghost { visibility: hidden; }
+.dc-run { position: absolute; inset: 0; overflow: hidden; overflow-wrap: anywhere; }
+.dc-noise { color: var(--ink-2); font-family: var(--mono); font-weight: 600; }
+.dc-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* ---------- Dot swap: [data-dot-swap] ---------- */
+/* The mesh is a grid of purple dots over the block; each dot pops from scale 0 to a size that closes the gaps
+   between circles (cell × 1.45 > cell × √2), with its own random delay (--d). */
+[data-dot-swap] { position: relative; border-radius: var(--r-lg); } /* the board's radius, so the mesh (radius: inherit) matches it */
+.ds-mesh { position: absolute; inset: 0; z-index: 2; display: grid; grid-template-columns: repeat(var(--ds-cols), var(--ds-cell)); grid-auto-rows: var(--ds-cell); overflow: hidden; border-radius: inherit; pointer-events: auto; }
+.ds-mesh i { display: block; border-radius: 50%; background: var(--purple); transform: scale(0); transition: transform 90ms var(--ease-out) var(--d, 0ms); }
+.ds-mesh.is-on i { transform: scale(1.45); }
+
+/* ---------- Reduced motion: everything still, in its final state ---------- */
+/* .is-still is set by vv-motion.js when matchMedia reports reduced motion; the media query covers the CSS on its own. */
+[data-dot-matrix].is-still i, .step-mark.is-still *,
+[data-dot-matrix].is-still i::after { animation: none !important; transition: none !important; }
+@media (prefers-reduced-motion: reduce) {
+  [data-dot-matrix] i, [data-dot-matrix] i::after, .step-mark * { animation: none !important; transition: none !important; }
+}
