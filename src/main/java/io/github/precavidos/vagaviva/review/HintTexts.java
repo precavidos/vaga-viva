@@ -102,10 +102,12 @@ final class HintTexts {
 		}
 		FailedTest first = failing.getFirst();
 		String test = "O teste **" + ReviewTextFilter.neutralize(first.testName()) + "**";
-		if (first.message().isBlank()) {
-			return start + test + " falha sem mensagem de asserção. Abra o teste e leia o que ele verifica por último: o que ele esperava receber, e o que a sua implementação devolve nesse caso?";
+		if (first.message().isBlank() || !ReviewTextFilter.isQuotable(first.message())) {
+			String why = first.message().isBlank() ? " falha sem mensagem de asserção."
+					: " falha com uma mensagem que eu não repito aqui.";
+			return start + test + why + " Abra o teste e leia o que ele verifica por último: o que ele esperava receber, e o que a sua implementação devolve nesse caso?";
 		}
-		return start + test + " falha com esta mensagem:\n\n> " + quote(first.message()) + "\n\n"
+		return start + test + " falha com esta mensagem:\n\n> " + ReviewTextFilter.neutralize(first.message().strip()) + "\n\n"
 				+ "O que essa mensagem diz que era esperado, e o que a sua implementação devolve nesse caso? A diferença entre os dois é o ponto a corrigir.";
 	}
 
@@ -149,10 +151,6 @@ final class HintTexts {
 	static String allPassing() {
 		return "Todos os testes das missões do seu plano passam neste PR, então não há dica a dar agora. "
 				+ "Antes do merge, releia o seu código: algum nome poderia explicar melhor o que faz?";
-	}
-
-	private static String quote(String message) {
-		return ReviewTextFilter.neutralize(message.strip()).replace("\n", "\n> ");
 	}
 
 }

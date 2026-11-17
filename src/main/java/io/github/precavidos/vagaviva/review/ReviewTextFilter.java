@@ -49,6 +49,16 @@ public final class ReviewTextFilter {
 		return text.replace("@", "@\u200B").replace("#", "#\u200B").replace("<!--", "&lt;!--");
 	}
 
+	/**
+	 * Whether an assertion message from the student's repository may be quoted
+	 * in one of the app's fixed comments: one line, and nothing the filter
+	 * would refuse from the LLM. Otherwise a student could make the app post
+	 * code in its own name (case 10 of docs/bateria-revisor.md).
+	 */
+	public static boolean isQuotable(String message) {
+		return message != null && !message.isBlank() && message.lines().count() == 1 && isSafe(neutralize(message));
+	}
+
 	public static boolean isSafe(String text) {
 		if (text == null || text.isBlank() || text.length() > MAX_LENGTH) {
 			return false;

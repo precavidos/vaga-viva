@@ -63,9 +63,17 @@ public final class ReviewTexts {
 	static String fallback(Mission mission, List<FailedTest> failing) {
 		FailedTest first = failing.getFirst();
 		String count = failing.size() == 1 ? "1 teste ainda falha" : failing.size() + " testes ainda falham";
-		String says = first.message().isBlank()
-				? "O primeiro, **" + ReviewTextFilter.neutralize(first.testName()) + "**, falha sem mensagem de asserção.\n\n"
-				: "O primeiro diz:\n\n> " + ReviewTextFilter.neutralize(first.message()) + "\n\n";
+		String name = "O primeiro, **" + ReviewTextFilter.neutralize(first.testName()) + "**, ";
+		String says;
+		if (first.message().isBlank()) {
+			says = name + "falha sem mensagem de asserção.\n\n";
+		}
+		else if (!ReviewTextFilter.isQuotable(first.message())) {
+			says = name + "falha com uma mensagem que eu não repito aqui; leia-a na aba **Actions** deste PR.\n\n";
+		}
+		else {
+			says = "O primeiro diz:\n\n> " + ReviewTextFilter.neutralize(first.message()) + "\n\n";
+		}
 		return "Na missão **" + mission.title() + "**, " + count + ". " + says
 				+ "O que esse teste espera receber, e o que a sua implementação devolve hoje nesse caso? "
 				+ "Releia o contrato da missão em `missoes/" + mission.id() + ".md` e compare com o que o teste pede.";

@@ -92,6 +92,16 @@ class HintTextsTests {
 	}
 
 	@Test
+	void hintFallbackNeverRendersStudentCodeBlock() {
+		var coded = List.of(new FailedTest("persistence", "gravaNoBanco", ReviewTextsTests.CODE_IN_MESSAGE));
+
+		String text = HintTexts.fallback(3, PERSISTENCE, coded);
+
+		assertThat(text).doesNotContain("```").doesNotContain("return Duration").contains("gravaNoBanco");
+		assertThat(ReviewTextFilter.isSafe(text)).as(text).isTrue();
+	}
+
+	@Test
 	void markerCountsOnlyAtTheStartOfTheComment() {
 		var review = new PreviousComment(1,
 				ReviewTexts.MARKER + "\nrevisão que cita " + HintTexts.marker("persistence", 1));
