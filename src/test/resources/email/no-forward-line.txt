@@ -1,0 +1,20 @@
+olha essa vaga
+
+Desenvolvedora Java Júnior
+Empresa Exemplo Tecnologia Ltda. - Remoto
+
+Sobre a vaga
+Estamos procurando uma pessoa desenvolvedora Java júnior para integrar o time de pagamentos da Empresa Exemplo. Você vai construir e manter APIs REST com Java 21 e Spring Boot, escrever testes automatizados e participar das revisões de código com o time.
+
+Requisitos
+- Conhecimento de Java e Spring Boot
+- Noções de SQL e PostgreSQL
+- Git e testes com JUnit
+
+Diferenciais
+- Experiência com Docker
+- Contato com integração contínua
+
+Benefícios: vale-refeição, plano de saúde e horário flexível.
+
+Segue abaixo, me diz o que acha.

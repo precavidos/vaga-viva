@@ -40,7 +40,9 @@ class SecurityConfig {
 			.csrf((csrf) -> csrf.spa()
 				.ignoringRequestMatchers(api.matcher("/api/job-postings/**"), api.matcher("/api/project-plans"),
 						// GitHub signs its webhooks instead (X-Hub-Signature-256).
-						api.matcher("/api/github/webhook")))
+						api.matcher("/api/github/webhook"),
+						// Resend signs its webhooks instead (Svix).
+						api.matcher("/api/inbound-email")))
 			.exceptionHandling((exceptions) -> exceptions.defaultAuthenticationEntryPointFor(
 					new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED), api.matcher("/api/**")))
 			.build();

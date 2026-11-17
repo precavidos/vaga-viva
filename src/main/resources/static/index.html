@@ -540,6 +540,18 @@ Modelo híbrido, em São Paulo.`;
 
   VVMotion.init();
 
+  // A posting forwarded by e-mail arrives as #vaga=<base64url of the raw-deflated text>.
+  // The fragment never reaches the server; it is cleared from the address bar once read.
+  async function postingFromLink() {
+    if (!location.hash.startsWith('#vaga=')) return null;
+    const value = location.hash.slice('#vaga='.length);
+    history.replaceState(null, '', '/');
+    const base64 = value.replace(/-/g, '+').replace(/_/g, '/');
+    const bytes = Uint8Array.from(atob(base64 + '='.repeat((4 - base64.length % 4) % 4)), (c) => c.charCodeAt(0));
+    const stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream('deflate-raw'));
+    return await new Response(stream).text();
+  }
+
   // Back from GitHub (sign-in or app installation): resume with the stored posting.
   const params = new URLSearchParams(window.location.search);
   const pending = recall();
@@ -567,6 +579,18 @@ Modelo híbrido, em São Paulo.`;
     fast = true; // the student already watched the reading: go straight to the plan and the repository
     // Only a plan on screen goes on to the repository: a failed reading or plan keeps its own error in view.
     start(pending).then((planned) => { if (planned) create(pending); });
+  } else {
+    postingFromLink().then((text) => {
+      if (text && text.trim()) {
+        $('#posting').value = text;
+        $('#posting').dispatchEvent(new Event('input'));
+        start(text);
+      }
+    }).catch(() => {
+      const message = 'Não conseguimos abrir a vaga desse link. Cole o texto aqui.';
+      postingError(message);
+      say(message);
+    });
   }
 </script>
 </body>

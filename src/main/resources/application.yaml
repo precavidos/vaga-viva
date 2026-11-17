@@ -52,6 +52,11 @@ vagaviva:
       private-key: ${GITHUB_APP_PRIVATE_KEY:}
       webhook-secret: ${GITHUB_WEBHOOK_SECRET:}
       slug: ${GITHUB_APP_SLUG:vaga-viva}
+  resend:
+    api-key: ${RESEND_API_KEY:}
+    webhook-secret: ${RESEND_WEBHOOK_SECRET:}
+    from: ${RESEND_FROM:}
+    public-url: ${VAGAVIVA_PUBLIC_URL:}
   classroom:
     stuck-after: 3d
     idle-after: 5d
