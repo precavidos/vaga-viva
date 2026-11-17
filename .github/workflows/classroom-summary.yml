@@ -1,0 +1,17 @@
+name: Classroom summary
+on:
+  schedule:
+    - cron: '0 11 * * 1'
+  workflow_dispatch:
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send the teachers' weekly summaries
+        # The free Render plan sleeps, so the first call may time out while it wakes up: retry once after 60 s.
+        # The idempotency key per classroom and Monday makes the retry harmless.
+        run: |
+          curl --fail-with-body --silent --show-error --max-time 300 \
+            --retry 1 --retry-delay 60 --retry-all-errors \
+            -X POST -H "X-Vaga-Viva-Secret: ${{ secrets.CLASSROOM_SUMMARY_SECRET }}" \
+            "${{ vars.VAGAVIVA_PUBLIC_URL }}/api/classrooms/weekly-summaries"

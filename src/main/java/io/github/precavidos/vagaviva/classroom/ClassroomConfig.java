@@ -15,4 +15,10 @@ class ClassroomConfig {
 		return Clock.systemUTC();
 	}
 
+	@Bean
+	WeeklySummaryService weeklySummaryService(ClassroomRepository classrooms, DashboardService dashboards,
+			ClassroomMailer mailer, Clock clock) {
+		return new WeeklySummaryService(classrooms, dashboards, mailer, clock, WeeklySummaryService.Pause.SLEEP);
+	}
+
 }
