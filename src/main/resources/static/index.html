@@ -83,6 +83,14 @@
             <p class="muted" id="plan-summary"></p>
           </div>
           <ol class="missions stagger" id="missions"></ol>
+          <div class="stack" id="weekly-email-panel" style="gap:8px">
+            <label for="weekly-email">Seu e-mail</label>
+            <input class="input" type="email" id="weekly-email" autocomplete="email" maxlength="254">
+            <label class="row small" for="weekly-consent" style="justify-content:flex-start;align-items:flex-start">
+              <input type="checkbox" id="weekly-consent">
+              <span>Quero receber toda segunda a minha missão da semana e o último retorno do revisor. Guardamos o endereço só para isso.</span>
+            </label>
+          </div>
           <div class="banner error" id="create-error" role="alert" tabindex="-1" hidden><span data-icon="warning"></span><div id="create-error-text"></div></div>
           <div class="row" style="justify-content:flex-end">
             <button type="button" class="btn" id="create-button"><span data-icon="github"></span>Criar meu repositório no GitHub</button>
@@ -135,11 +143,23 @@
 
   // The posting text waits here while the student signs in or installs the app; it is removed once the repository exists.
   const STORAGE_KEY = 'vagaviva.posting';
-  function remember(text) {
-    try { sessionStorage.setItem(STORAGE_KEY, text); } catch { /* private mode: the student pastes again */ }
+  // Stored as JSON: { text, email, consent }. A value written before the e-mail existed was the bare text.
+  function remember(text, email, consent) {
+    try { sessionStorage.setItem(STORAGE_KEY, JSON.stringify({ text, email, consent })); }
+    catch { /* private mode: the student pastes again */ }
   }
   function recall() {
-    try { return sessionStorage.getItem(STORAGE_KEY); } catch { return null; }
+    try {
+      const raw = sessionStorage.getItem(STORAGE_KEY);
+      if (raw === null) return null;
+      try {
+        const saved = JSON.parse(raw);
+        if (saved && typeof saved === 'object' && typeof saved.text === 'string') {
+          return { text: saved.text, email: String(saved.email ?? ''), consent: saved.consent === true };
+        }
+      } catch { /* the old format: the text itself */ }
+      return { text: raw, email: '', consent: false };
+    } catch { return null; }
   }
   function forget() {
     try { sessionStorage.removeItem(STORAGE_KEY); } catch { /* nothing stored */ }
@@ -437,6 +457,19 @@ Modelo híbrido, em São Paulo.`;
             () => ({ status: 0, body: {} }));
   }
 
+  async function saveWeeklyEmail(email, repositoryFullName) {
+    try {
+      const response = await fetch('/api/weekly-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-XSRF-TOKEN': VV.csrfToken() },
+        body: JSON.stringify({ email, repositoryFullName }),
+      });
+      return response.ok;
+    } catch {
+      return false;
+    }
+  }
+
   let swapped = false; // the dot swap runs once per flow
   async function toRepository(swap) {
     if (swapped) { swap(); return; }
@@ -448,13 +481,28 @@ Modelo híbrido, em São Paulo.`;
   // line keeps counting from the same request and whose last stage turns green only when the server answers.
   async function create(text) {
     const button = $('#create-button');
+    const email = $('#weekly-email').value.trim();
+    const consent = $('#weekly-consent').checked;
+    if (consent && (email === '' || !$('#weekly-email').checkValidity())) {
+      $('#create-error-text').textContent = 'Informe um e-mail válido para receber o resumo semanal.';
+      $('#create-error').hidden = false;
+      $('#weekly-email').focus();
+      return;
+    }
     $('#create-error').hidden = true;
-    remember(text);
+    remember(text, consent ? email : '', consent);
     const since = performance.now();
     VV.busy(button, 'Criando o repositório', 'flip');
     const request = sendCreate(text);
     const early = await Promise.race([request, sleep(500).then(() => null)]);
-    if (early) { VV.idle(button, early.status === 201); await settle(early); return; }
+    if (early) {
+      VV.idle(button, early.status === 201);
+      await settle(early);
+      if (early.status === 201 && consent && !(await saveWeeklyEmail(email, early.body.fullName))) {
+        say('Não conseguimos salvar o seu e-mail. Tente de novo mais tarde.');
+      }
+      return;
+    }
 
     VV.idle(button, false);
     await toRepository(() => {
@@ -500,6 +548,11 @@ Modelo híbrido, em São Paulo.`;
     }
     forget();
     await toRepository(() => ready(body));
+    if (consent && !(await saveWeeklyEmail(email, body.fullName))) {
+      $('#create-error-text').textContent = 'Não conseguimos salvar o seu e-mail. Tente de novo mais tarde.';
+      $('#create-error').hidden = false;
+      say('Não conseguimos salvar o seu e-mail. Tente de novo mais tarde.');
+    }
   }
 
   function ready(body) {
@@ -574,11 +627,13 @@ Modelo híbrido, em São Paulo.`;
     window.location.replace(returnTo);
   } else if (pending && comingBack) {
     history.replaceState(null, '', '/');
-    $('#posting').value = pending;
+    $('#posting').value = pending.text;
     $('#posting').dispatchEvent(new Event('input'));
+    $('#weekly-email').value = pending.email;
+    $('#weekly-consent').checked = pending.consent;
     fast = true; // the student already watched the reading: go straight to the plan and the repository
     // Only a plan on screen goes on to the repository: a failed reading or plan keeps its own error in view.
-    start(pending).then((planned) => { if (planned) create(pending); });
+    start(pending.text).then((planned) => { if (planned) create(pending.text); });
   } else {
     postingFromLink().then((text) => {
       if (text && text.trim()) {

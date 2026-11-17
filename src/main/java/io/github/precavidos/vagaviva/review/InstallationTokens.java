@@ -3,6 +3,8 @@ package io.github.precavidos.vagaviva.review;
 import java.time.Clock;
 import java.time.Duration;
 import java.util.Map;
+import java.util.Optional;
+import java.util.OptionalLong;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 
@@ -36,6 +38,12 @@ class InstallationTokens {
 		InstallationToken token = cache.compute(installationId, (id, cached) -> stillValid(cached) ? cached
 				: github.createInstallationToken(appJwt.get(), id));
 		return token.token();
+	}
+
+	/** A token for the installation of the repository, or nothing when the app is not installed on it. */
+	Optional<String> forRepository(String repositoryFullName) {
+		OptionalLong installation = github.repositoryInstallation(appJwt.get(), repositoryFullName);
+		return installation.isPresent() ? Optional.of(forInstallation(installation.getAsLong())) : Optional.empty();
 	}
 
 	private boolean stillValid(InstallationToken token) {

@@ -1,6 +1,7 @@
 package io.github.precavidos.vagaviva.review;
 
 import java.time.Clock;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
@@ -12,6 +13,7 @@ import org.springframework.context.annotation.Configuration;
 import com.anthropic.client.okhttp.AnthropicOkHttpClient;
 
 import io.github.precavidos.vagaviva.github.GitHubApi;
+import io.github.precavidos.vagaviva.plan.MissionCatalog;
 import io.github.precavidos.vagaviva.writing.LlmProperties;
 
 @Configuration(proxyBeanMethods = false)
@@ -29,6 +31,17 @@ class ReviewConfig {
 		Supplier<String> appJwt = () -> jwt.updateAndGet(current -> current != null ? current
 				: new AppJwt(app.id(), app.privateKey(), clock)).create();
 		return new InstallationTokens(github, appJwt, clock);
+	}
+
+	@Bean
+	StudentPlans studentPlans(GitHubApi github, List<MissionCatalog> catalogs) {
+		return new StudentPlans(github, catalogs);
+	}
+
+	@Bean
+	RepositorySnapshots repositorySnapshots(GitHubApi github, InstallationTokens tokens, StudentPlans plans,
+			FailedTestsSource failedTests, GitHubAppProperties app) {
+		return new RepositorySnapshots(github, tokens, plans, failedTests, app);
 	}
 
 	/** Without an API key, the reviewer posts its fixed texts (the same switch as the student texts). */

@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>Vaga Viva — Descadastrar</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/vv.css">
+</head>
+<body>
+<main>
+  <p id="status" class="sr" role="status" aria-live="polite"></p>
+  <div class="wrap narrow">
+    <section class="board stack lg" aria-labelledby="title">
+      <div class="stack">
+        <h1 id="title" tabindex="-1">E-mail semanal.</h1>
+        <p class="lead" id="lead">Quer parar de receber o e-mail semanal do Vaga Viva?</p>
+      </div>
+      <div class="banner error" id="error" role="alert" hidden><div>Não deu para descadastrar agora. Tente de novo.</div></div>
+      <div class="row"><button type="button" class="btn" id="stop">Parar de receber</button></div>
+    </section>
+  </div>
+</main>
+<script>
+  const token = new URLSearchParams(location.search).get('t') || '';
+  const stop = document.getElementById('stop');
+  if (token.trim() === '') {
+    document.getElementById('lead').textContent = 'Este link de descadastro está incompleto. Use o link do último e-mail que você recebeu.';
+    stop.parentElement.hidden = true;
+  }
+  stop.addEventListener('click', async () => {
+    stop.disabled = true;
+    document.getElementById('error').hidden = true;
+    try {
+      const response = await fetch('/api/weekly-email/unsubscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token })
+      });
+      if (!response.ok) throw new Error();
+      const done = 'Pronto. Você não vai mais receber o e-mail semanal.';
+      document.getElementById('lead').textContent = done;
+      document.getElementById('status').textContent = done;
+      stop.parentElement.hidden = true;
+    } catch (e) {
+      document.getElementById('error').hidden = false;
+      stop.disabled = false;
+    }
+  });
+</script>
+</body>
+</html>

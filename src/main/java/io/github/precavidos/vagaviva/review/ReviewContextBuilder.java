@@ -1,24 +1,16 @@
 package io.github.precavidos.vagaviva.review;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import io.github.precavidos.vagaviva.github.GitHubApi;
 import io.github.precavidos.vagaviva.github.GitHubComment;
-import io.github.precavidos.vagaviva.github.GitHubFile;
-import io.github.precavidos.vagaviva.plan.Mission;
 import io.github.precavidos.vagaviva.plan.MissionCatalog;
 import io.github.precavidos.vagaviva.review.ReviewContext.PreviousComment;
 import io.github.precavidos.vagaviva.review.ReviewContext.StudentPlan;
-import tools.jackson.core.JacksonException;
-import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.json.JsonMapper;
 
 /**
  * Reads, with an installation token, what the reviewer needs about a pull
@@ -29,16 +21,12 @@ import tools.jackson.databind.json.JsonMapper;
 @Component
 class ReviewContextBuilder {
 
-	static final String PLAN_FILE = ".vaga-viva/plan.json";
-
 	/** Enough for a mission's change; a larger diff is cut, with a marker. */
 	static final int MAX_DIFF_LENGTH = 60_000;
 
-	private static final JsonMapper JSON = JsonMapper.builder().build();
-
 	private final GitHubApi github;
 
-	private final Map<String, MissionCatalog> catalogs;
+	private final StudentPlans plans;
 
 	private final FailedTestsSource failedTests;
 
@@ -46,14 +34,20 @@ class ReviewContextBuilder {
 
 	ReviewContextBuilder(GitHubApi github, List<MissionCatalog> catalogs, FailedTestsSource failedTests,
 			GitHubAppProperties app) {
+		this(github, new StudentPlans(github, catalogs), failedTests, app);
+	}
+
+	@Autowired
+	ReviewContextBuilder(GitHubApi github, StudentPlans plans, FailedTestsSource failedTests,
+			GitHubAppProperties app) {
 		this.github = github;
-		this.catalogs = catalogs.stream().collect(Collectors.toMap(MissionCatalog::archetype, Function.identity()));
+		this.plans = plans;
 		this.failedTests = failedTests;
 		this.app = app;
 	}
 
 	Optional<ReviewContext> build(String token, String repositoryFullName, int pullRequestNumber, String headSha) {
-		Optional<StudentPlan> plan = readPlan(token, repositoryFullName);
+		Optional<StudentPlan> plan = plans.read(token, repositoryFullName);
 		if (plan.isEmpty()) {
 			return Optional.empty();
 		}
@@ -61,34 +55,6 @@ class ReviewContextBuilder {
 		var tests = failedTests.failedTests(token, repositoryFullName, headSha, plan.get());
 		return Optional.of(new ReviewContext(token, repositoryFullName, pullRequestNumber, headSha, plan.get(), diff,
 				tests.isPresent(), tests.orElse(List.of()), reviewerComments(token, repositoryFullName, pullRequestNumber)));
-	}
-
-	private Optional<StudentPlan> readPlan(String token, String repositoryFullName) {
-		Optional<GitHubFile> file = github.readFile(token, repositoryFullName, PLAN_FILE);
-		if (file.isEmpty()) {
-			return Optional.empty();
-		}
-		JsonNode plan;
-		try {
-			plan = JSON.readTree(file.get().content());
-		}
-		catch (JacksonException e) {
-			return Optional.empty();
-		}
-		MissionCatalog catalog = catalogs.get(plan.path("archetype").asString(""));
-		if (catalog == null) {
-			return Optional.empty();
-		}
-		var byId = catalog.missions().stream().collect(Collectors.toMap(Mission::id, Function.identity()));
-		var missions = new ArrayList<Mission>();
-		for (JsonNode id : plan.path("missions")) {
-			Mission mission = byId.get(id.asString(""));
-			if (mission != null && !missions.contains(mission)) {
-				missions.add(mission);
-			}
-		}
-		return Optional.of(new StudentPlan(catalog.archetype(), plan.path("domain").asString(catalog.domain().id()),
-				missions));
 	}
 
 	private List<PreviousComment> reviewerComments(String token, String repositoryFullName, int pullRequestNumber) {

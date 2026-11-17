@@ -13,6 +13,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.OptionalLong;
 import java.util.Set;
 
 import org.junit.jupiter.api.Test;
@@ -364,6 +365,16 @@ class StudentRepositoryProvisionerTests {
 
 		@Override
 		public InstallationToken createInstallationToken(String appJwt, long installationId) {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public OptionalLong repositoryInstallation(String appJwt, String repositoryFullName) {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public Optional<GitHubPullRequest> latestPullRequest(String token, String repositoryFullName) {
 			throw new UnsupportedOperationException();
 		}
 
