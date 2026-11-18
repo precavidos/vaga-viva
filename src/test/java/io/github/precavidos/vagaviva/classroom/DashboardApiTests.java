@@ -161,6 +161,8 @@ class DashboardApiTests {
 		EnrollmentProgress progress = progresses.findById(enrollment.getId()).orElseThrow();
 		progress.setLastReviewerQuestion("O que acontece se a data já passou?");
 		progress.setLastPullRequestUrl("https://github.com/ana/vaga-viva-clinic/pull/13");
+		// Hints on the first mission do not count for the second, where she is now.
+		progress.setHintsByMission("{\"" + ids.get(0) + "\": 3, \"" + ids.get(1) + "\": 2}");
 		progresses.save(progress);
 
 		var response = get("/api/classrooms/" + classroom.getId() + "/students/ana", "david");
@@ -179,8 +181,24 @@ class DashboardApiTests {
 		json.extractingPath("$.failingTests[0].message").isEqualTo("expected 201 but was 500");
 		json.extractingPath("$.failingTests[1].message").isNull();
 		json.extractingPath("$.lastReviewerQuestion").isEqualTo("O que acontece se a data já passou?");
-		json.extractingPath("$.hintsOnMission").isNull();
+		json.extractingPath("$.hintsOnMission").isEqualTo(2);
 		json.extractingPath("$.lastPullRequestUrl").isEqualTo("https://github.com/ana/vaga-viva-clinic/pull/13");
+	}
+
+	@Test
+	void studentCardCountsZeroHintsWhenNoneWereAsked() {
+		Classroom classroom = newClassroom("david");
+		String first = StoredPlan.fromJson(classroom.getPlan()).missionIds().get(0);
+		Enrollment enrollment = enroll(classroom, "ana", "Ana", first, NOW, NOW, "[]", "[]", false);
+		EnrollmentProgress progress = progresses.findById(enrollment.getId()).orElseThrow();
+		// A row of another shape reads as no hints rather than breaking the card.
+		progress.setHintsByMission("[1, 2]");
+		progresses.save(progress);
+
+		var response = get("/api/classrooms/" + classroom.getId() + "/students/ana", "david");
+
+		assertThat(response).hasStatusOk();
+		assertThat(response).bodyJson().extractingPath("$.hintsOnMission").isEqualTo(0);
 	}
 
 	@Test

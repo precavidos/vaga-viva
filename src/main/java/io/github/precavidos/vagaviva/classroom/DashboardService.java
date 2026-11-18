@@ -135,8 +135,28 @@ class DashboardService {
 				progress == null ? List.of() : failingTests(progress.getFailingTests()),
 				tests(missions, progress),
 				progress == null ? null : progress.getLastReviewerQuestion(),
-				// The hints are counted from Task 10 on.
-				null, progress == null ? null : progress.getLastPullRequestUrl());
+				hintsOn(missions, standing.missionOrder(), progress),
+				progress == null ? null : progress.getLastPullRequestUrl());
+	}
+
+	/** The hints asked on the mission the card shows; 0 when none were, or when the row cannot be read. */
+	private static int hintsOn(List<Mission> missions, int missionOrder, EnrollmentProgress progress) {
+		if (progress == null || missionOrder < 1 || missionOrder > missions.size()) {
+			return 0;
+		}
+		String json = progress.getHintsByMission();
+		if (json == null || json.isBlank()) {
+			return 0;
+		}
+		try {
+			Map<String, Integer> hints = JSON.readValue(json, new TypeReference<Map<String, Integer>>() {
+			});
+			Integer count = hints == null ? null : hints.get(missions.get(missionOrder - 1).id());
+			return count == null ? 0 : Math.max(0, count);
+		}
+		catch (RuntimeException e) {
+			return 0;
+		}
 	}
 
 	private List<Mission> missionsOf(StoredPlan plan) {
@@ -268,7 +288,7 @@ class DashboardService {
 
 	record StudentCard(String displayName, String login, String repositoryUrl, int missionOrder, String missionTitle,
 			StudentStatus status, String reason, List<FailingTest> failingTests, List<MissionTests> tests,
-			String lastReviewerQuestion, Integer hintsOnMission, String lastPullRequestUrl) {
+			String lastReviewerQuestion, int hintsOnMission, String lastPullRequestUrl) {
 	}
 
 	record MissionTests(int order, String missionId, Integer passed, Integer total) {
