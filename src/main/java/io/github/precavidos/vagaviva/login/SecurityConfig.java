@@ -29,6 +29,9 @@ class SecurityConfig {
 				// The invite page is open to anyone holding the join code.
 				.requestMatchers(api.matcher(HttpMethod.GET, "/api/classrooms/{joinCode}"))
 				.permitAll()
+				// The scheduled workflow sends a shared secret instead of a session.
+				.requestMatchers(api.matcher(HttpMethod.POST, "/api/classrooms/weekly-summaries"))
+				.permitAll()
 				.requestMatchers(api.matcher("/api/me"), api.matcher("/api/student-repositories/**"),
 						api.matcher("/api/classrooms/**"), api.matcher("/api/weekly-email"))
 				.authenticated()
@@ -46,7 +49,7 @@ class SecurityConfig {
 						// The unsubscribe token is the credential.
 						api.matcher("/api/weekly-email/unsubscribe"),
 						// The scheduled workflow sends a shared secret instead.
-						api.matcher("/api/weekly-emails")))
+						api.matcher("/api/weekly-emails"), api.matcher("/api/classrooms/weekly-summaries")))
 			.exceptionHandling((exceptions) -> exceptions.defaultAuthenticationEntryPointFor(
 					new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED), api.matcher("/api/**")))
 			.build();

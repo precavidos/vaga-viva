@@ -104,6 +104,17 @@ Quem marca o checkbox na página recebe toda segunda a missão da semana. Quem d
 
 Quem já recebeu nos últimos 6 dias é pulado, então rodar duas vezes não manda e-mail em dobro. O log registra o login do GitHub e o resultado, nunca o e-mail.
 
+### Resumo semanal do professor
+
+O professor que informa o e-mail e marca o consentimento ao criar a turma recebe toda segunda um resumo com os contadores, quem está travado ou parado e o link do painel. Quem dispara é o workflow `.github/workflows/classroom-summary.yml`, que chama `POST /api/classrooms/weekly-summaries`. Sem o segredo, o endpoint responde 404. Com um segredo errado, responde 401. Sem as variáveis `RESEND_*`, responde 503.
+
+1. Gere outro segredo longo (por exemplo, `openssl rand -hex 32`).
+2. No Render, em *Environment*, cadastre `CLASSROOM_SUMMARY_SECRET` com esse valor. `CLASSROOM_TEACHERS` e as variáveis `RESEND_*` também são necessárias.
+3. No GitHub, em *Settings > Secrets and variables > Actions*, cadastre o *secret* `CLASSROOM_SUMMARY_SECRET` com o mesmo valor. A variável `VAGAVIVA_PUBLIC_URL` é a mesma do e-mail semanal.
+4. Para testar sem esperar a segunda-feira, rode o workflow *Classroom summary* em *Actions > Run workflow*. Uma execução verde significa que o endpoint respondeu 200 com `{"sent":n,"failed":n}`.
+
+Cada resumo leva uma chave de idempotência por turma e por segunda-feira. Por isso, o Resend descarta um segundo envio da mesma semana feito nas 24 horas seguintes. O log registra o id da turma e o resultado, nunca o e-mail do professor nem os nomes dos alunos.
+
 ## Depois
 
 Para o login com GitHub, cadastre também `GITHUB_CLIENT_ID` e `GITHUB_CLIENT_SECRET` no Render (e `GITHUB_APP_SLUG`, se o app não se chamar `vaga-viva`). A Callback URL e a Setup URL do GitHub App estão em `docs/github-app.md`. A API já confia nos cabeçalhos `X-Forwarded-*` do Render, então os redirecionamentos do login saem com `https`.

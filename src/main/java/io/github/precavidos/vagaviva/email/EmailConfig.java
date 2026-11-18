@@ -10,6 +10,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestClient;
 
+import io.github.precavidos.vagaviva.classroom.ClassroomMailer;
 import io.github.precavidos.vagaviva.classroom.ClassroomStandings;
 import io.github.precavidos.vagaviva.review.RepositorySnapshots;
 
@@ -24,6 +25,11 @@ class EmailConfig {
 			.withReadTimeout(Duration.ofSeconds(10));
 		return new ResendClient(
 				builder.clone().requestFactory(ClientHttpRequestFactoryBuilder.detect().build(settings)), properties);
+	}
+
+	@Bean
+	ClassroomMailer classroomMailer(ResendApi resend, ResendProperties properties) {
+		return new ResendClassroomMailer(resend, properties);
 	}
 
 	@Bean
