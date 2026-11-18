@@ -345,13 +345,10 @@
     const question = s.lastReviewerQuestion
       ? `<div class="question"><span class="avatar bot" aria-hidden="true">?</span><p class="bubble">${esc(s.lastReviewerQuestion)}</p></div>`
       : '<p class="muted">O revisor ainda não fez perguntas.</p>';
-    let hints = '<p class="muted">Dicas ainda não disponíveis.</p>';
-    if (s.hintsOnMission !== null && s.hintsOnMission !== undefined) {
-      const n = num(s.hintsOnMission);
-      const dots = [1, 2, 3].map((i) => `<span class="dot ${i <= n ? '' : 'off'}"></span>`).join('');
-      const text = n <= 3 ? `${n} de 3 nesta missão` : `${n} nesta missão`;
-      hints = `<div class="hints" role="img" aria-label="${esc(text)}">${dots}<span>${esc(text)}</span></div>`;
-    }
+    const n = num(s.hintsOnMission);
+    const dots = [1, 2, 3].map((i) => `<span class="dot ${i <= n ? '' : 'off'}"></span>`).join('');
+    const hintText = n <= 3 ? `${n} de 3 nesta missão` : `${n} nesta missão`;
+    const hints = `<div class="hints" role="img" aria-label="${esc(hintText)}">${dots}<span>${esc(hintText)}</span></div>`;
     const reason = String(s.reason ?? '');
     $('#drawer-body').innerHTML = `
       <div class="block rise">
