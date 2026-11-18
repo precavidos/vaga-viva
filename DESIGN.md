@@ -1,6 +1,6 @@
 # Design do Vaga Viva
 
-Este documento é a fonte única das decisões visuais e de interação do produto: página do aluno, área do professor, convite da turma, painel, e-mail e landing page (`site/index.html`). A direção visual é a **direção B, "ferramenta de dev"**, com uma **linguagem de pontos** como sistema visual. A decisão e o porquê estão em `docs/superpowers/specs/2026-11-13-direcao-b-pontos-design.md`.
+Este documento é a fonte única das decisões visuais e de interação do produto: página do aluno, área do professor, convite da turma, painel, e-mail e landing page (`site/index.html`). A direção visual é a **direção B, "ferramenta de dev"**, com uma **linguagem de pontos** como sistema visual. A decisão e o porquê estão em `docs/historic/specs/2026-11-13-direcao-b-pontos-design.md`.
 
 Os protótipos navegáveis ficam em `docs/design/prototipos/`. Eles usam dados fictícios e implementam tudo o que está escrito aqui. O CSS de referência é `docs/design/prototipos/vv.css`, e os componentes de movimento ficam em `vv-motion.css` e `vv-motion.js`, ao lado dele.
 
@@ -417,7 +417,7 @@ Sem ninguém travado ou parado, o item 3 vira "Ninguém travado ou parado nesta 
 - Os componentes de movimento ficam em `vv-motion.css` e `vv-motion.js`, ao lado de `vv.css` e `vv.js`, e são usados pelos protótipos, pelas páginas reais e pela landing. Cada componente funciona só com atributos e classes no HTML e respeita movimento reduzido. Eles foram inspirados no React Bits e no Matrix dot loader da transitions.dev, e reescritos do zero: nenhum dos dois é dependência.
 - A landing (`site/index.html`) é publicada sozinha, com o CSS dentro do arquivo. Ela recebe uma cópia dos tokens e dos componentes que usa, marcada com um comentário de origem.
 - As fontes vêm do Google Fonts, como na landing page, com `display=swap` e fontes de sistema como reserva.
-- Os dados dos protótipos têm o mesmo formato das respostas da API descritas em `docs/superpowers/plans/2026-11-11-classroom-mode.md`. A grade de testes lê a lista `tests` do cartão (`missionId`, `passed`, `total`, na ordem do plano).
+- Os dados dos protótipos têm o mesmo formato das respostas da API descritas em `docs/historic/plans/2026-11-11-classroom-mode.md`. A grade de testes lê a lista `tests` do cartão (`missionId`, `passed`, `total`, na ordem do plano).
 
 ## 9. O que evitar
 

@@ -1,6 +1,6 @@
 # Revisão final da direção B (layout, movimento e acessibilidade)
 
-Revisão feita em 14/11/2026, na branch `feat/direcao-b`, sobre as três frentes da direção B: os protótipos (`docs/design/prototipos/`), as páginas reais do Spring (`src/main/resources/static/`) e a landing (`site/index.html`). As referências são o `DESIGN.md` e `docs/superpowers/specs/2026-11-13-direcao-b-pontos-design.md`.
+Revisão feita em 14/11/2026, na branch `feat/direcao-b`, sobre as três frentes da direção B: os protótipos (`docs/design/prototipos/`), as páginas reais do Spring (`src/main/resources/static/`) e a landing (`site/index.html`). As referências são o `DESIGN.md` e `docs/historic/specs/2026-11-13-direcao-b-pontos-design.md`.
 
 ## Como foi verificado
 

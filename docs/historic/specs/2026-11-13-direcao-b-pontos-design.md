@@ -1,7 +1,7 @@
 # Direção B: marca amadurecida e linguagem de pontos — design
 
 **Data:** 13/11/2026
-**Depende de:** o modo turma (`docs/superpowers/specs/2026-11-11-classroom-mode-design.md`), já no ramo `feat/classroom-mode`.
+**Depende de:** o modo turma (`docs/historic/specs/2026-11-11-classroom-mode-design.md`), já no ramo `feat/classroom-mode`.
 **Mockups de referência:** `.superpowers/brainstorm/1361-1794598134/content/` (`direcao-visual.html`, opção B; `pontos.html`; `reactbits-inspiracoes.html`). Eles são rascunhos de conversa, não código para copiar.
 
 ## Por que
