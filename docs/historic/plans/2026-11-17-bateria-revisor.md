@@ -8,7 +8,7 @@
 
 **Tech Stack:** Bash + `gh` 2.x, `cloudflared`, Java 21 / Spring Boot (app existente), JUnit 5 + AssertJ, Docker Compose (Postgres local).
 
-**Spec:** `docs/superpowers/specs/2026-11-17-bateria-revisor-design.md`
+**Spec:** `docs/historic/specs/2026-11-17-bateria-revisor-design.md`
 
 ## Global Constraints
 

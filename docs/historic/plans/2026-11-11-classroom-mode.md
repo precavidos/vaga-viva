@@ -19,7 +19,7 @@
 - MockMvcTester e Testcontainers para os testes.
 - GitHub Actions para o agendamento.
 
-**Desenho:** `docs/superpowers/specs/2026-11-11-classroom-mode-design.md`. Leia junto com este plano. As decisões e as frases para os usuários vêm de lá.
+**Desenho:** `docs/historic/specs/2026-11-11-classroom-mode-design.md`. Leia junto com este plano. As decisões e as frases para os usuários vêm de lá.
 
 ## Restrições gerais
 

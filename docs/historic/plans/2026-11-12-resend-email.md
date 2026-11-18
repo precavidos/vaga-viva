@@ -8,7 +8,7 @@
 
 **Tech Stack:** Java 21, Spring Boot 4.1.2 (`RestClient`, Spring Data JPA, Flyway, Spring Security), Jackson 3 (`tools.jackson.databind`), jsoup 1.24.1, JUnit 5 + AssertJ + Mockito, `MockRestServiceServer`, Testcontainers PostgreSQL, `OutputCaptureExtension`.
 
-**Spec:** [`docs/superpowers/specs/2026-11-12-resend-email-design.md`](../specs/2026-11-12-resend-email-design.md) (issue [precavidos/vaga-viva#28](https://github.com/precavidos/vaga-viva/issues/28)).
+**Spec:** [`docs/historic/specs/2026-11-12-resend-email-design.md`](../specs/2026-11-12-resend-email-design.md) (issue [precavidos/vaga-viva#28](https://github.com/precavidos/vaga-viva/issues/28)).
 
 ## Global Constraints
 

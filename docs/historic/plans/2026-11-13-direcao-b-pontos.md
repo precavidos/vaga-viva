@@ -11,7 +11,7 @@
 
 **Tecnologia:** Spring Boot 4.1, Java 21, Flyway, PostgreSQL 17, MockMvcTester e Testcontainers; HTML, CSS e JS puros sem build; Node 22 para os verificadores da skill design-taste-frontend.
 
-**Desenho:** `docs/superpowers/specs/2026-11-13-direcao-b-pontos-design.md`. Leia junto com este plano. As decisões de aparência, a cor de cada ponto e onde cada componente aparece vêm de lá. Mockups de conversa (não são código para copiar): `.superpowers/brainstorm/1361-1794598134/content/`.
+**Desenho:** `docs/historic/specs/2026-11-13-direcao-b-pontos-design.md`. Leia junto com este plano. As decisões de aparência, a cor de cada ponto e onde cada componente aparece vêm de lá. Mockups de conversa (não são código para copiar): `.superpowers/brainstorm/1361-1794598134/content/`.
 
 **Ramo:** `feat/direcao-b`, criado a partir de `feat/classroom-mode`.
 
