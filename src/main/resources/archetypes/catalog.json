@@ -42,6 +42,9 @@
     { "id": "typescript-node", "name": "TypeScript e NestJS", "languages": ["typescript", "javascript"],
       "frameworks": ["nestjs", "nodejs", "express"],
       "templateRepository": "precavidos/vaga-viva-template-typescript-node",
-      "missionTestCommand": "npm test -- missions/%s" }
+      "missionTestCommand": "npm test -- missions/%s" },
+    { "id": "python-fastapi", "name": "Python e FastAPI", "languages": ["python"], "frameworks": ["fastapi"],
+      "templateRepository": "precavidos/vaga-viva-template-python-fastapi",
+      "missionTestCommand": "uv run pytest --mission %s" }
   ]
 }

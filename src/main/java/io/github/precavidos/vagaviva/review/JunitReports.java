@@ -28,10 +28,10 @@ import io.github.precavidos.vagaviva.review.ReviewContext.FailedTest;
 
 /**
  * Reads the failed tests out of the zip a student's workflow uploads: the
- * Surefire reports of the Java template ({@code TEST-*.xml}) or the jest-junit
- * report of the TypeScript one ({@code junit.xml}). Both name a mission test's
- * class {@code Missão <id>: <título>}, which is how a test is tied to its
- * mission.
+ * Surefire reports of the Java template ({@code TEST-*.xml}), the jest-junit
+ * report of the TypeScript one or the pytest report of the Python one (both
+ * {@code junit.xml}). All name a mission test's class
+ * {@code Missão <id>: <título>}, which is how a test is tied to its mission.
  * <p>
  * The zip comes from the student's repository, so it is untrusted: sizes are
  * capped and the XML parser resolves no DTD or external entity.
@@ -44,6 +44,9 @@ final class JunitReports {
 	static final int MAX_MESSAGE_LENGTH = 500;
 
 	private static final Pattern MISSION = Pattern.compile("^Missão ([a-z0-9-]+):");
+
+	/** pytest puts the exception type before the {@code assert} message: {@code AssertionError: <mensagem>}. */
+	private static final Pattern PYTEST_ASSERTION = Pattern.compile("^AssertionError:\\s*");
 
 	/** Terminal colour codes some reporters leave in messages. */
 	private static final Pattern ANSI = Pattern.compile("\u001B\\[[0-9;]*m");
@@ -111,7 +114,8 @@ final class JunitReports {
 	/**
 	 * The Portuguese assertion text: the {@code [...]} description of an
 	 * AssertJ failure (Java) or the line after {@code Custom message:} of
-	 * jest-expect-message (TypeScript); otherwise the first line.
+	 * jest-expect-message (TypeScript); otherwise the first line, without the
+	 * {@code AssertionError: } pytest puts before an {@code assert} message (Python).
 	 */
 	static String message(Element failure) {
 		String text = failure.getAttribute("message");
@@ -130,7 +134,7 @@ final class JunitReports {
 		else {
 			message = text.lines().findFirst().orElse("");
 		}
-		message = message.strip();
+		message = PYTEST_ASSERTION.matcher(message.strip()).replaceFirst("");
 		return message.length() <= MAX_MESSAGE_LENGTH ? message : message.substring(0, MAX_MESSAGE_LENGTH) + "…";
 	}
 

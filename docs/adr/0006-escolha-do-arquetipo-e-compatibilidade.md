@@ -13,6 +13,7 @@ O catálogo `archetypes/catalog.json` lista as linguagens e os frameworks que o 
 ## Consequences
 
 - O MVP planeja três arquétipos: `java-spring`, `python-fastapi` e `typescript-node`. Cada um entra no catálogo só quando tiver repositório-modelo validado (ADR 0004).
-- O arquétipo escolhido decide tudo o que vem depois: o vocabulário de competências, o catálogo de missões, o repositório-modelo e o comando que roda os testes de uma missão. Hoje são dois, `java-spring` e `typescript-node`; o Python entra quando o modelo dele estiver validado.
+- O arquétipo escolhido decide tudo o que vem depois: o vocabulário de competências, o catálogo de missões, o repositório-modelo e o comando que roda os testes de uma missão. Hoje são os três: `java-spring`, `typescript-node` e `python-fastapi`.
 - Um arquétipo pode praticar mais de uma linguagem: o `typescript-node` cobre TypeScript e JavaScript, já que uma vaga de Node.js costuma citar uma das duas.
+- Um arquétipo pratica só os frameworks que o modelo dele usa: o `python-fastapi` cobre FastAPI, e uma vaga de Django ou Flask recebe o projeto em FastAPI com o aviso de cobertura parcial.
 - Reconhecer uma linguagem não promete um projeto para ela: a lista de linguagens cresce sem custo, e os arquétipos, com o custo de um modelo cada.
