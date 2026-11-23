@@ -79,7 +79,7 @@ class ProjectPlanApiTests {
 			.uri("/api/project-plans")
 			.contentType(MediaType.APPLICATION_JSON)
 			.content("""
-					{ "text": "Desenvolvedor Python Júnior com Django e PostgreSQL" }""");
+					{ "text": "Desenvolvedor PHP Júnior com Laravel e PostgreSQL" }""");
 
 		assertThat(response).hasStatusOk();
 		var json = assertThat(response).bodyJson();
@@ -87,8 +87,24 @@ class ProjectPlanApiTests {
 		json.extractingPath("$.archetypeFit.archetype").isEqualTo("java-spring");
 		json.extractingPath("$.archetypeFit.status").isEqualTo("NOT_COVERED");
 		json.extractingPath("$.archetypeFit.covered").asArray().isEmpty();
-		json.extractingPath("$.archetypeFit.uncovered").asArray().containsExactly("Python", "Django");
+		json.extractingPath("$.archetypeFit.uncovered").asArray().containsExactly("PHP", "Laravel");
 		json.extractingPath("$.missions").asArray().isNotEmpty();
+	}
+
+	@Test
+	void plansAPythonPostingWithThePythonArchetype() {
+		var response = mvc.post()
+			.uri("/api/project-plans")
+			.contentType(MediaType.APPLICATION_JSON)
+			.content("""
+					{ "text": "Desenvolvedor Python Júnior com FastAPI, SQLAlchemy, PostgreSQL e pytest" }""");
+
+		assertThat(response).hasStatusOk();
+		var json = assertThat(response).bodyJson();
+		json.extractingPath("$.archetype").isEqualTo("python-fastapi");
+		json.extractingPath("$.archetypeFit.status").isEqualTo("COVERED");
+		json.extractingPath("$.missions").asArray().isNotEmpty();
+		json.extractingPath("$.missions[0].id").isEqualTo("patients-api");
 	}
 
 	@Test

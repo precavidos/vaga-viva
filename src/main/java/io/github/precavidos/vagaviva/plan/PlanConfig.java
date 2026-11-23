@@ -22,6 +22,11 @@ class PlanConfig {
 	}
 
 	@Bean
+	MissionCatalog pythonFastapiMissionCatalog(Vocabularies vocabularies) {
+		return MissionCatalog.fromClasspath("missions/python-fastapi.json", vocabularies.get("python-fastapi"));
+	}
+
+	@Bean
 	ProjectPlanners projectPlanners(List<MissionCatalog> catalogs) {
 		return new ProjectPlanners(catalogs);
 	}

@@ -10,7 +10,8 @@ class VocabularyConfig {
 	@Bean
 	Vocabularies vocabularies() {
 		return Vocabularies.of(SkillVocabulary.fromClasspath("vocabulary/java-spring.json"),
-				SkillVocabulary.fromClasspath("vocabulary/typescript-node.json"));
+				SkillVocabulary.fromClasspath("vocabulary/typescript-node.json"),
+				SkillVocabulary.fromClasspath("vocabulary/python-fastapi.json"));
 	}
 
 }

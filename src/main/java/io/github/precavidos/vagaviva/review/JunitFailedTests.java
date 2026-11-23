@@ -21,7 +21,7 @@ import io.github.precavidos.vagaviva.github.GitHubWorkflowRun;
 @Component
 class JunitFailedTests implements FailedTestsSource {
 
-	/** The artifacts {@code vaga-viva.yml} uploads: Surefire's (Java) and jest-junit's (TypeScript). */
+	/** The artifacts {@code vaga-viva.yml} uploads: Surefire's (Java), and jest-junit's (TypeScript) or pytest's (Python). */
 	static final Set<String> REPORT_ARTIFACTS = Set.of("surefire-reports", "junit-report");
 
 	/** A compressed report is a few kilobytes; anything far larger is not a report. */

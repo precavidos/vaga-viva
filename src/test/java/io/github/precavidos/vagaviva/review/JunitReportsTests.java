@@ -73,6 +73,24 @@ class JunitReportsTests {
 			</testsuites>
 			""";
 
+	/** Shaped like pytest's {@code --junitxml} report in the Python template, with the classname the template sets. */
+	private static final String PYTEST = """
+			<?xml version="1.0" encoding="utf-8"?>
+			<testsuites>
+			  <testsuite name="pytest" errors="0" failures="1" skipped="1" tests="3">
+			    <testcase classname="Missão patients-api: Cadastro de pacientes" name="test_cadastra_paciente_e_responde_201" time="0.12">
+			      <failure message="AssertionError: Esperava 201 ao cadastrar o paciente, mas veio 404&#10;assert 404 == 201&#10; +  where 404 = &lt;Response [404]&gt;.status_code">tests/missions/test_patients_api.py:14: in test_cadastra_paciente_e_responde_201
+			    assert resposta.status_code == 201, "Esperava 201 ao cadastrar o paciente, mas veio 404"
+			E   AssertionError: Esperava 201 ao cadastrar o paciente, mas veio 404</failure>
+			    </testcase>
+			    <testcase classname="Missão patients-api: Cadastro de pacientes" name="test_busca_paciente_pelo_id" time="0.05"/>
+			    <testcase classname="Missão pagination: Listagem paginada de consultas" name="test_pagina_as_consultas" time="0">
+			      <skipped type="pytest.skip" message="Missão 'pagination' fora do seu plano (.vaga-viva/plan.json)">conftest.py:40: Missão 'pagination' fora do seu plano (.vaga-viva/plan.json)</skipped>
+			    </testcase>
+			  </testsuite>
+			</testsuites>
+			""";
+
 	private static final MissionCatalog CATALOG = MissionCatalog.fromClasspath("missions/java-spring.json",
 			SkillVocabulary.fromClasspath("vocabulary/java-spring.json"));
 
@@ -95,6 +113,16 @@ class JunitReportsTests {
 
 		assertThat(failed).containsExactly(new FailedTest("scheduling-rules", "recusa com 422 uma consulta no passado",
 				"esperava recusar consulta no passado com status 422"));
+	}
+
+	@Test
+	void readsThePythonTemplatesPytestReportWithoutTheAssertionErrorPrefix() {
+		TestReport report = JunitReports.read(zip(Map.of("reports/junit.xml", PYTEST)));
+
+		assertThat(report.failed()).containsExactly(new FailedTest("patients-api",
+				"test_cadastra_paciente_e_responde_201", "Esperava 201 ao cadastrar o paciente, mas veio 404"));
+		assertThat(report.missionsRun()).containsExactly("patients-api");
+		assertThat(report.tallies()).containsEntry("patients-api", new MissionTally(1, 2));
 	}
 
 	@Test

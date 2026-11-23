@@ -58,12 +58,31 @@ class ArchetypeCatalogTests {
 
 	@Test
 	void otherLanguageIsNotCovered() {
-		ArchetypeFit fit = catalog.match("Desenvolvedor Python com Django e FastAPI.");
+		ArchetypeFit fit = catalog.match("Desenvolvedor PHP com Laravel.");
 
 		assertThat(fit.archetype()).isEqualTo("java-spring");
 		assertThat(fit.status()).isEqualTo(Status.NOT_COVERED);
 		assertThat(fit.covered()).isEmpty();
-		assertThat(fit.uncovered()).containsExactly("Python", "Django", "FastAPI");
+		assertThat(fit.uncovered()).containsExactly("PHP", "Laravel");
+	}
+
+	@Test
+	void fastApiPostingGetsThePythonArchetype() {
+		ArchetypeFit fit = catalog.match("Desenvolvedora Python com FastAPI e PostgreSQL.");
+
+		assertThat(fit.archetype()).isEqualTo("python-fastapi");
+		assertThat(fit.status()).isEqualTo(Status.COVERED);
+		assertThat(fit.covered()).containsExactly("Python", "FastAPI");
+	}
+
+	@Test
+	void djangoPostingGetsThePythonArchetypeWithDjangoLeftOut() {
+		ArchetypeFit fit = catalog.match("Desenvolvedor Python com Django e FastAPI.");
+
+		assertThat(fit.archetype()).isEqualTo("python-fastapi");
+		assertThat(fit.status()).isEqualTo(Status.PARTIAL);
+		assertThat(fit.covered()).containsExactly("Python", "FastAPI");
+		assertThat(fit.uncovered()).containsExactly("Django");
 	}
 
 	@Test
