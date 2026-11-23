@@ -23,6 +23,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import io.github.precavidos.vagaviva.github.GitHubApi;
 import io.github.precavidos.vagaviva.github.GitHubApiException;
+import io.github.precavidos.vagaviva.provisioning.AdultsOnly;
 import io.github.precavidos.vagaviva.provisioning.InstallAppProblem;
 
 /**
@@ -59,6 +60,9 @@ class EnrollmentController {
 			@RegisteredOAuth2AuthorizedClient("github") OAuth2AuthorizedClient client) {
 		if (!request.consent()) {
 			return badRequest("Para entrar na turma, aceite que o professor veja o seu progresso.");
+		}
+		if (!Boolean.TRUE.equals(request.adult())) {
+			return AdultsOnly.refused();
 		}
 		String name = request.displayName() == null ? "" : request.displayName().strip();
 		if (name.isEmpty() || name.length() > MAX_NAME_LENGTH) {
@@ -104,7 +108,8 @@ class EnrollmentController {
 		return login == null ? user.getName() : login.toString();
 	}
 
-	record JoinRequest(String displayName, boolean consent) {
+	/** @param adult the student confirmed being 18 or older; the MVP is not meant for minors */
+	record JoinRequest(String displayName, boolean consent, Boolean adult) {
 	}
 
 	record Joined(String fullName, String htmlUrl) {

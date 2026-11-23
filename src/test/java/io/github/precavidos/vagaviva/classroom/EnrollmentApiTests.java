@@ -132,6 +132,18 @@ class EnrollmentApiTests {
 	}
 
 	@Test
+	void studentsMustConfirmTheyAreAdults() {
+		String code = newClassroom();
+
+		var response = join(code, "carla", "Carla", true, false);
+
+		assertThat(response).hasStatus(HttpStatus.BAD_REQUEST);
+		assertThat(response).bodyJson().extractingPath("$.detail").asString().contains("18 anos");
+		verify(provisioner, never()).provision(any(), any(), any());
+		assertThat(enrollments.countByClassroom(classrooms.byJoinCode(code).orElseThrow())).isZero();
+	}
+
+	@Test
 	void nameIsRequiredAndAtMost40Characters() {
 		String code = newClassroom();
 		given(github.isAppInstalledOn(TOKEN, "paula")).willReturn(true);
@@ -173,7 +185,7 @@ class EnrollmentApiTests {
 			.uri("/api/classrooms/" + newClassroom() + "/enrollments")
 			.with(csrf())
 			.contentType(MediaType.APPLICATION_JSON)
-			.content("{\"displayName\":\"Ana\",\"consent\":true}")
+			.content("{\"displayName\":\"Ana\",\"consent\":true,\"adult\":true}")
 			.exchange();
 
 		assertThat(response).hasStatus(HttpStatus.UNAUTHORIZED);
@@ -186,7 +198,7 @@ class EnrollmentApiTests {
 	 */
 	@Test
 	void anAnonymousJoinIsRefusedForCsrfBeforeItIsUnauthorized() {
-		String body = "{\"displayName\":\"Maria\",\"consent\":true}";
+		String body = "{\"displayName\":\"Maria\",\"consent\":true,\"adult\":true}";
 
 		var withoutToken = mvc.post()
 			.uri("/api/classrooms/abcdefghij/enrollments")
@@ -217,13 +229,17 @@ class EnrollmentApiTests {
 	}
 
 	private MvcTestResult join(String code, String login, String name, boolean consent) {
+		return join(code, login, name, consent, true);
+	}
+
+	private MvcTestResult join(String code, String login, String name, boolean consent, boolean adult) {
 		return mvc.post()
 			.uri("/api/classrooms/" + code + "/enrollments")
 			.with(login(login))
 			.with(csrf())
 			.contentType(MediaType.APPLICATION_JSON)
 			.content("""
-					{ "displayName": "%s", "consent": %s }""".formatted(name, consent))
+					{ "displayName": "%s", "consent": %s, "adult": %s }""".formatted(name, consent, adult))
 			.exchange();
 	}
 
