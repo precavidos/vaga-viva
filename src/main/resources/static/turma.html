@@ -72,6 +72,9 @@
         <label class="check"><input type="checkbox" id="consent" aria-describedby="consent-error">
           <span id="consent-text"></span></label>
         <span id="consent-error" class="error-text" hidden>Para entrar na turma, marque a caixa acima.</span>
+        <label class="check"><input type="checkbox" id="adult" aria-describedby="adult-error">
+          <span>Tenho 18 anos ou mais. <span class="muted">O Vaga Viva é para maiores de 18 anos.</span></span></label>
+        <span id="adult-error" class="error-text" hidden>Para entrar na turma, confirme que você tem 18 anos ou mais.</span>
         <div class="banner error" id="join-error" role="alert" tabindex="-1" hidden><span data-icon="warning"></span><div id="join-error-text"></div></div>
         <div class="row between">
           <span class="muted small" id="why" aria-live="polite">Falta o seu nome e o aceite.</span>
@@ -123,7 +126,7 @@
   const show = (id) => { PARTS.forEach((p) => { $(`#${p}`).hidden = p !== id; }); };
 
   const code = (location.pathname.match(/^\/turma\/([^/]+)\/?$/) ?? [])[1] ?? '';
-  const name = $('#display-name'), consent = $('#consent'), button = $('#b-join');
+  const name = $('#display-name'), consent = $('#consent'), adult = $('#adult'), button = $('#b-join');
   let classroom = null;
   let signedIn = false;
 
@@ -195,14 +198,17 @@
   function refresh() {
     const hasName = name.value.trim().length > 0;
     $('#name-count').textContent = `${name.value.length} / 40`;
-    const ok = hasName && consent.checked;
+    const accepted = consent.checked && adult.checked;
+    const ok = hasName && accepted;
     button.setAttribute('aria-disabled', String(signedIn && !ok));
-    $('#why').textContent = !signedIn ? 'Primeiro você entra com o GitHub. Depois volta aqui para escolher o nome e aceitar.' : ok ? 'Tudo certo.' : !hasName && !consent.checked ? 'Falta o seu nome e o aceite.' : !hasName ? 'Falta o seu nome.' : 'Falta o aceite.';
+    $('#why').textContent = !signedIn ? 'Primeiro você entra com o GitHub. Depois volta aqui para escolher o nome e aceitar.' : ok ? 'Tudo certo.' : !hasName && !accepted ? 'Falta o seu nome e o aceite.' : !hasName ? 'Falta o seu nome.' : 'Falta o aceite.';
     if (hasName) { $('#name-error').hidden = true; name.removeAttribute('aria-invalid'); }
     if (consent.checked) { $('#consent-error').hidden = true; consent.removeAttribute('aria-invalid'); }
+    if (adult.checked) { $('#adult-error').hidden = true; adult.removeAttribute('aria-invalid'); }
   }
   name.addEventListener('input', refresh);
   consent.addEventListener('change', refresh);
+  adult.addEventListener('change', refresh);
 
   $('#join').addEventListener('submit', (e) => {
     e.preventDefault();
@@ -211,8 +217,10 @@
     const hasName = name.value.trim().length > 0;
     $('#name-error').hidden = hasName; VV.invalid(name, !hasName);
     $('#consent-error').hidden = consent.checked; VV.invalid(consent, !consent.checked);
+    $('#adult-error').hidden = adult.checked; VV.invalid(adult, !adult.checked);
     if (!hasName) { name.focus(); return; }
     if (!consent.checked) { consent.focus(); return; }
+    if (!adult.checked) { adult.focus(); return; }
     join();
   });
 
@@ -223,7 +231,8 @@
     return fetch(`/api/classrooms/${encodeURIComponent(code)}/enrollments`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-XSRF-TOKEN': VV.csrfToken() },
-      body: JSON.stringify({ displayName, consent: true }),
+      // The submit handler only gets here with both boxes checked.
+      body: JSON.stringify({ displayName, consent: true, adult: true }),
     }).then(async (response) => ({ status: response.status, body: await VV.problemDetail(response) }),
             () => ({ status: 0, body: {} }));
   }

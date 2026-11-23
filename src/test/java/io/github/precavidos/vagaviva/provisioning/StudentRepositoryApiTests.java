@@ -42,7 +42,7 @@ class StudentRepositoryApiTests {
 	private static final String TOKEN = "access-token";
 
 	private static final String POSTING = """
-			{ "text": "Desenvolvedora Java Júnior com Spring Boot, PostgreSQL e Docker. Contato: rh@empresa.example" }""";
+			{ "text": "Desenvolvedora Java Júnior com Spring Boot, PostgreSQL e Docker. Contato: rh@empresa.example", "adult": true }""";
 
 	@Autowired
 	MockMvcTester mvc;
@@ -136,7 +136,7 @@ class StudentRepositoryApiTests {
 			.with(csrf())
 			.contentType(MediaType.APPLICATION_JSON)
 			.content("""
-					{ "text": "Vaga júnior TypeScript com NestJS e PostgreSQL" }""")
+					{ "text": "Vaga júnior TypeScript com NestJS e PostgreSQL", "adult": true }""")
 			.exchange();
 
 		assertThat(response).hasStatus(HttpStatus.CREATED);
@@ -145,6 +145,23 @@ class StudentRepositoryApiTests {
 		var body = org.mockito.ArgumentCaptor.forClass(String.class);
 		verify(github, org.mockito.Mockito.atLeastOnce()).createIssue(eq(TOKEN), anyString(), anyString(), body.capture());
 		assertThat(body.getValue()).contains("npm test -- missions/").doesNotContain("mvnw");
+	}
+
+	@Test
+	void studentsMustConfirmTheyAreAdults() {
+		var response = mvc.post()
+			.uri("/api/student-repositories")
+			.with(student())
+			.with(csrf())
+			.contentType(MediaType.APPLICATION_JSON)
+			.content("""
+					{ "text": "Desenvolvedora Java Júnior com Spring Boot, PostgreSQL e Docker." }""")
+			.exchange();
+
+		assertThat(response).hasStatus(HttpStatus.BAD_REQUEST);
+		assertThat(response).bodyJson().extractingPath("$.detail").asString().contains("18 anos");
+		verify(github, never()).isAppInstalledOn(any(), any());
+		verify(github, never()).generateFromTemplate(anyString(), anyString(), anyString(), anyString(), anyString());
 	}
 
 	@Test

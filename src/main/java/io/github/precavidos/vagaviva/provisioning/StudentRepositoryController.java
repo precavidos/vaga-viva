@@ -72,6 +72,9 @@ class StudentRepositoryController {
 	@PostMapping("/student-repositories")
 	ResponseEntity<?> create(@Valid @RequestBody CreateRequest request, @AuthenticationPrincipal OAuth2User user,
 			@RegisteredOAuth2AuthorizedClient("github") OAuth2AuthorizedClient client) {
+		if (!Boolean.TRUE.equals(request.adult())) {
+			return AdultsOnly.refused();
+		}
 		String token = client.getAccessToken().getTokenValue();
 		String login = login(user);
 		if (!github.isAppInstalledOn(token, login)) {
@@ -99,7 +102,8 @@ class StudentRepositoryController {
 		return login == null ? user.getName() : login.toString();
 	}
 
-	record CreateRequest(@NotBlank @Size(max = JobPostingExtractor.MAX_LENGTH) String text) {
+	/** @param adult the student confirmed being 18 or older; the MVP is not meant for minors */
+	record CreateRequest(@NotBlank @Size(max = JobPostingExtractor.MAX_LENGTH) String text, Boolean adult) {
 	}
 
 	record Me(String login) {
