@@ -192,7 +192,10 @@ class StudentRepositoryProvisionerTests {
 		for (int i = 0; i < 6; i++) {
 			String id = PLAN.missions().get(i).mission().id();
 			assertThat(github.issues.get(i).body())
-				.startsWith("### Por que esta missão importa para a vaga\n\nContexto de " + id + ".");
+				.startsWith("### O que fazer\n\n" + PLAN.missions().get(i).mission().summary())
+				.contains("[`missoes/" + id + ".md`](https://github.com/maria/vaga-viva-clinic-scheduling/blob/main/missoes/"
+						+ id + ".md)")
+				.contains("### Por que esta missão importa para a vaga\n\nContexto de " + id + ".");
 		}
 		assertThat(github.updates).singleElement().satisfies(file -> {
 			assertThat(file.path()).isEqualTo("README.md");
@@ -208,8 +211,10 @@ class StudentRepositoryProvisionerTests {
 	void defaultTextsWhenTheWriterGivesNothing() {
 		provisioner.provision("token", "maria", PLAN);
 
-		assertThat(github.issues.getFirst().body()).startsWith("### Por que esta missão importa para a vaga")
-			.contains("Esta missão exercita");
+		assertThat(github.issues.getFirst().body()).startsWith("### O que fazer")
+			.contains("### Por que esta missão importa para a vaga")
+			.contains("Esta missão exercita")
+			.contains("`/dica`");
 		assertThat(github.updates).singleElement()
 			.satisfies(file -> assertThat(file.content()).contains(DefaultStudentTexts.projectIntro(PLAN, VOCABULARY)));
 	}

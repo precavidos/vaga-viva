@@ -6,8 +6,10 @@ import io.github.precavidos.vagaviva.plan.Mission;
 import io.github.precavidos.vagaviva.vocabulary.SkillVocabulary;
 
 /**
- * Default, student-facing (Portuguese) text for mission issues. It is what
- * students get whenever the LLM-written text is unavailable (ADR 0002).
+ * The student-facing (Portuguese) text of a mission issue. It says what to do first, points to the mission's
+ * contract in the student's repository ({@code missoes/<id>.md}, written by the template), then why it matters for
+ * the job and how to know it is done. {@code context} is the LLM's text or, when that is unavailable, the default
+ * one (ADR 0002).
  */
 final class MissionIssueText {
 
@@ -18,16 +20,26 @@ final class MissionIssueText {
 		return "Missão " + order + ": " + mission.title();
 	}
 
-	/** @param testCommand the archetype's command that runs only this mission's tests */
-	static String body(Mission mission, String context, SkillVocabulary vocabulary, String testCommand) {
+	/**
+	 * @param repositoryFullName the student's repository, where {@code missoes/<id>.md} lives
+	 * @param testCommand the archetype's command that runs only this mission's tests
+	 */
+	static String body(Mission mission, String context, SkillVocabulary vocabulary, String repositoryFullName,
+			String testCommand) {
 		String skills = mission.skills()
 			.stream()
 			.map(vocabulary::skillLabel)
 			.collect(Collectors.joining(", "));
+		String contract = "missoes/" + mission.id() + ".md";
+		String contractUrl = "https://github.com/" + repositoryFullName + "/blob/main/" + contract;
 		return """
-				### Por que esta missão importa para a vaga
+				### O que fazer
 
 				%s
+
+				O contrato completo da missão (rotas, campos, respostas e erros esperados) está em [`%s`](%s). Os testes conferem exatamente o que ele descreve.
+
+				### Por que esta missão importa para a vaga
 
 				%s
 
@@ -35,14 +47,14 @@ final class MissionIssueText {
 
 				### Como saber que terminou
 
-				Os testes desta missão passam:
+				Rode só os testes desta missão:
 
 				```bash
 				%s
 				```
 
-				Quando terminar, abra um pull request com a sua solução.
-				""".formatted(context, mission.summary(), skills, testCommand);
+				Eles falham até a missão estar pronta, e cada falha diz o que ainda falta. Quando todos passarem, abra um pull request: o revisor do Vaga Viva comenta com perguntas, sem entregar a resposta. Se travar, comente `/dica` no pull request para receber uma dica por vez.
+				""".formatted(mission.summary(), contract, contractUrl, context, skills, testCommand);
 	}
 
 }

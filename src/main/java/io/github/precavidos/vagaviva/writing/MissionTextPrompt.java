@@ -20,7 +20,9 @@ final class MissionTextPrompt {
 			Escreva em português do Brasil, em segunda pessoa (você), num tom direto e encorajador, sem exageros.
 
 			- projectIntro: um ou dois parágrafos curtos, sem títulos nem listas, dizendo para que vaga o projeto foi montado (nível e competências) e por que construir este projeto prepara o aluno para ela.
-			- missions: para cada missão recebida, repita exatamente o mesmo id e escreva em context de duas a quatro frases ligando a missão às competências da vaga que ela exercita.
+			- missions: para cada missão recebida, repita exatamente o mesmo id e escreva em context de duas a quatro frases ligando a missão às competências da vaga que ela exercita. O context explica por que a missão importa para a vaga: o que fazer já aparece na issue, acima dele, então não repita o resumo da missão.
+
+			As competências são habilidades que a vaga pede ao candidato. Nunca as trate como times, áreas, setores ou pessoas da empresa (escreva "a vaga pede Design de APIs", nunca "o time de Design de APIs").
 
 			Se a compatibilidade com a vaga for PARTIAL ou NOT_COVERED, o projectIntro diz numa frase quais tecnologias da vaga este projeto não pratica (as de "Não pratica") e que o que ele treina continua valendo para a vaga, sem prometer a stack que fica de fora. Se for COVERED ou NOT_STATED, não fale de compatibilidade.
 
