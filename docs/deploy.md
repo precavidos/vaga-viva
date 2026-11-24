@@ -57,7 +57,7 @@ Cadastre também `ANTHROPIC_API_KEY` com a chave da conta do time na Anthropic. 
 1. No serviço do Render, em *Settings → Deploy Hook*, copie a URL do hook.
 2. No GitHub, em *Settings → Secrets and variables → Actions* do repositório:
    - em **Secrets**, crie `RENDER_DEPLOY_HOOK_URL` com a URL do hook;
-   - em **Variables**, crie `API_URL` com a URL pública do serviço (por exemplo, `https://vaga-viva.onrender.com`). Ela aparece no ambiente `production` do GitHub.
+   - em **Variables**, crie `API_URL` com a URL pública do serviço (por exemplo, `https://vaga-viva-49kj.onrender.com`). Ela aparece no ambiente `production` do GitHub.
 
 A URL do hook permite publicar o serviço: trate-a como senha. Nunca a coloque no repositório nem no chat.
 
@@ -88,7 +88,7 @@ O aluno pode encaminhar uma vaga por e-mail e receber o plano de volta. Quem rec
    - `RESEND_API_KEY`: a chave de API do Resend;
    - `RESEND_WEBHOOK_SECRET`: o `whsec_…` do webhook;
    - `RESEND_FROM`: o remetente das respostas, num domínio verificado (por exemplo, `Vaga Viva <vaga@seu-dominio.com>`);
-   - `VAGAVIVA_PUBLIC_URL`: a URL pública da API (por exemplo, `https://vaga-viva.onrender.com`), usada para montar o link `#vaga=` das respostas.
+   - `VAGAVIVA_PUBLIC_URL`: a URL pública da API (por exemplo, `https://vaga-viva-49kj.onrender.com`), usada para montar o link `#vaga=` das respostas.
 4. Para testar, encaminhe uma vaga fictícia (com mais de 200 caracteres) para o endereço de recebimento. A resposta com o plano deve chegar em alguns segundos, e o link dela abre a página já com a vaga preenchida.
 
 Tudo o que chega por e-mail (remetente, assunto, corpo e link) fica só em memória e não vai para o log (ADR 0003).
