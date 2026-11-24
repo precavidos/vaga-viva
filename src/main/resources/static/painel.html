@@ -75,7 +75,8 @@
     </div>
     <button type="button" class="close" id="drawer-close" aria-label="Fechar a ficha"></button>
   </div>
-  <div class="drawer-body" id="drawer-body" aria-live="polite"></div>
+  <!-- Focusable so a keyboard can scroll it when the card is taller than a phone screen. -->
+  <div class="drawer-body" id="drawer-body" role="region" aria-label="Detalhes do aluno" tabindex="0" aria-live="polite"></div>
   <div class="drawer-foot" id="drawer-foot"></div>
 </dialog>
 
@@ -259,7 +260,13 @@
     if (!stat) return;
     const on = stat.getAttribute('aria-pressed') !== 'true';
     $$('.stat').forEach((s) => s.setAttribute('aria-pressed', String(on && s === stat)));
-    $$('.student').forEach((s) => s.classList.toggle('dim', on && s.dataset.status !== stat.dataset.status));
+    // A dimmed card is out of the filter: inert takes it out of clicks, Tab and screen readers, so its faded text is an
+    // inactive component (WCAG 1.4.3) and "Mostrando só" is what every user gets.
+    $$('.student').forEach((s) => {
+      const out = on && s.dataset.status !== stat.dataset.status;
+      s.classList.toggle('dim', out);
+      s.inert = out;
+    });
     const label = STATUS[stat.dataset.status].plural.toLowerCase();
     $('#filter-note').textContent = on ? `Mostrando só: ${label}. Clique de novo para limpar.` : 'Clique num aluno para ver o que está segurando ele.';
     say(on ? `Filtro: ${label}.` : 'Filtro removido.');

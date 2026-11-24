@@ -1,2 +1,6 @@
 /mvnw text eol=lf
 *.cmd text eol=crlf
+# Test fixtures are compared byte for byte: keep LF on every checkout, Windows included.
+src/test/resources/** text eol=lf
+# Outlook writes CRLF: this fixture keeps it on purpose, to test that case.
+src/test/resources/email/outlook-pt.txt -text
