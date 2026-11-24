@@ -92,7 +92,8 @@ public class StudentRepositoryProvisioner {
 			String context = Optional.ofNullable(texts.missionContexts().get(mission.id()))
 				.orElseGet(() -> DefaultStudentTexts.missionContext(planned, vocabulary));
 			GitHubIssue issue = github.createIssue(token, repository.fullName(), MissionIssueText.title(i + 1, mission),
-					MissionIssueText.body(mission, context, vocabulary, archetype.missionTestCommand(mission.id())));
+					MissionIssueText.body(mission, context, vocabulary, repository.fullName(),
+						archetype.missionTestCommand(mission.id())));
 			issues.add(new MissionIssue(mission.id(), issue.number(), issue.htmlUrl()));
 		}
 		String intro = texts.projectIntro().orElseGet(() -> DefaultStudentTexts.projectIntro(plan, vocabulary));
