@@ -10,13 +10,13 @@ Em <https://github.com/organizations/precavidos/settings/apps/new> (ou em *Setti
 | --- | --- |
 | GitHub App name | `Vaga Viva` (ou outro nome livre no GitHub) |
 | Homepage URL | `https://github.com/precavidos/vaga-viva` |
-| Callback URL | `http://localhost:8080/login/oauth2/code/github` e `https://vaga-viva.onrender.com/login/oauth2/code/github` |
+| Callback URL | `http://localhost:8080/login/oauth2/code/github` e `https://vaga-viva-49kj.onrender.com/login/oauth2/code/github` |
 | Expire user authorization tokens | marcado |
 | Request user authorization (OAuth) during installation | **desmarcado** (o login é feito antes, pelo Vaga Viva; com esta opção, o GitHub volta sem o `state` que o login exige) |
-| Setup URL (Post installation) | `https://vaga-viva.onrender.com/?instalado=1` |
+| Setup URL (Post installation) | `https://vaga-viva-49kj.onrender.com/?instalado=1` |
 | Redirect on update | marcado |
 | Webhook → Active | **marcado** |
-| Webhook URL | `https://vaga-viva.onrender.com/api/github/webhook` |
+| Webhook URL | `https://vaga-viva-49kj.onrender.com/api/github/webhook` |
 | Webhook secret | um texto aleatório longo, o mesmo de `GITHUB_WEBHOOK_SECRET` no Render (gere com `openssl rand -hex 32`) |
 | Where can this GitHub App be installed? | **Any account** (os alunos instalam na própria conta) |
 

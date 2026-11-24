@@ -57,7 +57,7 @@ Cadastre também `ANTHROPIC_API_KEY` com a chave da conta do time na Anthropic. 
 1. No serviço do Render, em *Settings → Deploy Hook*, copie a URL do hook.
 2. No GitHub, em *Settings → Secrets and variables → Actions* do repositório:
    - em **Secrets**, crie `RENDER_DEPLOY_HOOK_URL` com a URL do hook;
-   - em **Variables**, crie `API_URL` com a URL pública do serviço (por exemplo, `https://vaga-viva.onrender.com`). Ela aparece no ambiente `production` do GitHub.
+   - em **Variables**, crie `API_URL` com a URL pública do serviço (por exemplo, `https://vaga-viva-49kj.onrender.com`). Ela aparece no ambiente `production` do GitHub.
 
 A URL do hook permite publicar o serviço: trate-a como senha. Nunca a coloque no repositório nem no chat.
 
