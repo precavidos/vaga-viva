@@ -2,44 +2,220 @@
 
 Aprender fazendo com vagas reais, com um revisor que não dá a resposta.
 
-O aluno cola (ou encaminha por e-mail) uma vaga real e recebe no GitHub um projeto de estudo sob medida: README, missões em forma de issues e testes que falham até ele implementar. Um revisor de PR socrático faz perguntas e libera dicas graduais, sem nunca entregar código. Professores podem usar o modo turma para acompanhar todos os alunos num painel.
-
 Projeto da trilha **Acesso à educação** do Hack Brasil 2026.
 
-## Status
+## O que é
 
-Em construção. Este repositório foi criado do zero durante o Hack Brasil 2026, depois da sessão de abertura de 04/11.
+O aluno cola o texto (ou o link) de uma vaga real, ou encaminha a vaga por e-mail, e recebe no próprio GitHub um projeto de estudo montado para ela:
 
-## Stack planejada
+- um **README** que liga o projeto ao nível e às competências da vaga;
+- **uma issue por missão**, na ordem do plano;
+- **testes que falham** até o aluno implementar cada missão.
 
-- Spring Boot 4.1, Java 21 e PostgreSQL 17 (Flyway para migrações)
-- GitHub App e GitHub Actions
-- LLM para redigir o plano do projeto e as perguntas do revisor
-- Resend para e-mail
+Quando o aluno abre um PR, um **revisor socrático** comenta: faz perguntas sobre o teste que falha e o contrato da missão, sem nunca entregar código. Se travar, o aluno comenta `/dica` e recebe dicas em **3 níveis**, cada vez mais concretas, ainda sem código. Quem decide se a missão está pronta são os testes, não o LLM.
 
-## Como rodar
+No **modo turma**, o professor cria uma turma a partir de uma vaga-base, compartilha um link de convite e acompanha num painel a missão de cada aluno, quem está travado e os testes que falham. Toda segunda, se pediu, recebe um resumo por e-mail. O aluno também pode pedir, para si, um e-mail semanal com a missão da semana.
+
+## Como funciona
+
+```mermaid
+sequenceDiagram
+    actor A as Aluno
+    participant F as Front end estático
+    participant API as API Vaga Viva (Render)
+    participant GH as GitHub
+    participant LLM as Claude Haiku
+
+    A->>F: cola a vaga (ou encaminha por e-mail, via Resend)
+    F->>API: POST /api/job-postings/extraction
+    API->>API: competências (vocabulário fechado), nível e arquétipo
+    API-->>F: plano: 5 ou 6 missões, compatibilidade com a stack
+    A->>F: entra com GitHub e confirma 18+
+    F->>API: POST /api/student-repositories
+    API->>LLM: dados do plano (nunca o texto da vaga)
+    API->>GH: repositório a partir do modelo, plano, README e issues
+    A->>GH: abre um PR
+    GH->>GH: Actions roda os testes e publica o JUnit XML
+    GH->>API: webhook (workflow concluído ou comentário /dica)
+    API->>GH: lê diff, contrato e relatório de testes
+    API->>LLM: pergunta socrática ou dica
+    API->>API: filtro anti-código (senão, texto fixo)
+    API->>GH: comentário no PR
+```
+
+1. **Vaga → plano.** As competências são reconhecidas num vocabulário fechado (ESCO mais uma lista própria), o nível vem de regras, e o arquétipo sai das linguagens e frameworks citados. A escolha e a ordem das missões são determinísticas.
+2. **Plano → repositório.** O GitHub App cria o repositório do aluno a partir do repositório-modelo do arquétipo, grava `.vaga-viva/plan.json`, escreve o README e abre uma issue por missão. Os testes das missões fora do plano ficam desligados.
+3. **PR → revisão.** O workflow do repositório do aluno roda os testes e sobe o relatório JUnit XML como artefato. O webhook avisa a API, que lê o relatório, o diff e o contrato da missão em foco, e responde no PR.
+
+## Arquitetura
+
+```mermaid
+flowchart LR
+    subgraph Navegador
+        FE["Front end estático<br/>HTML, CSS e JS sem build"]
+    end
+    subgraph Render
+        API["API Spring Boot 4<br/>Java 21"]
+    end
+    DB[("PostgreSQL<br/>Neon")]
+    subgraph GitHub
+        APP["GitHub App<br/>repositório, issues, webhooks"]
+        REPO["Repositório do aluno<br/>+ GitHub Actions"]
+    end
+    LLM["Claude Haiku<br/>Anthropic"]
+    MAIL["Resend<br/>e-mail de entrada e saída"]
+
+    FE --> API
+    API --> DB
+    API <--> APP
+    APP --> REPO
+    REPO -- "JUnit XML (artefato)" --> API
+    API --> LLM
+    MAIL <--> API
+```
+
+| Peça | Papel |
+| --- | --- |
+| API (Spring Boot 4.1, Java 21) no Render | Extração da vaga, plano, criação do repositório, revisor, dicas, modo turma e e-mails. Publicada pelo CI a cada push no `main` que passa nos testes. |
+| PostgreSQL 17 no Neon | Só turmas, matrículas, progresso e inscrições no e-mail semanal. Migrações com Flyway. |
+| GitHub App | Cria o repositório a partir do modelo, grava o plano, abre as issues e recebe os webhooks de fim de workflow e de comentários `/dica`. Login do aluno por OAuth. |
+| GitHub Actions (no repositório do aluno) | Roda os testes e publica o relatório JUnit XML que o revisor lê. |
+| Claude Haiku (`claude-haiku-5-5`) | Redige o README, o contexto das missões, as perguntas do revisor e as dicas. Toda resposta passa pelo filtro anti-código; recusada ou indisponível, vale um texto fixo. Sem `ANTHROPIC_API_KEY`, tudo funciona com os textos fixos. |
+| Resend | Recebe vagas encaminhadas por e-mail e envia a resposta com o plano, o e-mail semanal do aluno e o resumo do professor. |
+| Front end | Páginas estáticas em `src/main/resources/static`, servidas pela própria API. A página do projeto fica em `site/` (GitHub Pages). |
+
+### Pacotes
+
+Em `src/main/java/io/github/precavidos/vagaviva/`:
+
+| Pacote | O que faz |
+| --- | --- |
+| `jobposting` | Recebe o texto da vaga ou lê a página de um link (com bloqueio de endereços internos e limite de leituras) e detecta o nível. |
+| `vocabulary` | Vocabulário fechado de competências e tecnologias; reconhece termos sem confundir "Java" com "JavaScript". |
+| `archetype` | Catálogo de arquétipos e cálculo da compatibilidade com a stack da vaga. |
+| `plan` | Catálogo de missões e regras determinísticas que montam o plano. |
+| `writing` | Textos do README e das missões pelo Claude, com textos padrão de reserva. |
+| `provisioning` | Cria o repositório do aluno, grava o plano, o README e as issues; exige a confirmação de 18+. |
+| `review` | Webhooks, leitura do relatório JUnit, revisor socrático, dicas em 3 níveis e o filtro anti-código. |
+| `classroom` | Turmas, convites, matrícula com consentimento, progresso, painel e resumo semanal do professor. |
+| `email` | Vagas recebidas por e-mail (webhook assinado do Resend), e-mail semanal e descadastro. |
+| `login` | Segurança: login com GitHub por OAuth, sessão em memória, CSRF. |
+| `webhook` | Limite de tamanho do corpo dos webhooks. |
+| `github` | Cliente da API do GitHub. |
+| `database` | Converte as URLs do Neon para o formato JDBC. |
+
+## Arquétipos
+
+Os três arquétipos do MVP estão no ar, com o mesmo domínio fictício (agendamento de clínica) e as mesmas 11 missões, de `patients-api` a `api-security`.
+
+| Arquétipo | Stack | Repositório-modelo | Missões | Testes de uma missão |
+| --- | --- | --- | --- | --- |
+| `java-spring` | Java e Spring Boot | [`precavidos/vaga-viva-template-java-spring`](https://github.com/precavidos/vaga-viva-template-java-spring) | [`java-spring.json`](src/main/resources/missions/java-spring.json) | `./mvnw test -Dgroups=<missão>` |
+| `typescript-node` | TypeScript e NestJS | [`precavidos/vaga-viva-template-typescript-node`](https://github.com/precavidos/vaga-viva-template-typescript-node) | [`typescript-node.json`](src/main/resources/missions/typescript-node.json) | `npm test -- missions/<missão>` |
+| `python-fastapi` | Python e FastAPI | [`precavidos/vaga-viva-template-python-fastapi`](https://github.com/precavidos/vaga-viva-template-python-fastapi) | [`python-fastapi.json`](src/main/resources/missions/python-fastapi.json) | `uv run pytest --mission <missão>` |
+
+Cada modelo tem uma solução de referência num repositório privado (`*-solution`, um commit por missão). O script `scripts/validate.sh` da solução confere que os testes de cada missão falham no modelo (por asserção, com mensagem em português), passam na solução e passam com só as missões centrais e a própria aplicadas, e que o `plan.json` desliga as demais. Ele imprime uma tabela missão × resultado. Uma missão só entra num plano depois de validada. Os critérios estão nos briefings em [`docs/devin/`](docs/devin/).
+
+O catálogo de arquétipos e das tecnologias reconhecidas fica em [`archetypes/catalog.json`](src/main/resources/archetypes/catalog.json). Uma vaga que cita uma stack sem arquétipo (Go, por exemplo) recebe o projeto do arquétipo padrão, com o aviso do que ele não pratica.
+
+## Decisões técnicas
+
+| ADR | Decisão |
+| --- | --- |
+| [0001](docs/adr/0001-vocabulario-fechado-de-competencias.md) | Competências mapeadas num vocabulário fechado (ESCO mais uma lista própria), não em texto livre: a mesma vaga gera sempre as mesmas competências, e a precisão é mensurável. |
+| [0002](docs/adr/0002-logica-deterministica-llm-so-explica.md) | Regras escolhem e ordenam as missões; o LLM só redige. O plano é reproduzível, o custo previsível, e uma queda do LLM não impede a entrega. |
+| [0003](docs/adr/0003-privacidade-da-vaga.md) | O texto da vaga fica só em memória; do aluno, o mínimo, com consentimento, e o descadastro apaga. |
+| [0004](docs/adr/0004-um-dominio-ficticio-por-arquetipo.md) | Um domínio fictício fixo por arquétipo: um modelo, uma suíte de testes e uma solução de referência para validar. |
+| [0005](docs/adr/0005-plano-no-repositorio-do-aluno.md) | O plano vai em `.vaga-viva/plan.json` no repositório do aluno, e os testes marcados por missão fora do plano ficam desligados. |
+| [0006](docs/adr/0006-escolha-do-arquetipo-e-compatibilidade.md) | O arquétipo sai das linguagens e frameworks da vaga, por regras fixas, e o aluno vê o quanto o projeto cobre a stack (`COVERED`, `PARTIAL`, `NOT_COVERED`, `NOT_STATED`). |
+| [0007](docs/adr/0007-progresso-do-aluno-em-turma.md) | No modo turma, o progresso é gravado a cada evento, só de quem entrou e consentiu; o painel só lê o banco. |
+
+O glossário do domínio está em [`CONTEXT.md`](CONTEXT.md). Specs e planos já executados ficam em [`docs/historic/`](docs/historic/).
+
+## Privacidade e LGPD
+
+O princípio é guardar o mínimo, e só com consentimento ([ADR 0003](docs/adr/0003-privacidade-da-vaga.md) e [ADR 0007](docs/adr/0007-progresso-do-aluno-em-turma.md)). Vagas podem trazer nomes e contatos de recrutadores, então o texto da vaga nunca é gravado.
+
+### O que não é guardado
+
+- **O texto da vaga**, colado, lido de um link ou encaminhado por e-mail: é processado em memória e descartado. Ficam só os ids das competências, das tecnologias, do nível e do arquétipo. Do e-mail encaminhado, nem remetente, nem assunto, nem corpo são gravados ou vão para o log.
+- **O código do aluno**: fica no GitHub dele; a API lê o diff do PR para a revisão e não o grava.
+- **O token do GitHub do aluno**: fica na sessão HTTP, em memória, não no banco.
+
+### O que é guardado, e quando
+
+| Situação | Dados | Como sai |
+| --- | --- | --- |
+| Uso individual | Nada no banco. | — |
+| E-mail semanal (checkbox opcional) | Login do GitHub, e-mail, repositório, data do consentimento, token de descadastro, data do último envio. | O link de descadastro apaga a linha. |
+| Aluno em turma (consentimento na matrícula) | Nome escolhido para o painel, login do GitHub, repositório, missão atual e desde quando, números dos PRs, testes que falham com as mensagens filtradas e a contagem de testes por missão, última pergunta do revisor, link do último PR, dicas por missão. | Exclusão manual no piloto, a pedido do aluno ou do professor ([`docs/deploy.md`](docs/deploy.md)). |
+| Professor | Login do GitHub e, se consentir, e-mail e data do consentimento. | Exclusão manual no piloto. |
+
+Os logs não trazem e-mails, nomes, texto de vaga nem código: citam no máximo o repositório e o número do PR, o login do GitHub do aluno (no e-mail semanal) ou o id da turma.
+
+### Idade
+
+O Vaga Viva é para **maiores de 18 anos**: toda rota que cria um repositório exige que o aluno confirme isso. Atender menores traz as obrigações do ECA Digital (Lei 15.211/2025), que estão no roteiro e ainda não foram construídas.
+
+### Terceiros fora do Brasil
+
+| Serviço | O que recebe |
+| --- | --- |
+| Anthropic (Claude) | Os dados do plano (arquétipo, nível, competências, tecnologias e missões), nunca o texto da vaga. Na revisão e nas dicas: o diff do PR, o contrato da missão, os nomes e as mensagens dos testes que falham e os comentários anteriores do próprio app. Nenhum e-mail ou nome. |
+| Resend | O e-mail encaminhado pelo aluno (com a vaga) e os e-mails enviados: endereço do destinatário e conteúdo, que no resumo do professor inclui os nomes escolhidos pelos alunos. |
+| Render | Hospeda a API; todas as requisições passam por ele. Região nos EUA, a mesma do banco. |
+| Neon | Hospeda o banco com os dados da tabela acima, em `AWS us-east-1`. |
+| GitHub | O repositório do aluno, as issues e os comentários do app, na conta do próprio aluno. |
+
+> Este é um resumo técnico do que o código faz, não uma avaliação jurídica nem aconselhamento legal.
+
+## Como rodar localmente
 
 Requisitos: Java 21 e Docker.
 
 ```bash
-docker compose up -d   # PostgreSQL local
-./mvnw spring-boot:run # API em http://localhost:8080/actuator/health
-./mvnw verify          # testes (sobem um PostgreSQL via Testcontainers)
+docker compose up -d     # PostgreSQL 17 local (compose.yaml)
+./mvnw spring-boot:run   # API e front end em http://localhost:8080
 ```
 
-A cada push no `main` que passa nos testes, a API é publicada no Render; veja [docs/deploy.md](docs/deploy.md).
+As tabelas são criadas pelo Flyway na primeira subida. Sem nenhuma variável, a API sobe contra o banco do `compose.yaml`, extrai vagas e monta planos com os textos padrão.
 
-## Princípios
+Para ligar o resto, copie `.env.example` para `.env`, preencha só o que precisar e carregue antes de subir (o Spring não lê o `.env` sozinho):
 
-- As habilidades da vaga são mapeadas para um vocabulário fechado (ESCO mais uma lista curta própria), não extraídas em texto livre.
-- A escolha e a ordem das missões são determinísticas; o LLM só redige textos.
-- Se o LLM cair, o repositório-modelo e os testes continuam sendo entregues, com textos padrão.
-- O texto da vaga é lido em memória; do usuário ficam apenas o login do GitHub e o e-mail, com consentimento.
+```bash
+set -a; . ./.env; set +a; ./mvnw spring-boot:run
+```
+
+| Variáveis | Para quê | Vazias |
+| --- | --- | --- |
+| `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET` | Login com GitHub | Sem login, sem criação de repositório |
+| `GITHUB_APP_ID`, `GITHUB_APP_PRIVATE_KEY`, `GITHUB_WEBHOOK_SECRET` | GitHub App: repositório, webhooks, revisor e dicas | Webhook desligado |
+| `ANTHROPIC_API_KEY` | Textos do Claude | Textos padrão |
+| `RESEND_API_KEY`, `RESEND_WEBHOOK_SECRET`, `RESEND_FROM`, `VAGAVIVA_PUBLIC_URL` | Vaga por e-mail e envios | Endpoints de e-mail respondem 503 |
+| `WEEKLY_EMAIL_SECRET` | Disparo do e-mail semanal | Endpoint responde 503 |
+| `CLASSROOM_TEACHERS`, `CLASSROOM_SUMMARY_SECRET` | Modo turma (logins dos professores) e resumo semanal | Ninguém cria turma; resumo responde 404 |
+| `DATABASE_URL`, `DATABASE_URL_UNPOOLED` | Banco no Neon (`neon env pull`) | Banco local do `compose.yaml` |
+
+A configuração do GitHub App está em [`docs/github-app.md`](docs/github-app.md); a publicação no Render, no Neon e no Resend, em [`docs/deploy.md`](docs/deploy.md). A demo pública roda no Render, e a URL atual fica no ambiente `production` do repositório no GitHub.
+
+## Testes e qualidade
+
+```bash
+./mvnw verify
+```
+
+- Os testes de integração sobem um PostgreSQL de verdade com **Testcontainers** (precisa do Docker).
+- O CI (`.github/workflows/ci.yml`) roda os testes em cada PR e push no `main`, e só publica no Render se passar.
+- A [bateria do revisor](docs/bateria-revisor.md) tenta fazer o revisor e o `/dica` entregarem a solução, em 10 casos com PRs reais: injeções no diff, no contrato da missão, nos nomes e nas mensagens dos testes. A rodada sem LLM achou um vazamento por eco (corrigido, com testes); a rodada com LLM, com os mesmos casos, está pendente no mesmo documento.
+- As páginas passaram por uma auditoria de acessibilidade com axe ([`docs/design/auditoria-axe.md`](docs/design/auditoria-axe.md)).
 
 ## Licença
 
-[MIT](LICENSE)
-
-## Dados de terceiros
+[MIT](LICENSE).
 
 O vocabulário de competências usa a classificação [ESCO](https://esco.ec.europa.eu) (European Skills, Competences, Qualifications and Occupations), © União Europeia, reutilizada sob a licença [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Os rótulos ESCO vêm da API oficial e podem ser conferidos com `python scripts/esco/refresh_labels.py <arquivo>`.
+
+## Time
+
+- [@davsilvam](https://github.com/davsilvam)
+- [@Guiezz](https://github.com/Guiezz)
