@@ -5,6 +5,7 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -104,7 +105,7 @@ class SocraticReviewerTests {
 		assertThat(focuses).extracting(Mission::id).containsExactly("persistence");
 		assertThat(contracts).containsExactly("# Contrato de persistence");
 		String body = postedBody();
-		assertThat(body).startsWith("<!-- vaga-viva:review focus=persistence -->\n## 🔎 Revisão do seu PR")
+		assertThat(body).startsWith("<!-- vaga-viva:review focus=persistence sha=abc1234 -->\n## 🔎 Revisão do seu PR")
 			.contains("**Missão em foco:** 2 · Pacientes no banco de dados · [contrato da missão](https://github.com/"
 					+ REPO + "/blob/main/missoes/persistence.md)")
 			.contains("### 📊 Seu progresso")
@@ -193,7 +194,7 @@ class SocraticReviewerTests {
 
 		reviewer.review(context(true, List.of(failed("persistence", "gravaNoBanco")), earlier));
 
-		assertThat(updatedBody(41)).contains(
+		assertThat(postedBody()).contains(
 				"🎉 **Missão 1 concluída:** os 5 testes de **Cadastro de pacientes** passam. Agora é a vez da próxima.");
 	}
 
@@ -203,7 +204,7 @@ class SocraticReviewerTests {
 
 		reviewer.review(context(true, List.of(failed("persistence", "gravaNoBanco")), earlier));
 
-		assertThat(updatedBody(41)).doesNotContain("🎉");
+		assertThat(postedBody()).doesNotContain("🎉");
 	}
 
 	@Test
@@ -239,15 +240,50 @@ class SocraticReviewerTests {
 	}
 
 	@Test
-	void editsItsOwnReviewNotAHintThatQuotesItsMarker() {
+	void postsANewReviewAndCollapsesTheLatestOneNotAHint() {
 		var earlier = List.of(new PreviousComment(41, ReviewTexts.MARKER + "\nRevisão antiga"),
 				new PreviousComment(42, HintTexts.marker("persistence", 1) + "\nUma dica " + ReviewTexts.MARKER));
 
 		reviewer.review(context(true, List.of(failed("persistence", "gravaNoBanco")), earlier));
 
-		verify(github).updateIssueComment(eq("token"), eq(REPO), eq(41L), anyString());
+		assertThat(postedBody()).startsWith("<!-- vaga-viva:review focus=persistence sha=abc1234 -->");
+		assertThat(updatedBody(41)).isEqualTo(ReviewTexts.MARKER
+				+ "\n<details>\n<summary>🔎 Revisão anterior (clique para abrir)</summary>\n\nRevisão antiga\n\n</details>");
 		verify(github, never()).updateIssueComment(anyString(), anyString(), eq(42L), anyString());
-		verify(github, never()).createIssueComment(anyString(), anyString(), anyInt(), anyString());
+	}
+
+	@Test
+	void namesTheCommitOfTheReviewItCollapses() {
+		var earlier = List.of(new PreviousComment(41,
+				"<!-- vaga-viva:review focus=persistence sha=9f8e7d6 -->\n## 🔎 Revisão do seu PR\n\nTexto"));
+
+		reviewer.review(context(true, List.of(failed("persistence", "gravaNoBanco")), earlier));
+
+		assertThat(updatedBody(41)).contains("<summary>🔎 Revisão anterior · commit 9f8e7d6 (clique para abrir)</summary>")
+			.doesNotContain("## 🔎 Revisão do seu PR")
+			.contains("Texto");
+	}
+
+	@Test
+	void leavesAnAlreadyCollapsedReviewAlone() {
+		var earlier = List.of(new PreviousComment(41, ReviewTexts.MARKER + "\n<details>\n<summary>x</summary>\n</details>"));
+
+		reviewer.review(context(true, List.of(failed("persistence", "gravaNoBanco")), earlier));
+
+		postedBody();
+		verify(github, never()).updateIssueComment(anyString(), anyString(), anyLong(), anyString());
+	}
+
+	@Test
+	void keepsTheNewReviewWhenCollapsingTheOldOneFails() {
+		doThrow(new IllegalStateException("GitHub is down")).when(github)
+			.updateIssueComment(anyString(), anyString(), anyLong(), anyString());
+
+		reviewer.review(context(true, List.of(failed("persistence", "gravaNoBanco")),
+				List.of(new PreviousComment(41, ReviewTexts.MARKER + "\nRevisão antiga"))));
+
+		assertThat(postedBody()).contains("Revisão do seu PR");
+		assertThat(asked).hasSize(1);
 	}
 
 	@Test
@@ -267,7 +303,6 @@ class SocraticReviewerTests {
 	private String postedBody() {
 		var body = ArgumentCaptor.forClass(String.class);
 		verify(github).createIssueComment(eq("token"), eq(REPO), eq(7), body.capture());
-		verify(github, never()).updateIssueComment(anyString(), anyString(), anyLong(), anyString());
 		return body.getValue();
 	}
 
@@ -278,7 +313,7 @@ class SocraticReviewerTests {
 	}
 
 	private static ReviewContext context(boolean reportRead, List<FailedTest> failed, List<PreviousComment> comments) {
-		return new ReviewContext("token", REPO, 7, "abc123", PLAN, "diff --git a/x b/x", reportRead, failed, comments,
+		return new ReviewContext("token", REPO, 7, "abc1234def", PLAN, "diff --git a/x b/x", reportRead, failed, comments,
 				reportRead ? TALLIES : Map.of());
 	}
 

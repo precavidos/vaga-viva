@@ -18,7 +18,7 @@ import io.github.precavidos.vagaviva.review.ReviewContext.PreviousComment;
  * Comments on a student's pull request after the Vaga Viva workflow ran: the progress of the plan, which mission
  * still fails and questions that lead to the fix, never the fix. Which tests fail and how many pass come from the
  * report, not from the LLM (ADR 0002); the LLM only writes what already works and the questions, and each part goes
- * through {@link ReviewTextFilter} on its own. One comment per pull request, edited on each run.
+ * through {@link ReviewTextFilter} on its own. A new comment on each run, with the previous one collapsed.
  */
 @Component
 class SocraticReviewer implements PullRequestReviewer {
@@ -45,7 +45,7 @@ class SocraticReviewer implements PullRequestReviewer {
 		String body;
 		String asked;
 		if (!context.testReportRead()) {
-			body = ReviewComment.noReport();
+			body = ReviewComment.noReport(context.headSha());
 			asked = "Os testes não rodaram neste PR. Qual é a primeira mensagem de erro no passo Testes da aba Actions?";
 		}
 		else if (context.failedTests().isEmpty()) {
@@ -118,14 +118,22 @@ class SocraticReviewer implements PullRequestReviewer {
 		return context.reviewerComments().stream().filter(ReviewTexts::isReview).reduce((first, second) -> second);
 	}
 
+	/**
+	 * A new comment on every review, so GitHub notifies the student (it does not for edits), and the previous
+	 * review folded into {@code <details>} below it. A failure to fold the old one never loses the new one.
+	 */
 	private void post(ReviewContext context, String body) {
 		Optional<PreviousComment> previous = previousReview(context);
-		if (previous.isPresent()) {
-			github.updateIssueComment(context.token(), context.repositoryFullName(), previous.get().id(), body);
-		}
-		else {
-			github.createIssueComment(context.token(), context.repositoryFullName(), context.pullRequestNumber(), body);
-		}
+		github.createIssueComment(context.token(), context.repositoryFullName(), context.pullRequestNumber(), body);
+		previous.ifPresent(comment -> ReviewComment.collapse(comment.body()).ifPresent(folded -> {
+			try {
+				github.updateIssueComment(context.token(), context.repositoryFullName(), comment.id(), folded);
+			}
+			catch (RuntimeException e) {
+				log.warn("Could not collapse the previous review on {}#{}: {}", context.repositoryFullName(),
+						context.pullRequestNumber(), e.getClass().getSimpleName());
+			}
+		}));
 	}
 
 }

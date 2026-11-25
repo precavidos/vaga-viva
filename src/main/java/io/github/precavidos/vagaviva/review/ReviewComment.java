@@ -28,7 +28,12 @@ final class ReviewComment {
 
 	static final String MARKER_PREFIX = "<!-- vaga-viva:review";
 
-	private static final Pattern FOCUS = Pattern.compile("^<!-- vaga-viva:review focus=([a-z0-9-]+) -->");
+	private static final Pattern FOCUS = Pattern.compile(" focus=([a-z0-9-]+)");
+
+	private static final Pattern SHA = Pattern.compile(" sha=([0-9a-f]{7,40})");
+
+	/** Opens a review that was collapsed after a newer one was posted. */
+	private static final String COLLAPSED = "<details>";
 
 	private static final Pattern SUMMARY = Pattern.compile("<!-- vaga-viva:summary ([A-Za-z0-9+/=]+) -->");
 
@@ -77,7 +82,7 @@ final class ReviewComment {
 	static String focus(ReviewContext context, Mission focus, List<FailedTest> failing, Summary summary,
 			String testCommand, Optional<Mission> justCompleted) {
 		List<Mission> plan = context.plan().missions();
-		var body = new StringBuilder("<!-- vaga-viva:review focus=" + focus.id() + " -->\n" + TITLE + "\n\n");
+		var body = new StringBuilder(marker(focus.id(), context.headSha()) + "\n" + TITLE + "\n\n");
 		justCompleted.ifPresent(done -> {
 			MissionTally tally = context.tallies().get(done.id());
 			String tests = tally == null ? "os testes" : tally.total() == 1 ? "o teste" : "os " + tally.total() + " testes";
@@ -107,7 +112,7 @@ final class ReviewComment {
 		var summary = new Summary("Todas as missões do seu plano passam neste PR.",
 				List.of("Algum nome no seu código poderia explicar melhor o que ele faz?",
 						"Algum trecho repetido caberia num lugar só?"));
-		var body = new StringBuilder(MARKER_PREFIX + " -->\n" + TITLE + "\n\n");
+		var body = new StringBuilder(marker(null, context.headSha()) + "\n" + TITLE + "\n\n");
 		body.append("🎉 **Todas as missões do seu plano passam neste PR.** Parabéns!\n\n");
 		body.append(progress(context, null));
 		body.append("### 👉 Próximo passo\n\n")
@@ -119,10 +124,10 @@ final class ReviewComment {
 	}
 
 	/** The workflow finished without a test report: most often the code does not compile. */
-	static String noReport() {
+	static String noReport(String headSha) {
 		var summary = new Summary("Os testes não rodaram neste PR: o workflow terminou sem relatório de testes.",
 				List.of("Qual é a primeira mensagem de erro no passo Testes da aba Actions?"));
-		var body = new StringBuilder(MARKER_PREFIX + " -->\n" + TITLE + "\n\n");
+		var body = new StringBuilder(marker(null, headSha) + "\n" + TITLE + "\n\n");
 		body.append("### ⚠️ Os testes não rodaram\n\n")
 			.append("O workflow **Vaga Viva** terminou sem gerar o relatório de testes. Na maioria das vezes, isso quer dizer que o projeto não compila.\n\n")
 			.append("1. Abra a aba **Actions** deste PR.\n")
@@ -175,7 +180,47 @@ final class ReviewComment {
 
 	/** The mission the comment was about, from its first line; empty for other states and older comments. */
 	static Optional<String> focusOf(String body) {
-		Matcher matcher = FOCUS.matcher(body);
+		return fromMarker(body, FOCUS);
+	}
+
+	/**
+	 * The previous review folded into {@code <details>}, once a newer review was posted below it: the conversation
+	 * keeps every round without growing into a wall. The marker stays on the first line, so it is still the app's
+	 * review. Empty when the comment is not a review or is already collapsed.
+	 */
+	static Optional<String> collapse(String body) {
+		if (body == null || !body.startsWith(MARKER_PREFIX)) {
+			return Optional.empty();
+		}
+		int end = body.indexOf('\n');
+		String first = end < 0 ? body : body.substring(0, end);
+		String rest = end < 0 ? "" : body.substring(end + 1);
+		if (rest.startsWith(COLLAPSED)) {
+			return Optional.empty();
+		}
+		if (rest.startsWith(TITLE)) {
+			rest = rest.substring(TITLE.length());
+		}
+		String commit = fromMarker(body, SHA).map(sha -> " · commit " + sha.substring(0, 7)).orElse("");
+		return Optional.of(first + "\n" + COLLAPSED + "\n<summary>🔎 Revisão anterior" + commit
+				+ " (clique para abrir)</summary>\n\n" + rest.strip() + "\n\n</details>");
+	}
+
+	private static String marker(String focusId, String headSha) {
+		String sha = headSha == null || !headSha.matches("[0-9a-f]{7,40}") ? "" : " sha=" + headSha.substring(0, 7);
+		return MARKER_PREFIX + (focusId == null ? "" : " focus=" + focusId) + sha + " -->";
+	}
+
+	/** A field of the marker on the first line, which only the app writes. */
+	private static Optional<String> fromMarker(String body, Pattern field) {
+		if (body == null || !body.startsWith(MARKER_PREFIX)) {
+			return Optional.empty();
+		}
+		int end = body.indexOf("-->");
+		if (end < 0) {
+			return Optional.empty();
+		}
+		Matcher matcher = field.matcher(body.substring(0, end));
 		return matcher.find() ? Optional.of(matcher.group(1)) : Optional.empty();
 	}
 
