@@ -53,6 +53,26 @@ class ReviewCommentTests {
 	}
 
 	@Test
+	void dropsTheResponseBodyAndCutsLongMessages() {
+		assertThat(ReviewComment.shortened("esperava status 404 ao alterar um paciente removido; PUT /patients/{id} "
+				+ "respondeu 200 com corpo: {\"id\":1,\"email\":\"paciente8@example.com\"}"))
+			.isEqualTo("esperava status 404 ao alterar um paciente removido; PUT /patients/{id} respondeu 200");
+		assertThat(ReviewComment.shortened("expected 201 but got 500 with body: {\"error\":\"boom\"}"))
+			.isEqualTo("expected 201 but got 500");
+
+		String cut = ReviewComment.shortened("esperava " + "a resposta certa ".repeat(20));
+		assertThat(cut).hasSizeLessThanOrEqualTo(ReviewComment.MAX_MESSAGE + 1).endsWith("…");
+		assertThat(ReviewComment.shortened("esperava 60 minutos")).isEqualTo("esperava 60 minutos");
+	}
+
+	@Test
+	void theTableShowsTheShortenedMessage() {
+		assertThat(comment(new FailedTest("bug-hunt", "deletesPatient",
+				"esperava status 404 ao buscar um paciente removido; GET /patients/{id} respondeu 200 com corpo: {\"id\":1}")))
+			.contains("| `deletesPatient` | esperava status 404 ao buscar um paciente removido; GET /patients/{id} respondeu 200 |");
+	}
+
+	@Test
 	void fallbackQuestionsPassTheFilter() {
 		List<String> questions = ReviewComment.fallbackQuestions(BUG_HUNT,
 				List.of(new FailedTest("bug-hunt", "endsOnTheNextDay", CODE_IN_MESSAGE)));
