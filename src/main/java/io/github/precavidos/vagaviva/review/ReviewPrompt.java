@@ -38,7 +38,8 @@ final class ReviewPrompt {
 			Responda em dois campos. O comentário já mostra, fora deles, o progresso, os testes que falham e o próximo passo: não repita nada disso.
 			- working: uma ou duas frases, no máximo 40 palavras, reconhecendo o que o aluno já acertou nesta missão, a partir do diff e dos testes que já passam. Se ainda não há nada certo, diga em uma frase onde ele está e o que observar primeiro.
 			- questions: de duas a três perguntas, cada item com uma pergunta só, de no máximo 30 palavras, sem numeração. Elas levam o aluno a descobrir sozinho o que falta, a partir do que o teste espera e do contrato.
-			- Em nenhum dos campos use títulos Markdown, listas, blocos de código, crases, @ para mencionar ninguém ou # seguido de número.""";
+			- Em nenhum dos campos use títulos Markdown, listas, blocos de código, crases, @ para mencionar ninguém ou # seguido de número.
+			- Fale de conceitos com palavras comuns, nunca com a sintaxe da linguagem: não cite anotações (nada com @ na frente), nomes de métodos com parênteses, chaves, colchetes, ponto e vírgula ou sinal de igual. Escreva "a classe precisa ser reconhecida como entidade", não o nome da anotação. Escreva rotas sem chaves, como GET /patients/1.""";
 
 	private ReviewPrompt() {
 	}

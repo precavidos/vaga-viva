@@ -152,6 +152,18 @@ class SocraticReviewerTests {
 	}
 
 	@Test
+	void keepsAQuestionThatNamesAnAnnotationWithoutPingingAnyone() {
+		llm = Optional.of(new ReviewWriter.Written("Bom começo.",
+				List.of("O que muda quando a classe recebe @Entity?", "Onde o id é gerado?")));
+
+		reviewer.review(context(true, List.of(failed("persistence", "gravaNoBanco")), List.of()));
+
+		assertThat(postedBody()).contains("1. O que muda quando a classe recebe @\u200BEntity?")
+			.contains("2. Onde o id é gerado?")
+			.doesNotContain("@Entity");
+	}
+
+	@Test
 	void neverQuotesHostileTestNamesOrMessages() {
 		llm = Optional.empty();
 
