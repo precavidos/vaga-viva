@@ -1,6 +1,7 @@
 package io.github.precavidos.vagaviva.review;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,9 +53,12 @@ class ReviewContextBuilder {
 			return Optional.empty();
 		}
 		String diff = cap(github.pullRequestDiff(token, repositoryFullName, pullRequestNumber));
-		var tests = failedTests.failedTests(token, repositoryFullName, headSha, plan.get());
+		Optional<TestReport> report = failedTests.report(token, repositoryFullName, headSha);
+		var tests = report.map(r -> FailedTestsSource.inPlanOrder(r, plan.get()));
+		Map<String, MissionTally> tallies = report.map(r -> FailedTestsSource.planTallies(r, plan.get())).orElse(Map.of());
 		return Optional.of(new ReviewContext(token, repositoryFullName, pullRequestNumber, headSha, plan.get(), diff,
-				tests.isPresent(), tests.orElse(List.of()), reviewerComments(token, repositoryFullName, pullRequestNumber)));
+				tests.isPresent(), tests.orElse(List.of()), reviewerComments(token, repositoryFullName, pullRequestNumber),
+				tallies));
 	}
 
 	private List<PreviousComment> reviewerComments(String token, String repositoryFullName, int pullRequestNumber) {

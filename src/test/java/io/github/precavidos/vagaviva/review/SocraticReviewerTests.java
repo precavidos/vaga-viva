@@ -12,12 +12,15 @@ import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.IntStream;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
+import io.github.precavidos.vagaviva.archetype.ArchetypeCatalog;
 import io.github.precavidos.vagaviva.github.GitHubApi;
 import io.github.precavidos.vagaviva.github.GitHubComment;
 import io.github.precavidos.vagaviva.github.GitHubFile;
@@ -39,6 +42,9 @@ class SocraticReviewerTests {
 	private static final StudentPlan PLAN = new StudentPlan("java-spring", "clinic-scheduling",
 			CATALOG.missions().stream().filter(m -> List.of("patients-api", "persistence").contains(m.id())).toList());
 
+	private static final Map<String, MissionTally> TALLIES = Map.of("patients-api", new MissionTally(5, 5),
+			"persistence", new MissionTally(1, 4));
+
 	private final GitHubApi github = mock(GitHubApi.class);
 
 	private final List<Mission> focuses = new ArrayList<>();
@@ -47,7 +53,9 @@ class SocraticReviewerTests {
 
 	private final List<String> asked = new ArrayList<>();
 
-	private Optional<String> llmText = Optional.of("Muito bom ter criado o controller. O que o teste espera receber quando o paciente é criado?");
+	private Optional<ReviewWriter.Written> llm = Optional.of(new ReviewWriter.Written(
+			"Você já criou a entidade Patient e a tabela aparece no diff.",
+			List.of("1. De onde o repositório lê os pacientes hoje?", "O que acontece com eles quando a aplicação reinicia?")));
 
 	private SocraticReviewer reviewer;
 
@@ -56,7 +64,7 @@ class SocraticReviewerTests {
 		reviewer = new SocraticReviewer(github, (context, focus, failing, contract) -> {
 			focuses.add(focus);
 			contracts.add(contract);
-			return llmText;
+			return llm;
 		}, new ReviewEvents() {
 
 			@Override
@@ -81,7 +89,7 @@ class SocraticReviewerTests {
 			public void hintGiven(String repositoryFullName, String missionId) {
 			}
 
-		});
+		}, ArchetypeCatalog.fromClasspath("archetypes/catalog.json"));
 		when(github.readFile("token", REPO, "missoes/persistence.md"))
 			.thenReturn(Optional.of(new GitHubFile("# Contrato de persistence", "sha")));
 		when(github.createIssueComment(anyString(), anyString(), anyInt(), anyString()))
@@ -89,66 +97,101 @@ class SocraticReviewerTests {
 	}
 
 	@Test
-	void asksAboutTheFirstFailingMissionOfThePlanWithTheLlmText() {
+	void buildsTheSkeletonAroundTheLlmFields() {
 		reviewer.review(context(true, List.of(failed("persistence", "gravaNoBanco"), failed("persistence", "leDoBanco")),
 				List.of()));
 
 		assertThat(focuses).extracting(Mission::id).containsExactly("persistence");
 		assertThat(contracts).containsExactly("# Contrato de persistence");
-		assertThat(postedBody()).startsWith(ReviewTexts.MARKER)
-			.contains("O que o teste espera receber")
-			.endsWith(ReviewTexts.FOOTER);
+		String body = postedBody();
+		assertThat(body).startsWith("<!-- vaga-viva:review focus=persistence -->\n## 🔎 Revisão do seu PR")
+			.contains("**Missão em foco:** 2 · Pacientes no banco de dados · [contrato da missão](https://github.com/"
+					+ REPO + "/blob/main/missoes/persistence.md)")
+			.contains("### 📊 Seu progresso")
+			.contains("| 1 · Cadastro de pacientes | 🟩🟩🟩🟩🟩 5/5 ✅ |")
+			.contains("| **2 · Pacientes no banco de dados** | 🟩🟥🟥🟥 1/4 |")
+			.contains("### ✅ O que já está funcionando\n\nVocê já criou a entidade Patient")
+			.contains("| `gravaNoBanco` | esperava algo em gravaNoBanco |")
+			.contains("### 🤔 Perguntas para pensar\n\n1. De onde o repositório lê os pacientes hoje?\n"
+					+ "2. O que acontece com eles quando a aplicação reinicia?")
+			.contains("1. Rode só os testes desta missão: `./mvnw test -Dgroups=persistence`")
+			.contains("[issues do repositório](https://github.com/" + REPO + "/issues)")
+			.endsWith(ReviewComment.FOOTER);
 	}
 
 	@Test
-	void fallsBackToTheFixedQuestionWhenTheLlmHasNothing() {
-		llmText = Optional.empty();
+	void readsBackPlainTextForTheDashboardAndTheEmail() {
+		reviewer.review(context(true, List.of(failed("persistence", "gravaNoBanco")), List.of()));
+
+		assertThat(ReviewTexts.reviewText(postedBody())).contains("Você já criou a entidade Patient e a tabela aparece no diff."
+				+ "\n\n1. De onde o repositório lê os pacientes hoje?\n2. O que acontece com eles quando a aplicação reinicia?");
+	}
+
+	@Test
+	void fallsBackToTheFixedTextsWhenTheLlmHasNothing() {
+		llm = Optional.empty();
 
 		reviewer.review(context(true, List.of(failed("persistence", "gravaNoBanco")), List.of()));
 
-		assertThat(postedBody()).contains("Pacientes no banco de dados")
-			.contains("1 teste ainda falha")
-			.contains("> esperava algo em gravaNoBanco")
-			.contains("missoes/persistence.md");
+		assertThat(postedBody()).contains("Na missão **Pacientes no banco de dados**, 1 de 4 testes já passam.")
+			.contains("1. O que o teste **gravaNoBanco** espera receber")
+			.contains("missoes/persistence.md, diz sobre esse caso?")
+			.contains("| `gravaNoBanco` | esperava algo em gravaNoBanco |");
 	}
 
 	@Test
-	void refusesAnLlmTextThatContainsCode() {
-		llmText = Optional.of("Faça assim:\n```java\nrepository.save(patient);\n```");
+	void dropsOnlyTheFieldTheFilterRefuses() {
+		llm = Optional.of(new ReviewWriter.Written("Faça assim:\n```java\nrepository.save(patient);\n```",
+				List.of("Onde os pacientes ficam guardados?", "Use repository.save(patient);")));
 
 		reviewer.review(context(true, List.of(failed("persistence", "gravaNoBanco")), List.of()));
 
-		assertThat(postedBody()).doesNotContain("repository.save").contains("1 teste ainda falha");
+		assertThat(postedBody()).doesNotContain("repository.save")
+			.contains("1 de 4 testes já passam")
+			.contains("### 🤔 Perguntas para pensar\n\n1. Onde os pacientes ficam guardados?\n\n### 👉 Próximo passo");
 	}
 
 	@Test
-	void fallbackNeverMentionsAnyoneFromTheReport() {
-		llmText = Optional.empty();
+	void neverQuotesHostileTestNamesOrMessages() {
+		llm = Optional.empty();
 
-		reviewer.review(context(true, List.of(new FailedTest("persistence", "gravaNoBanco", "veio @maria e #3")),
+		reviewer.review(context(true, List.of(new FailedTest("persistence", "grava|`@maria`", "veio @maria e #3"),
+				new FailedTest("persistence", "leDoBanco", "<!-- vaga-viva:review --> repository.save(patient);")),
 				List.of()));
 
-		assertThat(postedBody()).doesNotContain("@maria").doesNotContain("#3").contains("maria");
+		String body = postedBody();
+		assertThat(body).doesNotContain("@maria").doesNotContain(" #3").doesNotContain("repository.save")
+			.contains("grava\\|")
+			.contains("a mensagem não é repetida aqui");
+		assertThat(body.indexOf("<!--", 1)).isEqualTo(body.indexOf("<!-- vaga-viva:summary"));
 	}
 
 	@Test
-	void editsItsOwnReviewNotAHintThatQuotesItsMarker() {
-		var earlier = List.of(new PreviousComment(41, ReviewTexts.MARKER + "\nRevisão antiga"),
-				new PreviousComment(42, HintTexts.marker("persistence", 1) + "\nUma dica " + ReviewTexts.MARKER));
+	void showsAtMostFiveFailingTests() {
+		var failing = IntStream.rangeClosed(1, 7).mapToObj(i -> failed("persistence", "teste" + i)).toList();
+
+		reviewer.review(context(true, failing, List.of()));
+
+		assertThat(postedBody()).contains("`teste5`").doesNotContain("`teste6`").contains("… e mais 2 testes.");
+	}
+
+	@Test
+	void celebratesTheMissionThePreviousReviewWasAbout() {
+		var earlier = List.of(new PreviousComment(41, "<!-- vaga-viva:review focus=patients-api -->\n## Revisão"));
 
 		reviewer.review(context(true, List.of(failed("persistence", "gravaNoBanco")), earlier));
 
-		verify(github).updateIssueComment(eq("token"), eq(REPO), eq(41L), anyString());
-		verify(github, never()).updateIssueComment(anyString(), anyString(), eq(42L), anyString());
+		assertThat(updatedBody(41)).contains(
+				"🎉 **Missão 1 concluída:** os 5 testes de **Cadastro de pacientes** passam. Agora é a vez da próxima.");
 	}
 
 	@Test
-	void fallbackWithoutAnAssertionMessageNamesTheTestInstead() {
-		llmText = Optional.empty();
+	void doesNotCelebrateWhileTheSameMissionIsInFocus() {
+		var earlier = List.of(new PreviousComment(41, "<!-- vaga-viva:review focus=persistence -->\n## Revisão"));
 
-		reviewer.review(context(true, List.of(new FailedTest("persistence", "gravaNoBanco", "")), List.of()));
+		reviewer.review(context(true, List.of(failed("persistence", "gravaNoBanco")), earlier));
 
-		assertThat(postedBody()).contains("gravaNoBanco").doesNotContain("> ");
+		assertThat(updatedBody(41)).doesNotContain("🎉");
 	}
 
 	@Test
@@ -162,41 +205,51 @@ class SocraticReviewerTests {
 	}
 
 	@Test
-	void saysTheBuildDidNotRunTheTestsWhenThereIsNoReport() {
+	void listsTheStepsWhenTheTestsDidNotRun() {
 		reviewer.review(context(false, List.of(), List.of()));
 
-		assertThat(postedBody()).contains("terminou sem gerar o relatório de testes").contains("não compila");
+		assertThat(postedBody()).contains("### ⚠️ Os testes não rodaram")
+			.contains("1. Abra a aba **Actions** deste PR.")
+			.contains("Re-run jobs")
+			.doesNotContain("Seu progresso");
 		assertThat(focuses).isEmpty();
 	}
 
 	@Test
-	void congratulatesWhenEveryTestOfThePlanPasses() {
-		reviewer.review(context(true, List.of(), List.of()));
+	void congratulatesWithTheProgressWhenEveryTestOfThePlanPasses() {
+		reviewer.review(new ReviewContext("token", REPO, 7, "abc123", PLAN, "diff", true, List.of(), List.of(),
+				Map.of("patients-api", new MissionTally(5, 5), "persistence", new MissionTally(4, 4))));
 
-		assertThat(postedBody()).contains("Todos os testes das missões do seu plano passam")
-			.contains("Cadastro de pacientes, Pacientes no banco de dados");
+		assertThat(postedBody()).contains("🎉 **Todas as missões do seu plano passam neste PR.**")
+			.contains("| 2 · Pacientes no banco de dados | 🟩🟩🟩🟩 4/4 ✅ |")
+			.contains("2. Faça o merge deste PR.");
 		assertThat(focuses).isEmpty();
 	}
 
 	@Test
-	void editsItsOwnEarlierReviewInsteadOfPostingAnother() {
-		var earlier = List.of(new PreviousComment(40, "Uma dica de nível 1 <!-- vaga-viva:hint -->"),
-				new PreviousComment(41, ReviewTexts.MARKER + "\nRevisão antiga"));
+	void editsItsOwnReviewNotAHintThatQuotesItsMarker() {
+		var earlier = List.of(new PreviousComment(41, ReviewTexts.MARKER + "\nRevisão antiga"),
+				new PreviousComment(42, HintTexts.marker("persistence", 1) + "\nUma dica " + ReviewTexts.MARKER));
 
 		reviewer.review(context(true, List.of(failed("persistence", "gravaNoBanco")), earlier));
 
-		var body = ArgumentCaptor.forClass(String.class);
-		verify(github).updateIssueComment(eq("token"), eq(REPO), eq(41L), body.capture());
-		assertThat(body.getValue()).contains("O que o teste espera receber");
+		verify(github).updateIssueComment(eq("token"), eq(REPO), eq(41L), anyString());
+		verify(github, never()).updateIssueComment(anyString(), anyString(), eq(42L), anyString());
 		verify(github, never()).createIssueComment(anyString(), anyString(), anyInt(), anyString());
 	}
 
 	@Test
-	void tellsTheEventsWhatItAsked() {
+	void tellsTheEventsTheFirstQuestion() {
 		reviewer.review(context(true, List.of(failed("persistence", "gravaNoBanco")), List.of()));
 
-		assertThat(asked).containsExactly(REPO + "#7: " + llmText.orElseThrow());
-		assertThat(postedBody()).contains(llmText.orElseThrow());
+		assertThat(asked).containsExactly(REPO + "#7: De onde o repositório lê os pacientes hoje?");
+	}
+
+	@Test
+	void barsScaleDownAndLeaveOtherMissionsGrey() {
+		assertThat(ReviewComment.bar(new MissionTally(1, 3), false)).isEqualTo("🟩⬜⬜ 1/3");
+		assertThat(ReviewComment.bar(new MissionTally(10, 20), true)).isEqualTo("🟩🟩🟩🟩🟩🟥🟥🟥🟥🟥 10/20");
+		assertThat(ReviewComment.bar(null, true)).isEqualTo("sem resultado ainda");
 	}
 
 	private String postedBody() {
@@ -206,8 +259,15 @@ class SocraticReviewerTests {
 		return body.getValue();
 	}
 
+	private String updatedBody(long id) {
+		var body = ArgumentCaptor.forClass(String.class);
+		verify(github).updateIssueComment(eq("token"), eq(REPO), eq(id), body.capture());
+		return body.getValue();
+	}
+
 	private static ReviewContext context(boolean reportRead, List<FailedTest> failed, List<PreviousComment> comments) {
-		return new ReviewContext("token", REPO, 7, "abc123", PLAN, "diff --git a/x b/x", reportRead, failed, comments);
+		return new ReviewContext("token", REPO, 7, "abc123", PLAN, "diff --git a/x b/x", reportRead, failed, comments,
+				reportRead ? TALLIES : Map.of());
 	}
 
 	private static FailedTest failed(String mission, String test) {

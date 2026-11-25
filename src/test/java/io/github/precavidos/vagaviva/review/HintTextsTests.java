@@ -43,9 +43,27 @@ class HintTextsTests {
 		String body = HintTexts.comment(PERSISTENCE, 2, "texto");
 
 		assertThat(body).startsWith("<!-- vaga-viva:hint mission=persistence level=2 -->\n")
+			.contains("## 💡 Dica 2 de 3 · Caminho")
+			.contains("**Missão:** Pacientes no banco de dados · ●●○ (a próxima dica aponta o ponto exato)")
 			.contains("texto")
-			.contains("Dica 2 de 3")
+			.contains("Comente `/dica` de novo para a dica 3 · Quase lá.")
 			.doesNotContain(ReviewTexts.MARKER);
+	}
+
+	@Test
+	void theLastLevelAndTheEndSayThereIsNoNextHint() {
+		assertThat(HintTexts.comment(PERSISTENCE, 3, "texto")).contains("## 💡 Dica 3 de 3 · Quase lá")
+			.contains("●●●")
+			.contains("Esta foi a última dica desta missão.");
+		assertThat(HintTexts.comment(PERSISTENCE, 4, "acabou")).contains("## 💡 As dicas desta missão acabaram")
+			.contains("acabou");
+	}
+
+	@Test
+	void earlierHintsReachTheWriterWithoutTheirHeader() {
+		var comment = new ReviewContext.PreviousComment(1, HintTexts.comment(PERSISTENCE, 1, "Olhe a data"));
+
+		assertThat(HintTexts.text(comment)).isEqualTo("Olhe a data");
 	}
 
 	@Test
@@ -93,7 +111,7 @@ class HintTextsTests {
 
 	@Test
 	void hintFallbackNeverRendersStudentCodeBlock() {
-		var coded = List.of(new FailedTest("persistence", "gravaNoBanco", ReviewTextsTests.CODE_IN_MESSAGE));
+		var coded = List.of(new FailedTest("persistence", "gravaNoBanco", ReviewCommentTests.CODE_IN_MESSAGE));
 
 		String text = HintTexts.fallback(3, PERSISTENCE, coded);
 
