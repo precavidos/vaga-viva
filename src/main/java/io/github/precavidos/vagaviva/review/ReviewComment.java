@@ -298,7 +298,28 @@ final class ReviewComment {
 		if (!ReviewTextFilter.isQuotable(message)) {
 			return "a mensagem não é repetida aqui: leia-a na aba **Actions**";
 		}
-		return tableText(message);
+		return tableText(shortened(message));
+	}
+
+	/** Characters of a test message the table shows; the whole message stays in the Actions log. */
+	static final int MAX_MESSAGE = 120;
+
+	private static final Pattern RESPONSE_BODY = Pattern.compile("(?i)\\s*,?\\s*(com corpo|with body)\\s*:.*$");
+
+	/**
+	 * What the test expected and what it got, without the response body the templates append ("… respondeu 200 com
+	 * corpo: {...}"), which fills the cell and turns fictional e-mails into links. Long messages are cut at a word.
+	 */
+	static String shortened(String message) {
+		String text = RESPONSE_BODY.matcher(message).replaceFirst("").strip();
+		if (text.isEmpty()) {
+			text = message.strip();
+		}
+		if (text.length() <= MAX_MESSAGE) {
+			return text;
+		}
+		int end = text.lastIndexOf(' ', MAX_MESSAGE);
+		return text.substring(0, end > MAX_MESSAGE / 2 ? end : MAX_MESSAGE).stripTrailing() + "…";
 	}
 
 	/** Neutralized for a comment and safe inside a Markdown table cell. */
