@@ -76,11 +76,12 @@ class ClaudeReviewWriterTests {
 
 	@Test
 	void sendsTheMissionTheFailingTestsAndTheDiffButNeverTheToken() throws Exception {
-		responseBody = message("{\"comment\": \"O que o teste espera?\"}", "end_turn");
+		responseBody = message("{\"working\": \"Bom começo.\", \"questions\": [\"O que o teste espera?\"]}",
+				"end_turn");
 
-		var text = writer.write(context(), PERSISTENCE, List.of(failed()), "# Contrato");
+		var written = writer.write(context(), PERSISTENCE, List.of(failed()), "# Contrato");
 
-		assertThat(text).contains("O que o teste espera?");
+		assertThat(written).contains(new ReviewWriter.Written("Bom começo.", List.of("O que o teste espera?")));
 		JsonNode request = JSON.readTree(lastRequestBody);
 		assertThat(request.path("model").asString()).isEqualTo("claude-haiku-5-5");
 		assertThat(request.path("thinking").path("type").asString()).isEqualTo("disabled");
@@ -92,12 +93,13 @@ class ClaudeReviewWriterTests {
 			.contains("# Contrato")
 			.contains("diff --git a/src/Patient.java")
 			.contains("Revisão anterior")
+			.contains("Testes desta missão que já passam: 1 de 4.")
 			.doesNotContain("ghs_installation_token");
 	}
 
 	@Test
 	void givesNothingWhenClaudeRefusesOrStopsEarly() {
-		responseBody = message("{\"comment\": \"parcial\"}", "max_tokens");
+		responseBody = message("{\"working\": \"parcial\", \"questions\": []}", "max_tokens");
 		assertThat(writer.write(context(), PERSISTENCE, List.of(failed()), "c")).isEmpty();
 
 		responseBody = message("", "refusal");
@@ -119,7 +121,8 @@ class ClaudeReviewWriterTests {
 		var plan = new StudentPlan("java-spring", "clinic-scheduling", List.of(PERSISTENCE));
 		return new ReviewContext("ghs_installation_token", "maria/repo", 7, "abc", plan,
 				"diff --git a/src/Patient.java b/src/Patient.java", true, List.of(failed()),
-				List.of(new PreviousComment(1, ReviewTexts.MARKER + "\nRevisão anterior" + ReviewTexts.FOOTER)));
+				List.of(new PreviousComment(1, ReviewTexts.MARKER + "\nRevisão anterior" + ReviewTexts.FOOTER)),
+				java.util.Map.of("persistence", new MissionTally(1, 4)));
 	}
 
 	private static FailedTest failed() {

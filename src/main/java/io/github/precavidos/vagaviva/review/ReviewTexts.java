@@ -1,82 +1,38 @@
 package io.github.precavidos.vagaviva.review;
 
-import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
-import io.github.precavidos.vagaviva.plan.Mission;
-import io.github.precavidos.vagaviva.review.ReviewContext.FailedTest;
 import io.github.precavidos.vagaviva.review.ReviewContext.PreviousComment;
 
 /**
- * The reviewer's fixed texts, in Portuguese: for when there is nothing for
- * the LLM to explain, and the fallback whenever the LLM is off, fails or
- * writes something the filter refuses. They name what the tests expect and
- * ask; they never show code.
+ * Recognizes the reviewer's own comment and reads it back as plain text. The comment itself is built by
+ * {@link ReviewComment}.
  */
 public final class ReviewTexts {
 
-	/** Hidden marker that tells the reviewer's own comment apart from the hints' and the student's. */
+	/**
+	 * The first line of a review comment written before the summary existed. Newer comments open with
+	 * {@link ReviewComment#MARKER_PREFIX} followed by the mission in focus; both are reviews.
+	 */
 	static final String MARKER = "<!-- vaga-viva:review -->";
 
+	/** The footer of review comments written before {@link ReviewComment#FOOTER}. */
 	static final String FOOTER = "\n\n---\n<sub>Revisor do Vaga Viva. Travou? Comente `/dica` neste PR para receber uma dica, uma de cada vez.</sub>";
 
 	private ReviewTexts() {
 	}
 
-	/** Whether {@code comment} is the reviewer's: its marker opens the body, as {@link #comment} writes it. */
+	/** Whether {@code comment} is the reviewer's: its marker opens the body. */
 	static boolean isReview(PreviousComment comment) {
-		return comment.body().startsWith(MARKER);
+		return comment.body().startsWith(ReviewComment.MARKER_PREFIX);
 	}
 
-	static String comment(String text) {
-		return MARKER + "\n" + text.strip() + FOOTER;
-	}
-
-	/** The text of the reviewer's own comment, without marker and footer; empty for any other comment. */
+	/**
+	 * What the reviewer's own comment says, as plain text: what already works and the questions, without the
+	 * tables and titles; empty for any other comment.
+	 */
 	public static Optional<String> reviewText(String body) {
-		if (body == null || !body.startsWith(MARKER)) {
-			return Optional.empty();
-		}
-		String text = body.substring(MARKER.length());
-		if (text.endsWith(FOOTER)) {
-			text = text.substring(0, text.length() - FOOTER.length());
-		}
-		return Optional.of(text.strip());
-	}
-
-	/** The workflow finished without a test report: most often the code does not compile. */
-	static String noReport() {
-		return """
-				O workflow **Vaga Viva** terminou sem gerar o relatório de testes, então os testes nem chegaram a rodar.
-
-				Na maioria das vezes, isso quer dizer que o projeto não compila. Abra a aba **Actions** deste PR, entre no passo **Testes** e procure a primeira mensagem de erro: em que arquivo e linha ela aponta? Depois de corrigir, faça um novo push e eu reviso de novo.""";
-	}
-
-	static String allPassing(List<Mission> plan) {
-		return "Todos os testes das missões do seu plano passam neste PR: "
-				+ plan.stream().map(Mission::title).collect(Collectors.joining(", ")) + ".\n\n"
-				+ "Antes de fazer o merge, releia o seu código: tem algum nome que poderia explicar melhor o que faz? Algum trecho repetido que caberia num lugar só?";
-	}
-
-	/** The fixed question built from the first failing test of the mission in focus. */
-	static String fallback(Mission mission, List<FailedTest> failing) {
-		FailedTest first = failing.getFirst();
-		String count = failing.size() == 1 ? "1 teste ainda falha" : failing.size() + " testes ainda falham";
-		String name = "O primeiro, **" + ReviewTextFilter.neutralize(first.testName()) + "**, ";
-		String says;
-		if (first.message().isBlank()) {
-			says = name + "falha sem mensagem de asserção.\n\n";
-		}
-		else if (!ReviewTextFilter.isQuotable(first.message())) {
-			says = name + "falha com uma mensagem que eu não repito aqui; leia-a na aba **Actions** deste PR.\n\n";
-		}
-		else {
-			says = "O primeiro diz:\n\n> " + ReviewTextFilter.neutralize(first.message()) + "\n\n";
-		}
-		return "Na missão **" + mission.title() + "**, " + count + ". " + says
-				+ "O que esse teste espera receber, e o que a sua implementação devolve hoje nesse caso? "
-				+ "Releia o contrato da missão em `missoes/" + mission.id() + ".md` e compare com o que o teste pede.";
+		return ReviewComment.plainText(body);
 	}
 
 }

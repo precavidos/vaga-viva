@@ -7,16 +7,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
+import io.github.precavidos.vagaviva.archetype.ArchetypeCatalog;
 import io.github.precavidos.vagaviva.github.GitHubApi;
 import io.github.precavidos.vagaviva.plan.Mission;
+import io.github.precavidos.vagaviva.review.ReviewComment.Summary;
 import io.github.precavidos.vagaviva.review.ReviewContext.FailedTest;
 import io.github.precavidos.vagaviva.review.ReviewContext.PreviousComment;
 
 /**
- * Comments on a student's pull request after the Vaga Viva workflow ran: which
- * mission still fails and questions that lead to the fix, never the fix. Which
- * tests fail comes from the report, not from the LLM (ADR 0002). One comment
- * per pull request, edited on each run instead of piling up.
+ * Comments on a student's pull request after the Vaga Viva workflow ran: the progress of the plan, which mission
+ * still fails and questions that lead to the fix, never the fix. Which tests fail and how many pass come from the
+ * report, not from the LLM (ADR 0002); the LLM only writes what already works and the questions, and each part goes
+ * through {@link ReviewTextFilter} on its own. One comment per pull request, edited on each run.
  */
 @Component
 class SocraticReviewer implements PullRequestReviewer {
@@ -29,47 +31,95 @@ class SocraticReviewer implements PullRequestReviewer {
 
 	private final ReviewEvents events;
 
-	SocraticReviewer(GitHubApi github, ReviewWriter writer, ReviewEvents events) {
+	private final ArchetypeCatalog archetypes;
+
+	SocraticReviewer(GitHubApi github, ReviewWriter writer, ReviewEvents events, ArchetypeCatalog archetypes) {
 		this.github = github;
 		this.writer = writer;
 		this.events = events;
+		this.archetypes = archetypes;
 	}
 
 	@Override
 	public void review(ReviewContext context) {
-		String text;
+		String body;
+		String asked;
 		if (!context.testReportRead()) {
-			text = ReviewTexts.noReport();
+			body = ReviewComment.noReport();
+			asked = "Os testes não rodaram neste PR. Qual é a primeira mensagem de erro no passo Testes da aba Actions?";
 		}
 		else if (context.failedTests().isEmpty()) {
-			text = ReviewTexts.allPassing(context.plan().missions());
+			body = ReviewComment.allPassing(context);
+			asked = "Todas as missões do plano passam neste PR.";
 		}
 		else {
-			text = aboutFirstFailingMission(context);
+			String focusId = context.failedTests().getFirst().missionId();
+			Mission focus = mission(context, focusId);
+			List<FailedTest> failing = context.failedTests().stream().filter(t -> t.missionId().equals(focusId)).toList();
+			Summary summary = summary(context, focus, failing);
+			body = ReviewComment.focus(context, focus, failing, summary, testCommand(context, focus),
+					justCompleted(context, focus));
+			asked = summary.questions().getFirst();
 		}
-		post(context, ReviewTexts.comment(text));
-		events.reviewerAsked(context.repositoryFullName(), context.pullRequestNumber(), text);
+		post(context, body);
+		events.reviewerAsked(context.repositoryFullName(), context.pullRequestNumber(), asked);
 	}
 
-	private String aboutFirstFailingMission(ReviewContext context) {
-		String focusId = context.failedTests().getFirst().missionId();
-		Mission focus = context.plan().missions().stream().filter(m -> m.id().equals(focusId)).findFirst().orElseThrow();
-		List<FailedTest> failing = context.failedTests().stream().filter(t -> t.missionId().equals(focusId)).toList();
-		String contract = MissionContract.read(github, context, focus);
-		Optional<String> written = writer.write(context, focus, failing, contract);
-		if (written.isPresent() && !ReviewTextFilter.isSafe(written.get())) {
-			log.warn("Review text refused by the filter for {}#{}", context.repositoryFullName(),
+	/** The LLM's parts, each kept only if the filter accepts it; the fixed text fills whatever is missing. */
+	private Summary summary(ReviewContext context, Mission focus, List<FailedTest> failing) {
+		Optional<ReviewWriter.Written> written = writer.write(context, focus, failing,
+				MissionContract.read(github, context, focus));
+		String working = written.map(ReviewWriter.Written::working).orElse("");
+		if (!working.isEmpty() && !ReviewTextFilter.isSafe(working)) {
+			log.warn("Review text (working) refused by the filter for {}#{}", context.repositoryFullName(),
 					context.pullRequestNumber());
-			written = Optional.empty();
+			working = "";
 		}
-		return written.orElseGet(() -> ReviewTexts.fallback(focus, failing));
+		List<String> questions = ReviewComment
+			.cleanQuestions(written.map(ReviewWriter.Written::questions).orElse(List.of()));
+		List<String> safe = questions.stream().filter(ReviewTextFilter::isSafe).toList();
+		if (safe.size() < questions.size()) {
+			log.warn("Review text ({} of {} questions) refused by the filter for {}#{}",
+					questions.size() - safe.size(), questions.size(), context.repositoryFullName(),
+					context.pullRequestNumber());
+		}
+		return new Summary(working.isEmpty() ? ReviewComment.fallbackWorking(context, focus) : working,
+				safe.isEmpty() ? ReviewComment.fallbackQuestions(focus, failing) : safe);
+	}
+
+	/**
+	 * The mission the previous review was about, when it is now complete: the student just finished it. Read from
+	 * the previous comment, since nothing is stored (ADR 0003).
+	 */
+	private Optional<Mission> justCompleted(ReviewContext context, Mission focus) {
+		return previousReview(context).flatMap(previous -> ReviewComment.focusOf(previous.body()))
+			.filter(id -> !id.equals(focus.id()))
+			.filter(id -> {
+				MissionTally tally = context.tallies().get(id);
+				return tally != null && tally.total() > 0 && tally.passed() == tally.total();
+			})
+			.flatMap(id -> context.plan().missions().stream().filter(m -> m.id().equals(id)).findFirst());
+	}
+
+	private String testCommand(ReviewContext context, Mission focus) {
+		try {
+			return archetypes.archetype(context.plan().archetype()).missionTestCommand(focus.id());
+		}
+		catch (IllegalArgumentException e) {
+			return archetypes.archetypes().getFirst().missionTestCommand(focus.id());
+		}
+	}
+
+	private static Mission mission(ReviewContext context, String id) {
+		return context.plan().missions().stream().filter(m -> m.id().equals(id)).findFirst().orElseThrow();
+	}
+
+	private static Optional<PreviousComment> previousReview(ReviewContext context) {
+		return context.reviewerComments().stream().filter(ReviewTexts::isReview).reduce((first, second) -> second);
 	}
 
 	private void post(ReviewContext context, String body) {
-		Optional<PreviousComment> previous = context.reviewerComments()
-			.stream()
-			.filter(ReviewTexts::isReview)
-			.reduce((first, second) -> second);
+		Optional<PreviousComment> previous = previousReview(context);
 		if (previous.isPresent()) {
 			github.updateIssueComment(context.token(), context.repositoryFullName(), previous.get().id(), body);
 		}

@@ -237,7 +237,7 @@ class ThreeLevelHintsTests {
 
 	@Test
 	void passesOnlyThatMissionsEarlierHintsToTheWriter() {
-		var comments = List.of(new PreviousComment(1, ReviewTexts.comment("Revisão do PR")),
+		var comments = List.of(new PreviousComment(1, (ReviewTexts.MARKER + "\n" + "Revisão do PR" + ReviewTexts.FOOTER)),
 				new PreviousComment(2, HintTexts.comment(PERSISTENCE, 1, "Olhe a data")),
 				new PreviousComment(3, HintTexts.comment(SCHEDULING, 1, "Olhe o horário")));
 

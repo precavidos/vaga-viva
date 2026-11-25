@@ -27,8 +27,9 @@ final class ClaudeReviewWriter implements ReviewWriter, AutoCloseable {
 	}
 
 	@Override
-	public Optional<String> write(ReviewContext context, Mission focus, List<FailedTest> failing, String contract) {
-		return claude.ask(ReviewPrompt.SYSTEM, ReviewPrompt.user(context, focus, failing, contract), "Review text");
+	public Optional<Written> write(ReviewContext context, Mission focus, List<FailedTest> failing, String contract) {
+		return claude.askReview(ReviewPrompt.SYSTEM, ReviewPrompt.user(context, focus, failing, contract), "Review text")
+			.map(answer -> new Written(answer.working(), answer.questions()));
 	}
 
 }

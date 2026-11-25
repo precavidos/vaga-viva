@@ -58,9 +58,9 @@ class RepositorySnapshotsTests {
 	void takesPlanReportAndLastReview() {
 		when(github.latestPullRequest("ghs_99", REPO)).thenReturn(Optional.of(new GitHubPullRequest(3, "abc123")));
 		when(github.issueComments("ghs_99", REPO, 3)).thenReturn(List.of(
-				new GitHubComment(1, "vaga-viva[bot]", true, ReviewTexts.comment("Primeira pergunta")),
+				new GitHubComment(1, "vaga-viva[bot]", true, (ReviewTexts.MARKER + "\n" + "Primeira pergunta" + ReviewTexts.FOOTER)),
 				new GitHubComment(2, "maria", false, "/dica"),
-				new GitHubComment(3, "vaga-viva[bot]", true, ReviewTexts.comment("  Segunda pergunta  "))));
+				new GitHubComment(3, "vaga-viva[bot]", true, (ReviewTexts.MARKER + "\n" + "  Segunda pergunta  " + ReviewTexts.FOOTER))));
 
 		RepositorySnapshot snapshot = snapshots.take(REPO).orElseThrow();
 
@@ -73,9 +73,9 @@ class RepositorySnapshotsTests {
 	void ignoresHintCommentsAndStudentComments() {
 		when(github.latestPullRequest("ghs_99", REPO)).thenReturn(Optional.of(new GitHubPullRequest(3, "abc123")));
 		when(github.issueComments("ghs_99", REPO, 3)).thenReturn(List.of(
-				new GitHubComment(1, "vaga-viva[bot]", true, ReviewTexts.comment("A pergunta")),
+				new GitHubComment(1, "vaga-viva[bot]", true, (ReviewTexts.MARKER + "\n" + "A pergunta" + ReviewTexts.FOOTER)),
 				new GitHubComment(2, "vaga-viva[bot]", true, "<!-- vaga-viva:hint 1 -->\nUma dica"),
-				new GitHubComment(3, "maria", false, ReviewTexts.comment("Copiei o marcador"))));
+				new GitHubComment(3, "maria", false, (ReviewTexts.MARKER + "\n" + "Copiei o marcador" + ReviewTexts.FOOTER))));
 
 		assertThat(snapshots.take(REPO).orElseThrow().lastReview()).contains("A pergunta");
 	}

@@ -37,7 +37,7 @@ final class WeeklyEmailTemplate {
 		if (review.isPresent()) {
 			text.append(reviewHeading).append("\n").append(review.get()).append("\n\n");
 			html.append("<p>").append(HtmlUtils.htmlEscape(reviewHeading)).append("<br>")
-				.append(HtmlUtils.htmlEscape(review.get()))
+				.append(HtmlUtils.htmlEscape(review.get()).replace("\n", "<br>"))
 				.append("</p>\n");
 		}
 		else {

@@ -25,6 +25,15 @@ final class HintTexts {
 
 	private static final String FOOTER_START = "\n\n---\n<sub>";
 
+	/** Separates the header from the hint's text, so earlier hints reach the LLM without their header. */
+	private static final String TEXT_START = "<!-- vaga-viva:hint-text -->";
+
+	/** What each level does: 1 says where to look, 2 the steps, 3 the exact point that fails. */
+	static final List<String> LEVEL_NAMES = List.of("Direção", "Caminho", "Quase lá");
+
+	private static final List<String> LEVEL_HINTS = List.of("(a próxima dica é mais específica)",
+			"(a próxima dica aponta o ponto exato)", "(esta é a última dica)");
+
 	private HintTexts() {
 	}
 
@@ -52,31 +61,47 @@ final class HintTexts {
 		return hintsGiven(List.of(comment), missionId) == 1;
 	}
 
-	/** The text a hint comment carries, without its marker and footer. */
+	/** The text a hint comment carries, without its marker, header and footer. */
 	static String text(PreviousComment comment) {
 		String body = comment.body();
-		Matcher marker = MARKER.matcher(body);
-		if (marker.lookingAt()) {
-			body = body.substring(marker.end());
+		int start = body.indexOf(TEXT_START);
+		if (start >= 0) {
+			body = body.substring(start + TEXT_START.length());
+		}
+		else {
+			Matcher marker = MARKER.matcher(body);
+			if (marker.lookingAt()) {
+				body = body.substring(marker.end());
+			}
 		}
 		int footer = body.indexOf(FOOTER_START);
 		return (footer < 0 ? body : body.substring(0, footer)).strip();
 	}
 
-	/** A hint comment: the marker, the text and a footer that says where the student is. */
+	/**
+	 * A hint comment, in Portuguese, for students new to GitHub: the level and its name in the title, the mission, a
+	 * {@code ●○○} marker and the text; the footer names the next level. The hidden marker on the first line is what
+	 * the next {@code /dica} counts.
+	 */
 	static String comment(Mission mission, int level, String text) {
-		return marker(mission.id(), level) + "\n" + text.strip() + FOOTER_START + footer(mission, level) + "</sub>";
+		if (level > LAST_LEVEL) {
+			return marker(mission.id(), level) + "\n## 💡 As dicas desta missão acabaram\n\n**Missão:** " + mission.title()
+					+ "\n\n" + TEXT_START + "\n\n" + text.strip() + FOOTER_START
+					+ "Revisor do Vaga Viva: ele faz perguntas e nunca entrega a resposta.</sub>";
+		}
+		String dots = "●".repeat(level) + "○".repeat(LAST_LEVEL - level);
+		return marker(mission.id(), level) + "\n## 💡 Dica " + level + " de " + LAST_LEVEL + " · "
+				+ LEVEL_NAMES.get(level - 1) + "\n\n**Missão:** " + mission.title() + " · " + dots + " "
+				+ LEVEL_HINTS.get(level - 1) + "\n\n" + TEXT_START + "\n\n" + text.strip() + FOOTER_START + footer(level)
+				+ "</sub>";
 	}
 
-	private static String footer(Mission mission, int level) {
+	private static String footer(int level) {
 		if (level < LAST_LEVEL) {
-			return "Dica " + level + " de " + LAST_LEVEL + " da missão **" + mission.title()
-					+ "**. Comente `/dica` de novo para a próxima.";
+			return "Ainda travado? Comente `/dica` de novo para a dica " + (level + 1) + " · "
+					+ LEVEL_NAMES.get(level) + ".";
 		}
-		if (level == LAST_LEVEL) {
-			return "Dica " + level + " de " + LAST_LEVEL + " da missão **" + mission.title() + "**. Esta é a última.";
-		}
-		return "Revisor do Vaga Viva.";
+		return "Esta foi a última dica desta missão. Releia o teste que falha e o contrato da missão.";
 	}
 
 	/** The fixed hint of {@code level} (1 to {@value #LAST_LEVEL}); {@code failing} may be empty. */
