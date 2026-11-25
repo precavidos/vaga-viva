@@ -1,5 +1,6 @@
 package io.github.precavidos.vagaviva.review;
 
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -57,6 +58,24 @@ public final class ReviewTextFilter {
 	 */
 	public static boolean isQuotable(String message) {
 		return message != null && !message.isBlank() && message.lines().count() == 1 && isSafe(neutralize(message));
+	}
+
+	/**
+	 * A text the LLM wrote, ready to post, or empty when the filter refuses it. An {@code @} or a {@code #} first
+	 * gets the zero-width space of {@link #neutralize}: a stray {@code @Entity} is then plain text that pings
+	 * nobody, instead of costing the whole sentence. Everything else the filter refuses, hidden markers included,
+	 * is still refused.
+	 */
+	public static Optional<String> fromLlm(String text) {
+		if (text == null) {
+			return Optional.empty();
+		}
+		// A line that is only an annotation is code even after the @ stops being a mention.
+		if (CODE_LINE.matcher(INLINE_CODE.matcher(text).replaceAll("")).find()) {
+			return Optional.empty();
+		}
+		String neutral = text.replace("@", "@\u200B").replace("#", "#\u200B");
+		return isSafe(neutral) ? Optional.of(neutral) : Optional.empty();
 	}
 
 	public static boolean isSafe(String text) {

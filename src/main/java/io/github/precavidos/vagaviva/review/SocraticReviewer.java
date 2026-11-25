@@ -69,15 +69,15 @@ class SocraticReviewer implements PullRequestReviewer {
 	private Summary summary(ReviewContext context, Mission focus, List<FailedTest> failing) {
 		Optional<ReviewWriter.Written> written = writer.write(context, focus, failing,
 				MissionContract.read(github, context, focus));
-		String working = written.map(ReviewWriter.Written::working).orElse("");
-		if (!working.isEmpty() && !ReviewTextFilter.isSafe(working)) {
+		String raw = written.map(ReviewWriter.Written::working).orElse("");
+		String working = raw.isEmpty() ? "" : ReviewTextFilter.fromLlm(raw).orElse("");
+		if (!raw.isEmpty() && working.isEmpty()) {
 			log.warn("Review text (working) refused by the filter for {}#{}", context.repositoryFullName(),
 					context.pullRequestNumber());
-			working = "";
 		}
 		List<String> questions = ReviewComment
 			.cleanQuestions(written.map(ReviewWriter.Written::questions).orElse(List.of()));
-		List<String> safe = questions.stream().filter(ReviewTextFilter::isSafe).toList();
+		List<String> safe = questions.stream().flatMap(q -> ReviewTextFilter.fromLlm(q).stream()).toList();
 		if (safe.size() < questions.size()) {
 			log.warn("Review text ({} of {} questions) refused by the filter for {}#{}",
 					questions.size() - safe.size(), questions.size(), context.repositoryFullName(),

@@ -90,10 +90,13 @@ class ThreeLevelHints implements HintResponder {
 			.toList();
 		Optional<String> written = writer.write(context, mission, level, failing,
 				MissionContract.read(github, context, mission), earlier);
-		if (written.isPresent() && !ReviewTextFilter.isSafe(written.get())) {
-			log.warn("Hint text refused by the filter for {}#{}", context.repositoryFullName(),
-					context.pullRequestNumber());
-			written = Optional.empty();
+		if (written.isPresent()) {
+			Optional<String> accepted = ReviewTextFilter.fromLlm(written.get());
+			if (accepted.isEmpty()) {
+				log.warn("Hint text refused by the filter for {}#{}", context.repositoryFullName(),
+						context.pullRequestNumber());
+			}
+			written = accepted;
 		}
 		String text = written.orElseGet(() -> HintTexts.fallback(level, mission, failing));
 		post(context, HintTexts.comment(mission, level, text));

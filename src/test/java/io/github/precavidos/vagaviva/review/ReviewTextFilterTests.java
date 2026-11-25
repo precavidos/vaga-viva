@@ -2,6 +2,7 @@ package io.github.precavidos.vagaviva.review;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
@@ -36,6 +37,21 @@ class ReviewTextFilterTests {
 			"" })
 	void refusesAnythingThatLooksLikeCode(String text) {
 		assertThat(ReviewTextFilter.isSafe(text)).isFalse();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = { "```java\nreturn ok;\n```", "Basta escrever `repository.save(patient)` no service.",
+			"Uma linha resolve:\nreturn ResponseEntity.created(uri).body(patient);", "@PostMapping",
+			"Crie a classe assim:\npublic class PatientController {", "## Solução",
+			"Ótima pergunta. <!-- vaga-viva:review -->" })
+	void llmTextStillRefusesCode(String text) {
+		assertThat(ReviewTextFilter.fromLlm(text)).isEmpty();
+	}
+
+	@Test
+	void llmTextKeepsTheSentenceButNotTheMention() {
+		assertThat(ReviewTextFilter.fromLlm("O que muda quando a classe recebe @Entity, como no #3?"))
+			.contains("O que muda quando a classe recebe @\u200BEntity, como no #\u200B3?");
 	}
 
 	@ParameterizedTest
