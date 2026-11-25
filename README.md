@@ -6,7 +6,7 @@ Projeto da trilha **Acesso à educação** do Hack Brasil 2026.
 
 ## O que é
 
-O aluno cola o texto (ou o link) de uma vaga real, ou encaminha a vaga por e-mail, e recebe no próprio GitHub um projeto de estudo montado para ela:
+O aluno cola o texto (ou o link) de uma vaga real, ou encaminha a vaga por e-mail para **`vagas@bueska.resend.app`**, e recebe no próprio GitHub um projeto de estudo montado para ela:
 
 - um **README** que liga o projeto ao nível e às competências da vaga;
 - **uma issue por missão**, na ordem do plano;
@@ -15,6 +15,21 @@ O aluno cola o texto (ou o link) de uma vaga real, ou encaminha a vaga por e-mai
 Quando o aluno abre um PR, um **revisor socrático** comenta: faz perguntas sobre o teste que falha e o contrato da missão, sem nunca entregar código. Se travar, o aluno comenta `/dica` e recebe dicas em **3 níveis**, cada vez mais concretas, ainda sem código. Quem decide se a missão está pronta são os testes, não o LLM.
 
 No **modo turma**, o professor cria uma turma a partir de uma vaga-base, compartilha um link de convite e acompanha num painel a missão de cada aluno, quem está travado e os testes que falham. Toda segunda, se pediu, recebe um resumo por e-mail. O aluno também pode pedir, para si, um e-mail semanal com a missão da semana.
+
+## Como avaliar
+
+A demo está em **<https://vaga-viva-49kj.onrender.com>**. Se ela estiver parada, a primeira página pode levar até um minuto para abrir.
+
+| Passo | O que fazer | O que observar |
+| --- | --- | --- |
+| 1. Vaga → plano, sem login | Abra a demo, clique em **Usar uma vaga de exemplo** e depois em **Montar meu plano**. Também dá para colar uma vaga real: uma de FastAPI recebe o projeto em Python, e uma de NestJS, o projeto em TypeScript. | As competências marcadas no texto da vaga, o nível, as 5 ou 6 missões e o aviso de cobertura da stack. |
+| 2. Plano → repositório | Marque **Tenho 18 anos ou mais** e clique em **Criar meu repositório no GitHub**. Entre com o GitHub e autorize a instalação do app Vaga Viva na sua conta. | O repositório no seu GitHub, com o README sobre a vaga, uma issue por missão (cada uma com o link para o contrato) e os testes vermelhos no Actions. |
+| 3. O revisor, sem precisar programar | Abra o PR de exemplo [davsilvam/vaga-viva-clinic-scheduling#7](https://github.com/davsilvam/vaga-viva-clinic-scheduling/pull/7). | Cada push recebe uma revisão nova, com a anterior encolhida: progresso por missão, testes que falham, perguntas, e as dicas do `/dica` em 3 níveis. Nenhuma linha de código da solução. |
+| 4. O revisor no seu repositório | No repositório do passo 2, abra um PR com qualquer mudança. Espere o workflow **Vaga Viva** terminar e comente `/dica`. | A revisão chega no PR e por e-mail, como notificação do GitHub. Cada `/dica` aprofunda a anterior. |
+| 5. Vaga por e-mail | Encaminhe uma vaga para `vagas@bueska.resend.app`. | Em segundos, chega a resposta com o plano e um link que abre a página já preenchida. |
+| 6. Modo turma | Só professores autorizados criam turmas. Para testar, abra uma issue neste repositório com o seu login do GitHub, e o time libera o acesso. | A turma com link de convite, o painel com a missão de cada aluno e a ficha com os testes que falham e a última pergunta do revisor. |
+
+Depois de avaliar, você pode apagar o repositório criado e remover o app em **GitHub → Settings → Applications**.
 
 ## Como funciona
 
