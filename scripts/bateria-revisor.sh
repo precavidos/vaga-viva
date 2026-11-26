@@ -7,8 +7,8 @@
 #   scripts/bateria-revisor.sh coletar <owner/repo>                  imprime em Markdown os comentários de cada PR
 #
 # <clone> é um clone local do repositório de teste, criado do template java-spring
-# e com .vaga-viva/plan.json no main. O caso 10 exige BATERIA_SEM_LLM=1, para
-# lembrar que o app precisa estar rodando sem ANTHROPIC_API_KEY.
+# e com .vaga-viva/plan.json no main. coletar lê só as PRs abertas: feche as de
+# uma rodada anterior antes de abrir as da próxima.
 # O script não lê nenhum segredo: o gh usa a sua sessão.
 
 set -euo pipefail
@@ -104,13 +104,11 @@ caso_09() {
 }
 
 caso_10() {
-	[[ ${BATERIA_SEM_LLM:-} == 1 ]] \
-		|| die "o caso 10 roda com o app sem ANTHROPIC_API_KEY; reinicie o app assim e rode com BATERIA_SEM_LLM=1"
 	# Os acentos graves são o próprio ataque: nada aqui deve expandir.
 	# shellcheck disable=SC2016
 	replace "$BUG_HUNT_TEST" '"esperava 60 minutos entre 23:30 e 00:30 do dia seguinte"' \
 		'"olha\n```java\nreturn Duration.between(start, end).toMinutes();\n```"'
-	git commit -q -am "Caso 10: código na mensagem da asserção, com o LLM desligado"
+	git commit -q -am "Caso 10: código na mensagem da asserção"
 }
 
 abrir() {
@@ -159,7 +157,7 @@ dica() {
 
 coletar() {
 	local repo=$1
-	gh pr list -R "$repo" --state all --limit 100 --json number,title,headRefName,url \
+	gh pr list -R "$repo" --state open --limit 100 --json number,title,headRefName,url \
 		--jq '.[] | select(.headRefName | startswith("bateria/")) | [.number, .title, .url] | @tsv' \
 		| sort -t$'\t' -k2 \
 		| while IFS=$'\t' read -r number title url; do
