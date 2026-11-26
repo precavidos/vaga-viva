@@ -96,7 +96,7 @@ flowchart LR
 | GitHub App | Cria o repositório a partir do modelo, grava o plano, abre as issues e recebe os webhooks de fim de workflow e de comentários `/dica`. Login do aluno por OAuth. |
 | GitHub Actions (no repositório do aluno) | Roda os testes e publica o relatório JUnit XML que o revisor lê. |
 | Claude Haiku (`claude-haiku-5-5`) | Redige o README, o contexto das missões, as perguntas do revisor e as dicas. Toda resposta passa pelo filtro anti-código; recusada ou indisponível, vale um texto fixo. Sem `ANTHROPIC_API_KEY`, tudo funciona com os textos fixos. |
-| Firecrawl | Lê a página de carreira quando ela é montada por JavaScript ou recusa o download do app. Só entra quando o leitor do próprio app não acha o texto da vaga. Sem `FIRECRAWL_API_KEY`, essas páginas pedem que o aluno cole o texto. |
+| Firecrawl | Lê a página de carreira quando ela é montada por JavaScript ou recusa o download do app. Só entra quando o leitor do próprio app não acha o texto da vaga. Sem `FIRECRAWL_API_KEY`, essas páginas pedem que o aluno cole o texto. Portais testados em [`docs/portais-de-vaga.md`](docs/portais-de-vaga.md). |
 | Resend | Recebe vagas encaminhadas por e-mail e envia a resposta com o plano, o e-mail semanal do aluno e o resumo do professor. |
 | Front end | Páginas estáticas em `src/main/resources/static`, servidas pela própria API. A página do projeto fica em `site/` (GitHub Pages). |
 
