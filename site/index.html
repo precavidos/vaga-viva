@@ -3,17 +3,19 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Vaga Viva</title>
+  <title>Vaga Viva: uma vaga real vira um projeto no seu GitHub</title>
   <meta name="description" content="O aluno cola uma vaga real e recebe no GitHub um projeto de estudo sob medida, com missões e testes, e um revisor que pergunta em vez de dar a resposta.">
   <meta property="og:title" content="Vaga Viva">
   <meta property="og:description" content="Aprender fazendo com vagas reais, com um revisor que não dá a resposta.">
   <meta property="og:type" content="website">
+  <meta property="og:image" content="media/aluno-poster.jpg">
   <meta name="theme-color" content="#f4f1ea" media="(prefers-color-scheme: light)">
   <meta name="theme-color" content="#161513" media="(prefers-color-scheme: dark)">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23141414'/%3E%3Cpath d='M8 17l5 5 11-12' stroke='%2333c47a' stroke-width='3.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <script>document.documentElement.classList.add('js');</script>
   <style>
     :root {
       --paper: #f4f1ea;
@@ -31,12 +33,7 @@
       --yellow: #ffd23f;
       --green: #33c47a;
       --coral: #ff6b4a;
-
-      --night: #121212;
-      --night-2: #1e1e1e;
-      --night-3: #2a2a2a;
-      --night-text: #f4f1ea;
-      --night-muted: #a9a59b;
+      --green-ink: #0e6b3c;
 
       --display: "Bricolage Grotesque", "Arial Black", system-ui, sans-serif;
       --body: "DM Sans", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
@@ -58,10 +55,8 @@
         --line: #34312c;
         --focus: #8a75ff;
         --dot-empty: #767166;
-        --night: #0b0b0a;
-        --night-2: #1a1917;
-        --night-3: #26241f;
         --logo-check: #0e6b3c;
+        --green-ink: #5ee39c;
         --rest: 0 30px 60px -30px rgba(0, 0, 0, .7);
       }
     }
@@ -69,14 +64,8 @@
     * { box-sizing: border-box; }
     html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
     @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
-    body {
-      margin: 0;
-      background: var(--paper);
-      color: var(--ink);
-      font: 17px/1.6 var(--body);
-      overflow-x: clip;
-    }
-    img, svg { display: block; }
+    body { margin: 0; background: var(--paper); color: var(--ink); font: 17px/1.6 var(--body); overflow-x: clip; }
+    img, svg, video { display: block; max-width: 100%; }
     a { color: inherit; }
     [hidden] { display: none !important; }
     .ico { width: 1.15em; height: 1.15em; fill: currentColor; flex: none; }
@@ -85,35 +74,33 @@
     .skip { position: absolute; left: -9999px; }
     .skip:focus { left: 16px; top: 16px; display: inline-flex; align-items: center; min-height: 44px; background: var(--card); padding: 8px 12px; z-index: 20; }
     .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+    code { font: 600 .88em var(--mono); padding: 1px 5px; border-radius: var(--r-xs); background: var(--paper-2); }
 
-    /* DESIGN.md 2.3: Bricolage 600 in every title, h2 28 px, h3 19 px. */
+    /* DESIGN.md 2.3: Bricolage 600 in every title. The landing's h2 is larger than the app's 28 px: it opens a screen. */
     h1, h2, h3 { font-family: var(--display); font-weight: 600; letter-spacing: -.025em; margin: 0; }
-    h2 { font-size: 28px; line-height: 1.15; }
+    h2 { font-size: clamp(28px, 3.4vw, 40px); line-height: 1.08; }
     h3 { font-size: 19px; line-height: 1.25; }
 
-    /* Buttons */
-    /* DESIGN.md 4.1: purple primary (one per screen), outlined secondary, 6 px corners, 1 px lift on hover. */
+    /* Buttons (DESIGN.md 4.1): purple primary, outlined secondary, 6 px corners, 1 px lift on hover. */
     .btn {
       display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 48px;
       padding: 12px 22px; border-radius: var(--r-sm); font: 700 16px/1.1 var(--body); text-decoration: none;
-      border: 1px solid var(--purple); background: var(--purple); color: #fff;
+      border: 1px solid var(--purple); background: var(--purple); color: #fff; cursor: pointer;
       transition: transform var(--t-fast) var(--ease-out), background-color var(--t-fast) var(--ease-out), border-color var(--t-fast) var(--ease-out);
-      cursor: pointer;
     }
     .btn:hover { transform: translateY(-1px); background: var(--purple-hover); border-color: var(--purple-hover); }
     .btn:active { transform: none; }
     .btn.ghost { background: transparent; border-color: var(--line); color: var(--ink); }
-    .btn.ghost:hover { background: transparent; border-color: var(--ink); }
+    .btn.ghost:hover { border-color: var(--ink); }
     .btn .arrow { display: grid; place-items: center; transition: transform var(--t-fast) var(--ease-out); }
     .btn:hover .arrow { transform: translateX(3px); }
+    .more { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; font-weight: 700; font-size: 15px; text-decoration: underline; text-decoration-color: var(--line); text-decoration-thickness: 2px; text-underline-offset: 6px; transition: text-decoration-color var(--t-fast) var(--ease-out); }
+    .more:hover { text-decoration-color: var(--ink); }
 
     /* Header */
-    .top { position: relative; z-index: 5; }
-    .top .wrap { display: flex; align-items: center; justify-content: space-between; height: 84px; gap: 16px; }
-    /* Every link and button is at least 44 px tall (DESIGN.md 7); links inside a sentence are the exception. */
+    .top { position: relative; z-index: 5; border-bottom: 1px solid var(--line); }
+    .top .wrap { display: flex; align-items: center; justify-content: space-between; height: 72px; gap: 16px; }
     .brand { display: flex; align-items: center; gap: 10px; min-height: 44px; font: 600 21px/1 var(--display); letter-spacing: -.025em; text-decoration: none; }
-    /* The mark follows the mode: an ink square with a green check on paper, a paper square with a dark green check
-       in dark mode, so it never sinks into the background. */
     .logo rect { fill: var(--ink); }
     .logo path { stroke: var(--logo-check); }
     .top nav { display: flex; gap: 28px; }
@@ -121,282 +108,251 @@
     .top nav a:hover { color: var(--ink); text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 6px; }
     .top .btn { min-height: 44px; padding: 8px 16px; font-size: 15px; }
 
-    /* Hero: the title in text only, one paragraph, two buttons, the dot field behind and, beside the title,
-       the posting turning into a plan on a dark panel (DESIGN.md 1, 2.6, 3.1, 3.3, 4.6, 4.12). */
-    .hero { padding: clamp(16px, 4vh, 48px) 0 clamp(48px, 9vh, 96px); }
-    /* The field fades out towards the next section instead of ending on a hard edge. */
-    .hero .dot-field-canvas { -webkit-mask-image: linear-gradient(#000 62%, transparent); mask-image: linear-gradient(#000 62%, transparent); }
-    /* Every two-column block splits on the same line as .sec-head: two halves, 48 px apart. */
-    .hero-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 48px; align-items: center; }
-    .hero h1 { font-size: clamp(34px, 5vw, 48px); line-height: 1.04; font-weight: 600; letter-spacing: -.025em; max-width: 12em; }
-    .hero .lead { font-size: 18px; line-height: 1.55; color: var(--ink-2); max-width: 31em; margin: 20px 0 32px; }
-    .hero .actions { display: flex; flex-wrap: wrap; gap: 12px; }
+    /* The page's frame (after github.com): every section sits between the same two vertical hairlines, and the
+       blocks inside a section share hairlines instead of floating as separate cards. */
+    .frame { max-width: 1160px; margin: 0 auto; border-inline: 1px solid var(--line); }
+    .band-row { border-top: 1px solid var(--line); }
 
-    .demo { margin: 0; min-width: 0; display: grid; gap: 16px; padding: 20px; background: var(--night-2); color: var(--night-text); border: 1px solid var(--night-3); border-radius: var(--r-md); }
-    .demo-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 12px; min-height: 18px; font: 600 12px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--night-muted); }
-    .demo-state { display: inline-flex; align-items: center; gap: 8px; font: 600 12.5px/1 var(--mono); letter-spacing: 0; text-transform: none; color: var(--night-text); }
-    .demo-label { margin: 0 0 8px; font: 600 11px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--night-muted); }
+    /* Hero: centred title, the dot field behind it, and the real student flow in a window below. */
+    .hero { position: relative; padding: clamp(48px, 9vh, 96px) 24px 0; text-align: center; }
+    .hero .dot-field-canvas { -webkit-mask-image: radial-gradient(ellipse at 50% 30%, #000 30%, transparent 75%); mask-image: radial-gradient(ellipse at 50% 30%, #000 30%, transparent 75%); }
+    .hero h1 { font-size: clamp(38px, 6vw, 68px); line-height: 1.02; max-width: 12em; margin: 0 auto; }
+    .hero h1 mark { color: inherit; padding: 0 .08em; background: linear-gradient(transparent 12%, var(--yellow) 12%, var(--yellow) 90%, transparent 90%) no-repeat 0 0 / 100% 100%; transition: background-size var(--t-slow) var(--ease-out) .35s; }
+    .hero .lead { font-size: 19px; line-height: 1.55; color: var(--ink-2); max-width: 36em; margin: 24px auto 32px; }
+    .actions { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
+    .hero .hint { margin: 14px 0 0; font-size: 14px; color: var(--ink-2); }
+    .hero .window { margin: clamp(40px, 7vh, 64px) auto 0; max-width: 1040px; text-align: left; }
+    /* The entrance, once on load (DESIGN.md 3, rise). Without JS or with reduced motion it is already in place. */
+    .js .hero [data-enter] { opacity: 0; transform: translateY(10px); transition: opacity var(--t-slow) var(--ease-out), transform var(--t-slow) var(--ease-out); }
+    .js .hero.is-in [data-enter] { opacity: 1; transform: none; }
+    .js .hero.is-in [data-enter="2"] { transition-delay: 80ms; }
+    .js .hero.is-in [data-enter="3"] { transition-delay: 160ms; }
+    .js .hero.is-in [data-enter="4"] { transition-delay: 260ms; }
+    .js .hero:not(.is-in) h1 mark { background-size: 0% 100%; }
 
-    /* The posting clip: paper in both modes, a dashed cut line, the scissors label, never tilted. */
-    .demo-clip { position: relative; overflow: hidden; margin: 0; padding: 38px 18px 16px; background: #f4f1ea; color: #141414; border-radius: var(--r-md); }
-    .demo-clip::before { content: ""; position: absolute; inset: 6px; border: 1px dashed #a9a393; border-radius: var(--r-xs); pointer-events: none; }
-    .demo-clip .clip-tag { position: absolute; left: 18px; top: 14px; display: flex; align-items: center; gap: 6px; padding: 0 6px; margin-left: -6px; background: #f4f1ea; font: 600 11px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: #4a4740; }
-    .demo-clip .clip-tag svg { width: 14px; height: 14px; }
-    .demo-clip .demo-job { position: relative; font: 600 17px/1.3 var(--display); letter-spacing: -.015em; margin: 0 0 6px; }
-    .demo-clip p { position: relative; margin: 0; font-size: 15px; line-height: 1.6; }
-    .demo mark { color: inherit; padding: 0 .1em; border-radius: var(--r-xs); background: linear-gradient(transparent 10%, var(--hl, var(--yellow)) 10%, var(--hl, var(--yellow)) 92%, transparent 92%) no-repeat 0 0 / 100% 100%; transition: background-size var(--t-slow) var(--ease-out); }
-    .demo mark[data-kind="level"] { --hl: #c9bdff; }
-    .demo-scan { position: absolute; left: 6px; right: 6px; top: 6px; height: 40px; border-bottom: 2px solid var(--yellow); background: rgba(255, 210, 63, .28); opacity: 0; pointer-events: none; }
+    /* The window: a real recording or screen of the app, a thin bar with the address and the pause control.
+       The page's one block with the resting shadow (DESIGN.md 2.4). */
+    .window { overflow: hidden; background: var(--card); border: 1px solid var(--line); border-radius: var(--r-lg) var(--r-lg) 0 0; border-bottom: 0; box-shadow: var(--rest); }
+    .window.flat { box-shadow: none; border-radius: var(--r-md); border-bottom: 1px solid var(--line); }
+    .win-bar { display: flex; align-items: center; gap: 12px; min-height: 48px; padding: 0 8px 0 16px; border-bottom: 1px solid var(--line); background: var(--paper-2); }
+    .win-dots { display: flex; gap: 6px; }
+    .win-dots i { width: 10px; height: 10px; border-radius: 50%; background: var(--coral); }
+    .win-dots i:nth-child(2) { background: var(--yellow); }
+    .win-dots i:nth-child(3) { background: var(--green); }
+    .win-url { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 600 12.5px/1 var(--mono); color: var(--ink-2); }
+    .vid-toggle { display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 12px; border: 1px solid transparent; border-radius: var(--r-sm); background: transparent; color: var(--ink); font: 600 13px/1 var(--body); cursor: pointer; transition: border-color var(--t-fast) var(--ease-out), transform var(--t-fast) var(--ease-out); }
+    .vid-toggle:hover { border-color: var(--ink); transform: translateY(-1px); }
+    .vid-toggle:active { transform: none; }
+    .vid-toggle svg { width: 14px; height: 14px; }
+    .window video { width: 100%; height: auto; aspect-ratio: var(--ar, 16 / 10); background: #f4f1ea; }
 
-    .demo-skills { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
-    .demo-skills li { display: inline-flex; align-items: baseline; gap: 6px; padding: 7px 10px; border-radius: var(--r-xs); background: var(--night-3); font: 600 12.5px/1.1 var(--mono); transition: opacity var(--t-base) var(--ease-out), transform var(--t-base) var(--ease-out); }
-    .demo-skills small { font: 500 11px/1 var(--body); color: var(--night-muted); }
-    .demo .dc-noise { color: var(--night-muted); }
+    /* The facts strip, a row of cells under the hero (github.com's activity row). */
+    .facts { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .fact { padding: 28px 24px; border-left: 1px solid var(--line); }
+    .fact:first-child { border-left: 0; }
+    .fact b { display: block; font: 600 40px/1 var(--display); letter-spacing: -.03em; font-variant-numeric: tabular-nums; }
+    .fact span { display: block; margin-top: 10px; font-size: 15px; line-height: 1.45; color: var(--ink-2); }
 
-    .demo-plan ol { list-style: none; margin: 0; padding: 0; }
-    .demo-plan li { display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; align-items: center; gap: 12px; padding: 9px 0; border-top: 1px solid var(--night-3); font-size: 14.5px; line-height: 1.3; transition: opacity var(--t-base) var(--ease-out), transform var(--t-base) var(--ease-out); }
-    .demo .num { display: inline-grid; place-items: center; min-width: 30px; height: 22px; padding: 0 6px; border-radius: var(--r-xs); border: 1px solid #4a4740; font: 600 11.5px/1 var(--mono); color: var(--night-text); }
-    .demo-dots { display: flex; gap: 5px; }
-    .demo-dots i { width: 10px; height: 10px; border-radius: 50%; background: var(--coral); }
-    .demo-count { min-width: 3ch; text-align: right; font: 600 12px/1 var(--mono); color: var(--night-muted); }
-    .demo-note { margin: 0; font-size: 13.5px; color: var(--night-muted); transition: opacity var(--t-base) var(--ease-out); }
-    .hero .demo-note { margin-top: 10px; }
+    /* A section: its title centred over a grid of cells that share hairlines. */
+    .sec-head { padding: clamp(64px, 10vh, 104px) 24px 48px; text-align: center; }
+    .sec-head h2 { max-width: 18em; margin: 0 auto; }
+    .sec-head p { margin: 16px auto 0; color: var(--ink-2); max-width: 38em; font-size: 18px; }
+    .grid { display: grid; grid-template-columns: repeat(var(--cols, 2), minmax(0, 1fr)); border-top: 1px solid var(--line); }
+    .grid > * { border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+    .grid.c2 > :nth-child(2n), .grid.c3 > :nth-child(3n) { border-right: 0; }
+    .grid.c3 { --cols: 3; }
+    .bento { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .bento > .span2 { grid-column: span 2; }
+    .bento > :nth-child(2), .bento > :nth-child(4) { border-right: 0; }
+    .grid > :last-child, .grid.c2 > :nth-last-child(2):nth-child(odd), .grid.c3 > :nth-last-child(-n + 3) { border-bottom: 0; }
+    .bento > :nth-last-child(2) { border-bottom: 0; }
 
-    /* Before the run (.is-armed, set only when it will play): no marks, no chips, no missions. Without JS or with
-       reduced motion the panel is already in its final state. Off screen (.is-paused) the run waits. */
-    .demo.is-armed mark:not(.on) { background-size: 0% 100%; }
-    .demo.is-armed .demo-skills li:not(.on) { opacity: 0; transform: scale(.92); }
-    .demo.is-armed .demo-plan li:not(.on) { opacity: 0; transform: translateY(10px); }
-    .demo.is-armed .demo-note:not(.on) { opacity: 0; }
-    .demo-scan.run { animation: demo-sweep .9s var(--ease-out); }
-    .demo.is-paused .demo-scan { animation-play-state: paused; }
-    @keyframes demo-sweep { 0% { opacity: 1; transform: translateY(0); } 85% { opacity: 1; } 100% { opacity: 0; transform: translateY(var(--sweep, 160px)); } }
-    @media (prefers-reduced-motion: reduce) { .demo *, .demo mark { transition: none !important; animation: none !important; } }
-    @media (max-width: 900px) {
-      .hero-grid { grid-template-columns: minmax(0, 1fr); gap: 32px; }
-      .hero h1 { max-width: 14em; }
+    .cell { display: flex; flex-direction: column; gap: 24px; padding: 32px; min-width: 0; }
+    .cell h3 { display: flex; align-items: center; gap: 12px; }
+    .cell p { margin: 8px 0 0; font-size: 15.5px; color: var(--ink-2); max-width: 36em; }
+    .cell .more { margin-top: 4px; }
+    .num { display: inline-grid; place-items: center; min-width: 30px; height: 24px; padding: 0 6px; border-radius: var(--r-xs); background: var(--ink); color: var(--paper); font: 600 12px/1 var(--mono); letter-spacing: 0; }
+
+    /* One whole piece of the app or of GitHub, cut tight to its own box, centred in a recessed pane with the same
+       margin on every side and never cropped (github.com's product cells). The pane's ground is the system's dot. */
+    .pane { --pad: clamp(20px, 3vw, 36px); position: relative; overflow: hidden; aspect-ratio: var(--pane, 16 / 10); border-radius: var(--r-md); background: radial-gradient(circle, var(--line) 1px, transparent 1.4px) 0 0 / 14px 14px, var(--paper-2); }
+    .pane img { position: absolute; inset: 0; margin: auto; width: auto; height: auto; max-width: calc(100% - 2 * var(--pad)); max-height: calc(100% - 2 * var(--pad)); border: 1px solid var(--line); border-radius: var(--r-md); background: #fff; transition: transform var(--t-base) var(--ease-out); }
+    .cell:hover .pane img { transform: scale(1.02); }
+    .pane.tall { --pane: 1 / 1; --pad: 20px; }
+
+    /* Stacks: a template repository as a folder, dark like every GitHub panel (DESIGN.md 2), its technologies as
+       sheets of the posting's paper, light in both modes. Open: the sheets float above in two columns. Closed: they
+       sit inside, only their top edges showing over the front. No tilt, no spring. */
+    .repo { position: relative; height: 330px; border-radius: var(--r-md); background: radial-gradient(circle, var(--line) 1px, transparent 1.4px) 0 0 / 14px 14px, var(--paper-2); overflow: hidden; }
+    .repo .f-back, .repo .f-front, .repo-pages, .folder-btn { position: absolute; left: 50%; width: 208px; margin-left: -104px; }
+    .repo .f-back { bottom: 24px; height: 126px; background: #1e1e1e; border: 1px solid #34312c; border-radius: 4px var(--r-md) var(--r-md) var(--r-md); }
+    .repo .f-back::before { content: ""; position: absolute; left: -1px; top: -15px; width: 78px; height: 16px; background: #1e1e1e; border: 1px solid #34312c; border-bottom: 0; border-radius: var(--r-sm) var(--r-sm) 0 0; }
+    .repo .f-front { bottom: 24px; height: 104px; z-index: 2; display: flex; flex-direction: column; justify-content: space-between; padding: 14px 16px; background: #2a2a2a; border: 1px solid #3a3833; border-radius: var(--r-md); transform-origin: 50% 100%; transition: transform var(--t-slow) var(--ease-out); }
+    .repo .f-front span { font: 600 11px/1.2 var(--mono); color: #a9a59b; overflow-wrap: anywhere; }
+    .repo .f-front b { font: 600 17px/1 var(--display); letter-spacing: -.02em; color: #f4f1ea; }
+    .repo.is-open .f-front { transform: translateY(10px) scaleY(.92); }
+    /* The sheets are placed from the folder's top edge (150 px above the stage's bottom). */
+    .repo-pages { bottom: 150px; height: 0; z-index: 1; list-style: none; margin-top: 0; margin-bottom: 0; padding: 0; }
+    .repo-pages li { --x: calc((var(--i) - 2.5) * 22px); --y: calc(2px + var(--i) * 3px); position: absolute; left: 50%; top: 0; width: max-content; min-width: 104px; padding: 8px 11px 8px 9px; border: 1px solid #dcd7ca; border-radius: var(--r-xs); background: #f4f1ea; color: #141414; font: 600 12px/1.2 var(--mono); white-space: nowrap; transform: translate(calc(-50% + var(--x)), var(--y)) scale(var(--s, .7)); transform-origin: 50% 0; transition: transform var(--t-slow) var(--ease-out) calc(var(--i) * 45ms); }
+    .repo.is-open .repo-pages li { --s: 1; }
+    .repo-pages li { display: flex; align-items: center; gap: 8px; }
+    .repo-pages .si { width: 16px; height: 16px; flex: none; fill: var(--c); }
+    .repo-pages li span { transition: opacity var(--t-base) var(--ease-out); }
+    .repo:not(.is-open) .repo-pages li span { opacity: 0; }
+    .repo.is-open .repo-pages li:nth-child(1) { --x: -62px; --y: -150px; }
+    .repo.is-open .repo-pages li:nth-child(2) { --x: 62px; --y: -142px; }
+    .repo.is-open .repo-pages li:nth-child(3) { --x: -70px; --y: -104px; }
+    .repo.is-open .repo-pages li:nth-child(4) { --x: 58px; --y: -98px; }
+    .repo.is-open .repo-pages li:nth-child(5) { --x: -54px; --y: -58px; }
+    .repo.is-open .repo-pages li:nth-child(6) { --x: 66px; --y: -54px; }
+    .folder-btn { bottom: 24px; height: 140px; z-index: 3; padding: 0; border: 0; border-radius: var(--r-md); background: transparent; cursor: pointer; }
+    .folder-btn:focus-visible { outline-offset: 4px; }
+
+    /* Sticky steps. The flow layout (no JS, narrow screens, reduced motion) is the base: every step, then its screen. */
+    .steps-pin { display: flex; flex-direction: column; padding: clamp(56px, 9vh, 96px) 24px; }
+    .steps-text, .steps-media, .steps-list, .stack { display: contents; }
+    .steps-pin h2 { order: 0; max-width: 14em; }
+    .steps-lead { order: 1; margin: 16px 0 32px; color: var(--ink-2); max-width: 32em; font-size: 18px; }
+    .steps-track { display: contents; }
+    .steps-mark, .steps-count { display: none; }
+    .steps-list { list-style: none; margin: 0; padding: 0; }
+    .step { padding: 20px 0 16px; border-top: 1px solid var(--line); }
+    .step:nth-child(1) { order: 2; } .step:nth-child(2) { order: 4; } .step:nth-child(3) { order: 6; } .step:nth-child(4) { order: 8; }
+    .stack-item:nth-child(1) { order: 3; } .stack-item:nth-child(2) { order: 5; } .stack-item:nth-child(3) { order: 7; } .stack-item:nth-child(4) { order: 9; }
+    .step h3 { font-size: 21px; }
+    .step p { margin: 8px 0 0; font-size: 15.5px; color: var(--ink-2); max-width: 34em; }
+    .step-btn { display: inline-flex; align-items: center; gap: 12px; min-height: 44px; padding: 0; border: 0; background: none; color: inherit; font: inherit; letter-spacing: inherit; text-align: left; cursor: pointer; }
+    .step-btn:hover { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 6px; }
+    .stack-item { aspect-ratio: auto; padding: var(--pad); margin-bottom: 32px; }
+    .stack-item img { position: static; max-width: 100%; max-height: 520px; margin: 0 auto; display: block; }
+
+    @media (min-width: 901px) and (prefers-reduced-motion: no-preference) {
+      /* Pinned for one screen plus three quarters of a screen per further step. */
+      .js .steps { height: calc(100vh + 3 * 75vh); }
+      .js .steps-pin { position: sticky; top: 0; height: 100vh; min-height: 620px; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.12fr); align-items: center; gap: 0; padding: 0; }
+      .js .steps-text { display: block; padding: 0 48px 0 32px; }
+      .js .steps-lead { margin: 16px 0 36px; }
+      .js .steps-track { display: block; position: relative; padding-left: 30px; }
+      .js .steps-list { display: block; }
+      .js .step { padding: 14px 0 12px; transition: opacity var(--t-slow) var(--ease-out), transform var(--t-slow) var(--ease-out); }
+      .js .step:first-child { border-top: 0; }
+      .js .step:not(.is-active) { opacity: .42; }
+      .js .step.is-active { transform: translateX(10px); }
+      .js .step h3 { font-size: 19px; }
+      .js .step p { font-size: 15px; }
+      /* The marker: a square of the test grid that hops to the active step, turning a quarter per step. */
+      .js .steps-mark { display: block; position: absolute; left: 0; top: 0; width: 14px; height: 14px; transform: translateY(var(--y, 0px)); transition: transform var(--t-slow) var(--ease-out); }
+      .js .steps-mark i { display: block; width: 14px; height: 14px; border-radius: var(--r-xs); background: var(--purple); transform: rotate(var(--r, 0deg)); transition: transform var(--t-slow) var(--ease-out); }
+      .js .steps-mark.hop i { animation: steps-hop var(--t-slow) var(--ease-out); }
+      @keyframes steps-hop { 0%, 100% { scale: 1; } 45% { scale: 1.45; } }
+      .js .steps-media { display: flex; flex-direction: column; justify-content: center; height: 100%; padding: 32px; border-left: 1px solid var(--line); }
+      .js .stack { display: block; position: relative; height: min(58vh, 540px); margin-bottom: 44px; }
+      /* The stack: the active screen in front, the next two peeking below it, the passed ones lifted away. */
+      .js .stack-item { position: absolute; inset: 0; margin: 0; border: 1px solid var(--line); transform-origin: 50% 100%; transition: transform var(--t-slow) var(--ease-out), opacity var(--t-slow) var(--ease-out); }
+      .js .stack-item img { position: absolute; inset: 0; margin: auto; max-width: calc(100% - 2 * var(--pad)); max-height: calc(100% - 2 * var(--pad)); }
+      .js .stack-item[data-pos="0"] { z-index: 4; }
+      .js .stack-item[data-pos="1"] { z-index: 3; transform: translateY(22px) scale(.94); opacity: .75; }
+      .js .stack-item[data-pos="2"] { z-index: 2; transform: translateY(44px) scale(.88); opacity: .4; }
+      .js .stack-item[data-pos="3"] { z-index: 1; transform: translateY(44px) scale(.88); opacity: 0; }
+      .js .stack-item[data-pos="-1"], .js .stack-item[data-pos="-2"], .js .stack-item[data-pos="-3"] { z-index: 5; transform: translateY(-40px) scale(1.02); opacity: 0; pointer-events: none; }
+      .js .steps-count { display: flex; align-items: baseline; gap: 10px; margin: 24px 0 0; font: 600 13px/1 var(--mono); color: var(--ink-2); }
+      .js .steps-count b { font: 600 56px/1 var(--mono); letter-spacing: -.04em; color: var(--ink); font-variant-numeric: tabular-nums; }
     }
-    /* On a phone the whole top fits the first screen: a shorter bar, both buttons on one line, two missions. */
-    @media (max-width: 520px) {
-      .top .wrap { height: 68px; }
-      .hero { padding: 4px 0 40px; }
-      .hero-grid { gap: 24px; }
-      .hero .lead { font-size: 16px; margin: 12px 0 20px; }
-      .hero .actions { gap: 8px; }
-      .hero .actions { flex-wrap: nowrap; }
-      .hero .actions .btn { flex: 1 1 auto; min-width: 0; padding: 12px 10px; font-size: 15px; gap: 6px; white-space: nowrap; }
-      .demo { padding: 14px; gap: 12px; }
-      .demo-clip { padding: 32px 12px 12px; }
-      .demo-clip .clip-tag { left: 12px; top: 12px; }
-      .demo-clip .demo-job { font-size: 16px; }
-      .demo-clip p { font-size: 14px; line-height: 1.5; }
-      .demo-skills li { padding: 6px 8px; font-size: 12px; }
-      .demo-plan li { gap: 10px; padding: 7px 0; font-size: 14px; }
-      .demo-plan li:nth-child(n + 3) { display: none; }
-      .hero .demo-note { margin-top: 6px; font-size: 13px; }
-    }
-    @media (max-width: 380px) { .hero .actions { flex-wrap: wrap; } }
 
-    /* copied from docs/design/prototipos/vv-motion.* */
-    /* Only the components the landing uses: the dot matrix (scan, wave, flip), the dot field, decrypt, the status line,
-       the step mark and, from vv.css, the test grid. */
-    [data-dot-matrix] {
-      --dm-dot: 4px; --dm-gap: 2px; --dm-cycle: 1.6s;
-      display: inline-grid; grid-template-columns: repeat(4, var(--dm-dot)); gap: var(--dm-gap);
-      flex: none; vertical-align: middle;
-    }
-    [data-dot-matrix] i { position: relative; display: block; width: var(--dm-dot); height: var(--dm-dot); border-radius: 50%; background: var(--dm-color); }
-    [data-dot-matrix="scan"] { --dm-color: var(--yellow); }
-    [data-dot-matrix="wave"] { --dm-color: var(--purple); }
-    [data-dot-matrix="scan"].is-running i { animation: vvm-dot-pulse var(--dm-cycle) var(--ease-out) infinite both; animation-delay: calc(var(--r) * var(--dm-cycle) / 4); }
-    [data-dot-matrix="wave"].is-running i { animation: vvm-dot-pulse var(--dm-cycle) var(--ease-out) infinite both; animation-delay: calc((var(--r) + var(--c)) * var(--dm-cycle) / 10); }
-    [data-dot-matrix].is-offscreen i { animation-play-state: paused; }
-    @keyframes vvm-dot-pulse {
-      0% { opacity: .22; transform: scale(.7); }
-      12% { opacity: 1; transform: scale(1); }
-      34%, 100% { opacity: .22; transform: scale(.7); }
-    }
-    [data-dot-field] { --df-dot: var(--dot-empty); --df-hot: var(--green); position: relative; isolation: isolate; }
-    .dot-field-canvas { position: absolute; inset: 0; z-index: -1; width: 100%; height: 100%; border-radius: inherit; pointer-events: none; }
-    [data-decrypt].is-decrypting { position: relative; }
-    .dc-ghost { visibility: hidden; }
-    .dc-run { position: absolute; inset: 0; overflow: hidden; overflow-wrap: anywhere; }
-    .dc-noise { color: var(--ink-2); font-family: var(--mono); font-weight: 600; }
-    .dc-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
-    [data-dot-matrix].is-still i { animation: none !important; transition: none !important; }
-    @media (prefers-reduced-motion: reduce) {
-      [data-dot-matrix] i { animation: none !important; transition: none !important; }
-    }
-    /* flip: coral dots turn green one at a time (the JS adds .is-on in a fixed order), then the grid resets. Done: all green. */
-    [data-dot-matrix="flip"] { --dm-color: var(--coral); }
-    [data-dot-matrix="flip"] i::after { content: ""; position: absolute; inset: 0; border-radius: 50%; background: var(--green); opacity: 0; transform: scale(.4); transition: opacity var(--t-fast) var(--ease-out), transform var(--t-fast) var(--ease-out); }
-    [data-dot-matrix="flip"] i.is-on::after,
-    [data-dot-matrix="flip"].is-done i::after { opacity: 1; transform: none; }
-    [data-dot-matrix="flip"].is-reset i::after { transition: none; }
-    /* Status line (DESIGN.md 4.14): matrix, gerund label, timer with one decimal and a comma. */
-    .status-line { display: inline-flex; align-items: center; gap: 10px; margin: 0; font: 600 13px/1.2 var(--mono); color: var(--ink); }
-    .status-timer { color: var(--ink-2); font-variant-numeric: tabular-nums; min-width: 6ch; }
-    .status-timer:not(:empty)::before { content: "· "; }
-    .status-line.on-night { color: #f4f1ea; }
-    .status-line.on-night .status-timer { color: #f4f1ea; opacity: .72; }
-    /* Step mark (DESIGN.md 4.15): a ring (todo), a spinning purple arc (current), a drawn check on green (done). */
-    .step-mark { display: inline-block; width: 18px; height: 18px; flex: none; vertical-align: middle; }
-    .step-mark svg { width: 18px; height: 18px; overflow: visible; }
-    .step-mark .sm-ring, .step-mark .sm-arc { fill: none; stroke-width: 2; }
-    .step-mark .sm-ring { stroke: var(--dot-empty); }
-    .step-mark .sm-arc { stroke: var(--purple); stroke-linecap: round; stroke-dasharray: 30 100; opacity: 0; }
-    .demo .step-mark .sm-arc { stroke: #8a75ff; } /* the purple is 2.7:1 on the dark panel; this one is 3:1 or more */
-    .step-mark .sm-spin { transform-box: view-box; transform-origin: 9px 9px; }
-    .step-mark .sm-disc { fill: var(--green); opacity: 0; transform-box: view-box; transform-origin: 9px 9px; }
-    .step-mark .sm-check { fill: none; stroke: #141414; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1; stroke-dashoffset: 1; }
-    .step-mark:not(.is-done) .sm-check { visibility: hidden; } /* a round cap can draw a dot before the check runs */
-    .step-mark.is-current .sm-ring { stroke: var(--line); }
-    .step-mark.is-current .sm-arc { opacity: 1; }
-    .step-mark.is-current .sm-spin { animation: vvm-spin .9s linear infinite; }
-    .step-mark.is-done .sm-ring { opacity: 0; }
-    .step-mark.is-done .sm-disc { opacity: 1; animation: vvm-pop var(--t-base) var(--ease-out) both; }
-    .step-mark.is-done .sm-check { stroke-dashoffset: 0; animation: vvm-draw var(--t-base) var(--ease-out) 120ms both; }
-    @keyframes vvm-spin { to { transform: rotate(360deg); } }
+    /* The reviewer's hint levels and the battery: the dots of the system, at the size of a picture. */
+    .levels { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; }
+    .levels li { display: grid; grid-template-columns: 64px minmax(0, 1fr) auto; gap: 16px; align-items: center; padding: 14px 0; border-top: 1px solid var(--line); }
+    .levels li:first-child { border-top: 0; padding-top: 0; }
+    .levels .lv { display: flex; gap: 6px; }
+    .levels .lv i { width: 14px; height: 14px; border-radius: 50%; box-shadow: inset 0 0 0 2px var(--dot-empty); }
+    .levels .lv i.on { background: var(--ink); box-shadow: none; }
+    .levels b { display: block; font-size: 15.5px; }
+    .levels span { display: block; font-size: 14.5px; color: var(--ink-2); line-height: 1.4; }
+    .battery { display: grid; grid-template-columns: repeat(5, 28px); gap: 8px; }
+    .battery i { display: grid; place-items: center; width: 28px; height: 28px; border-radius: var(--r-xs); background: var(--green); }
+    .battery svg { width: 16px; height: 16px; fill: none; stroke: #141414; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; }
+    .battery-wrap { display: flex; align-items: center; gap: 20px; }
+    .levels .cmd { font-size: 12px; white-space: nowrap; }
+    .battery-wrap small b { font-weight: 600; color: var(--ink); font-variant-numeric: tabular-nums; }
+
+    /* The two demos of the reviewer's cells play once in view and again on hover (DESIGN.md 3.2: landing demos are
+       illustrative). They start in their first frame only when they will play (.is-armed); otherwise they are final.
+       Hints: each /dica lights its row and fills its dots left to right. */
+    .levels li, .levels .cmd { transition: opacity var(--t-base) var(--ease-out), transform var(--t-base) var(--ease-out); }
+    .levels .lv i { transition: background-color var(--t-fast) var(--ease-out), box-shadow var(--t-fast) var(--ease-out); }
+    .levels.is-armed li:not(.on) { opacity: .4; }
+    .levels.is-armed li:not(.on) .cmd { opacity: 0; transform: scale(.92); }
+    .levels.is-armed li:not(.on) .lv i.on { background: transparent; box-shadow: inset 0 0 0 2px var(--dot-empty); }
+    .levels.is-armed li.on .lv i.on { animation: vvm-pop var(--t-base) var(--ease-out) both; }
+    .levels.is-armed li.on .lv i.on:nth-child(2) { transition-delay: 120ms; animation-delay: 120ms; }
+    .levels.is-armed li.on .lv i.on:nth-child(3) { transition-delay: 240ms; animation-delay: 240ms; }
+    /* Battery: each attempt arrives (coral), is refused (green) and gets its check. */
+    .battery i svg { transition: opacity var(--t-fast) var(--ease-out), transform var(--t-fast) var(--ease-out); }
+    .battery.is-armed i:not(.on) { background: transparent; box-shadow: inset 0 0 0 2px var(--dot-empty); }
+    .battery.is-armed i:not(.on) svg { opacity: 0; transform: scale(.6); }
+    .battery.is-armed i.on { animation: bat-hit 420ms var(--ease-out) both; }
+    .battery.is-armed i.on svg { transition-delay: 260ms; }
+    @keyframes bat-hit { 0% { background: var(--coral); transform: scale(.92); } 50% { background: var(--coral); transform: scale(1); } 100% { background: var(--green); } }
     @keyframes vvm-pop { from { opacity: 0; transform: scale(.92); } }
-    @keyframes vvm-draw { from { stroke-dashoffset: 1; } }
-    [data-dot-matrix].is-still i::after, .step-mark.is-still * { animation: none !important; transition: none !important; }
-    @media (prefers-reduced-motion: reduce) {
-      [data-dot-matrix] i::after, .step-mark * { animation: none !important; transition: none !important; }
-    }
-    /* From docs/design/prototipos/vv.css: the test grid (DESIGN.md 4.16), one row per plan mission, one square dot
-       per test. The dots pop only while a demo plays (see .is-armed below), not on their own. */
-    .test-grid { display: grid; gap: 6px; }
-    .test-row { display: grid; grid-template-columns: 22px minmax(0, 1fr) 40px; gap: 10px; align-items: center; min-height: 12px; }
-    .test-mission { font: 600 11px/1 var(--mono); color: var(--ink-2); }
-    .test-dots { display: flex; flex-wrap: wrap; gap: 4px; }
-    .test-count { font: 600 12px/1 var(--mono); font-variant-numeric: tabular-nums; text-align: right; color: var(--ink); }
-    .test-row[data-state="future"] .test-count, .test-row[data-state="none"] .test-count { color: var(--ink-2); }
-    .td { display: block; width: 12px; height: 12px; border-radius: var(--r-xs); }
-    .td.is-pass { background: var(--green); }
-    .td.is-fail { background: var(--coral); }
-    .td.is-empty { background: transparent; box-shadow: inset 0 0 0 2px var(--dot-empty); }
-    /* end of the copy */
+    .battery-wrap small { font: 600 12px/1.4 var(--mono); color: var(--ink-2); text-transform: uppercase; letter-spacing: .06em; }
 
+    /* Teachers: what the teacher sees and does not see. */
+    .sees { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .sees > div { padding: 32px; }
+    .sees > div + div { border-left: 1px solid var(--line); }
+    .sees ul { list-style: none; margin: 12px 0 0; padding: 0; }
+    .sees li { display: flex; gap: 12px; align-items: baseline; padding: 10px 0; border-top: 1px solid var(--line); font-size: 15.5px; }
+    .sees li::before { content: ""; flex: none; width: 10px; height: 10px; border-radius: 50%; background: var(--green); transform: translateY(1px); }
+    .sees .not li::before { background: transparent; box-shadow: inset 0 0 0 2px var(--dot-empty); }
 
-    /* Sections below the hero (DESIGN.md 1, 2, 4.6): paper, a plain h2 with one paragraph beside it, and the product on
-       dark panels. No labels over the titles, no flat colour blocks, no shadow except the closing block's. */
-    .section { padding: 96px 0; border-top: 1px solid var(--line); }
-    .sec-head { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px 48px; align-items: end; margin-bottom: 40px; }
-    .sec-head h2 { max-width: 17em; }
-    .sec-head p { margin: 0; color: var(--ink-2); max-width: 34em; }
+    /* Principles: a small drawing of dots per rule, in the system's own motifs (DESIGN.md 2.6). */
+    .art { height: 120px; display: flex; align-items: center; color: var(--ink); }
+    .art svg { height: 100%; width: auto; }
+    .art .bar { fill: var(--line); }
+    .art .hl { fill: var(--yellow); }
+    .art .ink { fill: var(--ink); }
+    .art .out { fill: none; stroke: var(--dot-empty); stroke-width: 2; }
+    /* The principles' drawings play like the reviewer's demos. Competencies: the highlighter draws over a term, its
+       competency dot appears. Rules: the missions build column by column, always in the same order. The posting: its
+       lines dissolve and only the four kept items fill in. */
+    .art .st { transform-box: fill-box; transition: transform var(--t-slow) var(--ease-out), opacity var(--t-base) var(--ease-out), fill var(--t-base) var(--ease-out), stroke var(--t-base) var(--ease-out); }
+    .art .hl, .art .gone { transform-origin: 0 50%; }
+    .art .pop { transform-origin: 50% 50%; }
+    .art.is-armed .hl:not(.on) { transform: scaleX(0); }
+    .art.is-armed .pop:not(.on) { opacity: 0; transform: scale(.6); }
+    .art.is-armed .gone.on { opacity: 0; transform: scaleX(.15); }
+    .art.is-armed .keep.on { fill: var(--ink); stroke: var(--ink); }
+    .art .dash { fill: none; stroke: var(--dot-empty); stroke-width: 1.5; stroke-dasharray: 5 4; }
 
-    /* How it works: four steps in order, then the plan and the repository being created (DESIGN.md 4.4, 4.15, 5.1). */
-    .how-steps { list-style: none; margin: 0 0 40px; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 24px; }
-    .how-steps li { padding-top: 16px; border-top: 1px solid var(--ink); }
-    .how-steps .n { display: block; margin-bottom: 12px; font: 600 12px/1 var(--mono); color: var(--ink-2); }
-    .how-steps h3 { margin-bottom: 6px; }
-    .how-steps p { margin: 0; font-size: 15px; color: var(--ink-2); }
-    .how-steps code, .reviewer-copy code, .roadmap code { font: 600 .88em var(--mono); padding: 1px 5px; border-radius: var(--r-xs); background: var(--paper-2); }
-    /* The repository panel starts on the line of the paragraph above it (.sec-head's second column: half the width plus 24 px). */
-    .build { display: grid; grid-template-columns: minmax(0, calc(50% + 8px)) minmax(0, 1fr); gap: 16px; align-items: start; }
-
-    .missions { list-style: none; margin: 0; padding: 0; display: grid; }
-    .missions li { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 14px; align-items: start; padding: 12px 0; border-top: 1px solid var(--night-3); }
-    .missions li:first-child { padding-top: 0; border-top: 0; }
-    .m-title { display: block; font-weight: 600; font-size: 15px; line-height: 1.3; }
-    .m-sum { display: block; margin-top: 2px; font-size: 14px; line-height: 1.4; color: var(--night-muted); }
-    .m-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
-    .m-chips span { padding: 5px 8px; border-radius: var(--r-xs); background: var(--night-3); font: 600 11px/1 var(--mono); }
-    .m-side { display: grid; gap: 8px; justify-items: end; }
-    /* The reason seal (DESIGN.md 4.4) on the dark panel: central in ink-on-paper, pela vaga in soft purple, padrão outlined. */
-    .tag { padding: 5px 7px; border: 1px solid #4a4740; border-radius: var(--r-xs); font: 600 10.5px/1 var(--mono); text-transform: uppercase; letter-spacing: .06em; color: var(--night-muted); white-space: nowrap; }
-    .tag.core { background: #f4f1ea; border-color: #f4f1ea; color: #141414; }
-    .tag.match { background: #2c2266; border-color: #2c2266; color: #f4f1ea; }
-    .diff { display: flex; gap: 3px; }
-    .diff i { width: 6px; height: 14px; border-radius: 2px; background: #4a4740; }
-    .diff i.on { background: #f4f1ea; }
-
-    .stage-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
-    .stage-list li { display: flex; align-items: center; gap: 12px; font-size: 15px; color: var(--night-muted); transition: color var(--t-base) var(--ease-out); }
-    .stage-list li.is-current, .stage-list li.is-done { color: var(--night-text); }
-    .stage-list li.is-current { font-weight: 600; }
-    .repo-result { display: grid; gap: 12px; padding-top: 16px; border-top: 1px solid var(--night-3); }
-    .repo-name { display: flex; align-items: center; gap: 8px; margin: 0; font: 600 13.5px/1.3 var(--mono); overflow-wrap: anywhere; }
-    .issues { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; font-size: 14.5px; line-height: 1.3; }
-    .issues li { display: grid; grid-template-columns: 10px auto minmax(0, 1fr); gap: 10px; align-items: center; }
-    .issues .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--coral); }
-    .issues .n { font: 600 12px/1 var(--mono); color: var(--night-muted); }
-
-    /* Reviewer: a pull request on a dark panel, the question in soft purple (DESIGN.md 4.10). */
-    .reviewer-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px 48px; align-items: start; }
-    .reviewer-copy { position: sticky; top: 24px; }
-    .reviewer-copy p { margin: 16px 0 0; color: var(--ink-2); max-width: 30em; }
-    .pr-bar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-weight: 600; font-size: 15px; }
-    .pr-open { padding: 5px 7px; border: 1px solid #4a4740; border-radius: var(--r-xs); font: 600 10.5px/1 var(--mono); text-transform: uppercase; letter-spacing: .06em; color: var(--night-text); }
-    .pr-num { color: var(--night-muted); font-weight: 500; }
-    .term { margin: 0; padding: 12px 14px; border-radius: var(--r-sm); background: var(--night); font: 400 12.5px/1.55 var(--mono); color: #cfcabe; white-space: pre-wrap; overflow-wrap: anywhere; }
-    .term .r { color: var(--coral); }
-    .term .d { color: var(--night-muted); }
-    .thread { display: grid; gap: 14px; }
-    .msg { display: grid; grid-template-columns: 36px minmax(0, 1fr); gap: 12px; align-items: start; }
-    .bubble { padding: 12px 16px; border-radius: var(--r-xs) var(--r-md) var(--r-md) var(--r-md); background: var(--night-3); font-size: 15px; line-height: 1.5; }
-    .bubble.bot { background: #2c2266; }
-    .bubble .meta { display: block; margin-bottom: 6px; font: 600 12px/1 var(--mono); color: var(--night-muted); }
-    .bubble.bot .meta { color: #c9bdff; }
-    .bubble code { font: 600 .9em var(--mono); padding: 1px 5px; border-radius: var(--r-xs); background: rgba(244, 241, 234, .12); }
-
-    /* Teachers: the class dashboard with the test grid, fictitious data in alphabetical order (DESIGN.md 2.2, 4.8, 4.9, 4.16). */
-    [data-status="STUCK"] { --st: var(--coral); }
-    [data-status="ADVANCING"] { --st: var(--green); }
-    [data-status="COMPLETED"] { --st: var(--purple); }
-    .meter { display: flex; gap: 2px; height: 10px; border-radius: var(--r-xs); overflow: hidden; }
-    .meter i { flex: 1; background: var(--st); transform-origin: left; transition: transform var(--t-slow) var(--ease-out); }
-    .legend { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 13.5px; color: var(--night-muted); }
-    .legend li { display: inline-flex; align-items: center; gap: 8px; }
-    .legend i { width: 8px; height: 8px; border-radius: 50%; background: var(--st); }
-    .students { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 12px; }
-    .student { position: relative; overflow: hidden; display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 12px 14px; align-items: center; padding: 18px 18px 18px 24px; border: 1px solid var(--night-3); border-radius: var(--r-md); }
-    .student::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 6px; background: var(--st); }
-    .avatar { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; background: var(--night-3); color: var(--night-text); font: 600 14px/1 var(--mono); }
-    .avatar.bot { background: var(--purple); color: #fff; }
-    .msg .avatar { width: 36px; height: 36px; font-size: 13px; }
-    .student .name { display: grid; gap: 8px; justify-items: start; font: 600 18px/1.2 var(--display); letter-spacing: -.02em; }
-    .student .test-grid { grid-column: 1 / -1; }
-    .student .reason { grid-column: 1 / -1; margin: 0; padding-top: 12px; border-top: 1px solid var(--night-3); font-size: 14.5px; line-height: 1.4; color: var(--night-muted); }
-    .board-demo .test-mission, .board-demo .test-row[data-state="future"] .test-count { color: var(--night-muted); }
-    .board-demo .test-count { color: var(--night-text); }
-    .status { display: inline-flex; align-items: center; gap: 5px; padding: 5px 8px 5px 6px; border-radius: var(--r-xs); background: var(--st); color: #141414; font: 600 11px/1 var(--mono); text-transform: uppercase; letter-spacing: .05em; white-space: nowrap; }
-    .status svg { width: 13px; height: 13px; }
-    .status[data-status="COMPLETED"] { color: #fff; }
-    .sees { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px 48px; margin-top: 32px; }
-    .sees h3 { margin-bottom: 8px; }
-    .sees ul { list-style: none; margin: 0; padding: 0; }
-    .sees li { padding: 9px 0; border-top: 1px solid var(--line); font-size: 15px; }
-
-    /* Principles and status: text in rows on paper, no icons, no badges. */
-    .rules { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
-    .rules li { padding-top: 16px; border-top: 1px solid var(--line); }
-    .rules h3 { margin-bottom: 6px; }
-    .rules p { margin: 0; font-size: 15px; color: var(--ink-2); }
-    .roadmap-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px 48px; align-items: start; }
-    .roadmap-grid > div > p { margin: 16px 0 0; color: var(--ink-2); }
-    .roadmap-grid .stack-line { font-size: 15px; }
+    /* Status */
+    .status-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr); }
+    .status-grid > div { padding: 32px; }
+    .status-grid > div + div { border-left: 1px solid var(--line); }
+    .status-grid p { margin: 0 0 16px; color: var(--ink-2); }
+    .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+    .chips span { padding: 6px 9px; border-radius: var(--r-xs); background: var(--paper-2); font: 600 12.5px/1 var(--mono); }
     .roadmap { list-style: none; margin: 0; padding: 0; }
-    .roadmap li { display: grid; grid-template-columns: 88px minmax(0, 1fr); gap: 16px; padding: 14px 0; border-top: 1px solid var(--line); }
-    .roadmap .state { font: 600 12px/1.7 var(--mono); text-transform: uppercase; letter-spacing: .06em; color: var(--ink); }
+    .roadmap li { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 16px; padding: 14px 0; border-top: 1px solid var(--line); }
+    .roadmap li:first-child { border-top: 0; padding-top: 0; }
+    .roadmap .state { display: inline-flex; align-items: center; gap: 8px; align-self: start; font: 600 12px/1.9 var(--mono); text-transform: uppercase; letter-spacing: .06em; }
+    .roadmap .state::before { content: ""; width: 10px; height: 10px; border-radius: 50%; background: var(--green); }
     .roadmap .state.next { color: var(--ink-2); }
+    .roadmap .state.next::before { background: transparent; box-shadow: inset 0 0 0 2px var(--dot-empty); }
     .roadmap h3 { font-size: 17px; }
     .roadmap p { margin: 2px 0 0; font-size: 15px; color: var(--ink-2); }
 
-    /* Closing: the page's one block with the resting shadow, and its second purple button, far from the hero's. */
-    .cta { padding: 0 0 96px; }
-    .cta-box { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 24px 48px; padding: clamp(24px, 4vw, 40px); background: var(--card); border: 1px solid var(--line); border-radius: var(--r-lg); box-shadow: var(--rest); }
-    .cta-box p { margin: 8px 0 0; color: var(--ink-2); max-width: 36em; }
+    /* The dot band: failing tests on the left turning green to the right. When it comes into view, the coral dots
+       marked data-c turn green once, column by column (DESIGN.md 2.6: each test is a dot that goes from coral to green). */
+    .band { padding: 48px 32px; }
+    .band-svg { width: 100%; height: auto; }
+    .band-svg .p { fill: var(--green); }
+    .band-svg .f { fill: var(--coral); transition: fill var(--t-base) var(--ease-out); transition-delay: calc(var(--d, 0) * 1ms); }
+    .band-svg .e { fill: none; stroke: var(--dot-empty); stroke-width: 2; }
+    .band-svg.is-on .f[data-c] { fill: var(--green); }
 
-    /* A demo below the hero starts in its first frame only when it will play (.is-armed, set by its script); without
-       JS or with reduced motion it is already final. Off screen (.is-paused) it waits where it is. */
-    .missions li, .issues li, .student, .repo-result { transition: opacity var(--t-base) var(--ease-out), transform var(--t-base) var(--ease-out); }
-    .is-armed .missions li:not(.on), .is-armed .issues li:not(.on), .is-armed .student:not(.on) { opacity: 0; transform: translateY(10px); }
-    .is-armed .repo-result:not(.on) { opacity: 0; }
-    .is-armed .repo-ready:not(.on) { display: none; }
-    .is-armed .meter i:not(.on) { transform: scaleX(0); }
-    .is-armed .student.on .td { animation: vvm-pop var(--t-base) var(--ease-out) both; }
-    .is-paused .step-mark *, .is-paused .td { animation-play-state: paused; }
+    /* Closing */
+    .cta { padding: clamp(56px, 9vh, 96px) 24px; text-align: center; }
+    .cta p { margin: 16px auto 32px; color: var(--ink-2); max-width: 34em; font-size: 18px; }
 
     /* Footer */
     footer { background: #0b0b0a; color: #c9c5bb; font-size: 15px; padding: 64px 0 40px; }
@@ -404,7 +360,7 @@
     footer .brand { color: #f4f1ea; margin-bottom: 14px; }
     footer p { margin: 0; }
     footer h2 { font: 600 12px/1 var(--mono); text-transform: uppercase; letter-spacing: .08em; color: #a9a59b; margin: 0 0 16px; }
-    footer ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; }
+    footer ul { list-style: none; margin: 0; padding: 0; display: grid; }
     footer ul a { min-height: 44px; }
     footer a { color: #f4f1ea; text-decoration: underline; text-decoration-color: #5c5850; text-underline-offset: 4px; display: inline-flex; align-items: center; gap: 8px; }
     footer a:hover { text-decoration-color: #f4f1ea; }
@@ -418,32 +374,64 @@
     .foot-base .eu { display: inline-flex; align-items: center; gap: 8px; }
     .foot-base .eu .ico { color: #ffcc00; width: 20px; height: 20px; }
 
+    /* The dot field (copied from docs/design/prototipos/vv-motion.*): the only canvas of the page. */
+    [data-dot-field] { --df-dot: var(--dot-empty); --df-hot: var(--green); position: relative; isolation: isolate; }
+    .dot-field-canvas { position: absolute; inset: 0; z-index: -1; width: 100%; height: 100%; pointer-events: none; }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { transition-duration: .01ms !important; transition-delay: 0s !important; animation-duration: .01ms !important; }
+    }
+
     /* Responsive */
     @media (max-width: 1000px) {
-      .sec-head, .reviewer-grid, .roadmap-grid, .build { grid-template-columns: minmax(0, 1fr); }
-      .reviewer-copy { position: static; }
-      .how-steps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-      .rules { grid-template-columns: minmax(0, 1fr); gap: 0; }
-      .rules li { padding: 16px 0; }
+      .facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .fact:nth-child(3) { border-left: 0; }
+      .fact:nth-child(n + 3) { border-top: 1px solid var(--line); }
+      .grid.c3, .bento { grid-template-columns: minmax(0, 1fr); }
+      .bento > .span2 { grid-column: auto; }
+      .grid.c3 .pane, .bento .pane { aspect-ratio: auto; padding: var(--pad); }
+      .grid.c3 .pane img, .bento .pane img { position: static; max-width: 100%; max-height: 560px; }
+      .grid.c3 > *, .bento > * { border-right: 0; border-bottom: 1px solid var(--line); }
+      .grid.c3 > :last-child, .bento > :last-child { border-bottom: 0; }
+      .status-grid { grid-template-columns: minmax(0, 1fr); }
+      .status-grid > div + div { border-left: 0; border-top: 1px solid var(--line); }
+    }
+    @media (max-width: 900px) {
+      .grid.c2 { grid-template-columns: minmax(0, 1fr); }
+      .grid.c2 > * { border-right: 0 !important; border-bottom: 1px solid var(--line) !important; }
+      .grid.c2 > :last-child { border-bottom: 0 !important; }
+      .grid.c2 .pane { aspect-ratio: auto; padding: var(--pad); }
+      .grid.c2 .pane img { position: static; max-width: 100%; max-height: 560px; }
     }
     @media (max-width: 760px) {
       .top nav { display: none; }
-      .section { padding: 64px 0; }
-      .cta { padding-bottom: 64px; }
       .sees { grid-template-columns: minmax(0, 1fr); }
+      .sees > div + div { border-left: 0; border-top: 1px solid var(--line); }
       .foot-grid { grid-template-columns: 1fr; gap: 32px; }
     }
     @media (max-width: 520px) {
       body { font-size: 16px; }
       .wrap { padding: 0 16px; }
+      .frame { border-inline: 0; }
       .top .btn span.long { display: none; }
-      .how-steps { grid-template-columns: minmax(0, 1fr); gap: 0; margin-bottom: 32px; }
-      .how-steps li { padding: 16px 0; }
-      .missions li { grid-template-columns: auto minmax(0, 1fr); row-gap: 10px; }
-      .m-side { grid-column: 2; display: flex; align-items: center; gap: 10px; }
+      .hero { padding: 40px 16px 0; }
+      .hero .lead { font-size: 17px; margin: 18px auto 24px; }
+      .actions .btn { flex: 1 1 100%; }
+      .window { margin-inline: -1px; }
+      .win-url { font-size: 11.5px; }
+      .vid-toggle .label { display: none; }
+      .vid-toggle { min-width: 44px; min-height: 44px; justify-content: center; }
+      .facts { grid-template-columns: minmax(0, 1fr); }
+      .fact { border-left: 0 !important; padding: 22px 16px; }
+      .fact + .fact { border-top: 1px solid var(--line); }
+      .fact b { font-size: 34px; }
+      .sec-head { padding: 56px 16px 32px; }
+      .sec-head p { font-size: 16.5px; }
+      .cell, .sees > div, .status-grid > div { padding: 24px 16px; }
+      .pane { --pad: 16px; }
       .roadmap li { grid-template-columns: minmax(0, 1fr); gap: 4px; }
-      .student { padding: 16px 14px 16px 20px; }
-      .cta-box .btn { width: 100%; }
+      .band { padding: 32px 16px; }
+      .cta .btn { width: 100%; }
     }
   </style>
 </head>
@@ -452,6 +440,27 @@
     <!-- Brand icons from Simple Icons (CC0 1.0), simpleicons.org -->
     <symbol id="i-github" viewBox="0 0 24 24"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></symbol>
     <symbol id="i-europeanunion" viewBox="0 0 24 24"><path d="M11.373 1.94 10.36 1.2h1.253L12 0l.387 1.2h1.253l-1.013.74.386 1.207L12 2.4l-1.013.747Zm1.254 20.86.386 1.2L12 23.26l-1.013.74.386-1.2-1.013-.74h1.253L12 20.853l.387 1.207h1.253ZM1.64 12.8l-1.013.747.386-1.2L0 11.627h1.253l.387-1.2.387 1.2h1.26l-1.02.746.386 1.2-1.013-.746Zm5.807-9.467.386 1.2L6.82 3.8l-1.013.74.386-1.2L5.18 2.6h1.253l.387-1.2.387 1.2H8.46Zm-4.78 3.08.386-1.2.394 1.2h1.22l-1.014.747.387 1.2-1.02-.747L2 8.36l.387-1.2-1.014-.747ZM1.387 16.84h1.28l.386-1.2.394 1.2h1.22l-1.014.747.387 1.2-1.02-.74-1.02.74.387-1.2-1.014-.747Zm4.806 4.56-1.013-.733h1.253l.387-1.2.387 1.2H8.46l-1.013.733.386 1.2-1.013-.74-1.013.74Zm16.794-9.027.386 1.2-1.013-.746-1.027.746.387-1.2-1.02-.746H22l.387-1.2.386 1.2H24Zm-6.434-9.04L15.54 2.6h1.253l.387-1.2.387 1.2h1.253l-1.013.733.386 1.2L17.18 3.8l-1.013.74.386-1.2Zm4 3.074.394-1.2.386 1.2h1.254l-.987.753.387 1.2-1.014-.747-1.02.747.387-1.2-1.007-.747Zm.78 10.433h1.254l-.987.747.387 1.2-1.014-.74-1.02.74.387-1.2-1.007-.747h1.254l.393-1.2.387 1.2zm-2.513 3.827-1.013.733.386 1.2-1.013-.74-1.013.74.386-1.2-1.013-.733h1.253l.387-1.2.387 1.2z"/></symbol>
+    <symbol id="si-openjdk" viewBox="0 0 24 24"><path d="M11.915 0 11.7.215C9.515 2.4 7.47 6.39 6.046 10.483c-1.064 1.024-3.633 2.81-3.711 3.551-.093.87 1.746 2.611 1.55 3.235-.198.625-1.304 1.408-1.014 1.939.1.188.823.011 1.277-.491a13.389 13.389 0 0 0-.017 2.14c.076.906.27 1.668.643 2.232.372.563.956.911 1.667.911.397 0 .727-.114 1.024-.264.298-.149.571-.33.91-.5.68-.34 1.634-.666 3.53-.604 1.903.062 2.872.39 3.559.704.687.314 1.15.664 1.925.664.767 0 1.395-.336 1.807-.9.412-.563.631-1.33.72-2.24.06-.623.055-1.32 0-2.066.454.45 1.117.604 1.213.424.29-.53-.816-1.314-1.013-1.937-.198-.624 1.642-2.366 1.549-3.236-.08-.748-2.707-2.568-3.748-3.586C16.428 6.374 14.308 2.394 12.13.215zm.175 6.038a2.95 2.95 0 0 1 2.943 2.942 2.95 2.95 0 0 1-2.943 2.943A2.95 2.95 0 0 1 9.148 8.98a2.95 2.95 0 0 1 2.942-2.942zM8.685 7.983a3.515 3.515 0 0 0-.145.997c0 1.951 1.6 3.55 3.55 3.55 1.95 0 3.55-1.598 3.55-3.55 0-.329-.046-.648-.132-.951.334.095.64.208.915.336a42.699 42.699 0 0 1 2.042 5.829c.678 2.545 1.01 4.92.846 6.607-.082.844-.29 1.51-.606 1.94-.315.431-.713.651-1.315.651-.593 0-.932-.27-1.673-.61-.741-.338-1.825-.694-3.792-.758-1.974-.064-3.073.293-3.821.669-.375.188-.659.373-.911.5s-.466.2-.752.2c-.53 0-.876-.209-1.16-.64-.285-.43-.474-1.101-.545-1.948-.141-1.693.176-4.069.823-6.614a43.155 43.155 0 0 1 1.934-5.783c.348-.167.749-.31 1.192-.425zm-3.382 4.362a.216.216 0 0 1 .13.031c-.166.56-.323 1.116-.463 1.665a33.849 33.849 0 0 0-.547 2.555 3.9 3.9 0 0 0-.2-.39c-.58-1.012-.914-1.642-1.16-2.08.315-.24 1.679-1.755 2.24-1.781zm13.394.01c.562.027 1.926 1.543 2.24 1.783-.246.438-.58 1.068-1.16 2.08a4.428 4.428 0 0 0-.163.309 32.354 32.354 0 0 0-.562-2.49 40.579 40.579 0 0 0-.482-1.652.216.216 0 0 1 .127-.03z"/></symbol>
+    <symbol id="si-springboot" viewBox="0 0 24 24"><path d="m23.693 10.7058-4.73-8.1844c-.4094-.7106-1.4166-1.2942-2.2402-1.2942H7.2725c-.819 0-1.8308.5836-2.2402 1.2942L.307 10.7058c-.4095.7106-.4095 1.873 0 2.5837l4.7252 8.189c.4094.7107 1.4166 1.2943 2.2402 1.2943h9.455c.819 0 1.826-.5836 2.2402-1.2942l4.7252-8.189c.4095-.7107.4095-1.8732 0-2.5838zM10.9763 5.7547c0-.5365.4377-.9742.9742-.9742s.9742.4377.9742.9742v5.8217c0 .5366-.4377.9742-.9742.9742s-.9742-.4376-.9742-.9742zm.9742 12.4294c-3.6427 0-6.6077-2.965-6.6077-6.6077.0047-2.0896.993-4.0521 2.6685-5.304a.8657.8657 0 0 1 1.2142.1788.8657.8657 0 0 1-.1788 1.2143c-2.1602 1.6048-2.612 4.6592-1.0072 6.8194 1.6049 2.1603 4.6593 2.612 6.8195 1.0072 1.2378-.9177 1.9673-2.372 1.9673-3.9157a4.8972 4.8972 0 0 0-1.9861-3.925c-.386-.2824-.466-.8284-.1836-1.2143.2824-.386.8283-.466 1.2143-.1835 1.6895 1.2471 2.6826 3.2238 2.6873 5.3228 0 3.6474-2.965 6.6077-6.6077 6.6077z"/></symbol>
+    <symbol id="si-hibernate" viewBox="0 0 24 24"><path d="M5.365 0L9.98 7.994h8.95L14.31 0H5.366zm-.431.248L.46 7.994l4.613 8.008L9.55 8.24 4.934.248zm13.992 7.75l-4.475 7.76 4.617 7.992 4.471-7.744-4.613-8.008zm-4.905 8.006l-8.95.002L9.688 24h8.946l-4.615-7.994.001-.002Z"/></symbol>
+    <symbol id="si-flyway" viewBox="0 0 24 24"><path d="m3.02 21.055 1.12-.23c1.054-.219 2.114-.415 3.161-.66a4.955 4.952 0 0 0 3.696-3.915 6.06 6.057 0 0 0 .085-1.153l.366-.09a4.936 4.933 0 0 0 3.75-3.717 3.8 3.798 0 0 0 .128-1.06c-.002-.096 0-.193 0-.305.094-.023.18-.047.267-.067a4.552 4.549 0 0 0 2.68-1.755 5.772 5.769 0 0 0 1.005-4.854c-.021-.088-.035-.179-.061-.264a.63.629 0 0 0-.728-.432l-3.184.652-3.485.716-4.002.822q-2.186.449-4.373.893a1.125 1.125 0 0 1-.422.06c-.007-.074-.017-.14-.017-.204-.001-1.12.002-2.243-.005-3.364a.324.324 0 0 1 .174-.307 8.493 8.488 0 0 1 1.9-.86A17.205 17.194 0 0 1 7.827.315C8.373.23 8.922.181 9.47.12a26.795 26.777 0 0 1 3.526-.102c.496.01.992.051 1.487.097.542.051 1.085.11 1.623.192a14.482 14.472 0 0 1 4.007 1.124c.262.123.509.28.764.422a.215.215 0 0 1 .122.223c-.004.054 0 .11 0 .163v19.519c0 .347.045.28-.262.472a8.437 8.432 0 0 1-1.961.857 16.78 16.769 0 0 1-2.851.63c-.6.08-1.2.146-1.804.207-.277.03-.556.035-.835.043-.564.015-1.128.041-1.691.03-.636-.014-1.272-.059-1.907-.099a20.054 20.041 0 0 1-2.519-.332 13.423 13.415 0 0 1-3.224-.976c-.273-.13-.53-.29-.797-.435a.246.246 0 0 1-.144-.248c.008-.23 0-.46.003-.69 0-.049.01-.096.016-.163zm9.985-10.652a1.248 1.248 0 0 1-.09.55 2.624 2.622 0 0 1-2.045 1.84c-1.3.28-2.607.537-3.912.805l-.57.114a1.147 1.146 0 1 0 .403 2.256c.595-.11 1.186-.242 1.779-.363.064-.014.128-.022.209-.035a2.584 2.582 0 0 1-.55 1.41A2.801 2.8 0 0 1 6.516 18c-1.103.223-2.206.45-3.308.676-.052.01-.106.013-.156.02-.048-.146-.061-10.38-.014-10.63l14.048-2.883a1.523 1.522 0 0 1-.016.18 3.438 3.436 0 0 1-.738 1.502 2.399 2.397 0 0 1-1.426.804c-1.11.216-2.218.45-3.326.677l-.96.196a1.168 1.168 0 0 0-.953 1.057 1.147 1.147 0 0 0 .875 1.186 1.747 1.746 0 0 0 .807-.054c.492-.1.983-.203 1.475-.304.053-.01.108-.014.18-.023z"/></symbol>
+    <symbol id="si-junit5" viewBox="0 0 24 24"><path d="M11.886 9.769c1.647 0 2.95.436 3.912 1.307.961.872 1.442 2.06 1.442 3.566 0 1.744-.548 3.107-1.643 4.09-1.088.977-2.638 1.465-4.65 1.465-1.826 0-3.26-.294-4.303-.883v-2.38a7.89 7.89 0 002.079.793c.782.186 1.509.28 2.18.28 1.184 0 2.086-.265 2.704-.794.619-.53.928-1.304.928-2.325 0-1.952-1.245-2.929-3.733-2.929-.35 0-.783.038-1.297.112-.514.067-.965.145-1.352.235l-1.174-.693.626-7.98H16.1v2.335H9.919l-.37 4.046c.262-.044.578-.096.95-.156.38-.06.843-.09 1.387-.09zM12 0C5.373 0 0 5.373 0 12a11.998 11.998 0 006.65 10.738v-3.675h.138c.01.004 4.86 2.466 8.021 0 3.163-2.468 1.62-5.785 1.08-6.557-.54-.771-3.317-2.083-5.708-1.851-2.391.231-2.391.308-2.391.308l.617-7.096 7.687-.074V.744A12 12 0 0011.999 0zm4.095.744V3.793l-7.688.074-.617 7.096s0-.077 2.391-.308c2.392-.232 5.169 1.08 5.708 1.851.54.772 2.083 4.089-1.08 6.557-3.16 2.467-8.013.004-8.02 0h-.14v3.675A12 12 0 0012 24c6.628 0 12-5.373 12-12A12.007 12.007 0 0016.35.83c-.085-.03-.17-.059-.255-.086zM6.299 22.556z"/></symbol>
+    <symbol id="si-apachemaven" viewBox="0 0 24 24"><path d="M4.237.001c-.312-.013-.665.072-.828.457-.158.374-.283 1.188-.34 2.276l1.223.591c-.02-.737.007-1.43.076-2.066-.026.299-.056.96.006 2.039.019.342.049.725.088 1.15.002.024.002.047.007.069a45.485 45.485 0 0 0 .309 2.412c.057.368.126.752.195 1.16l-.01.01c.014.01.015.018.014.023l.03.16c.03.162.06.328.093.494l.108.553.056.289a61.72 61.72 0 0 0 .457 2.068c.09.382.186.78.287 1.186.098.386.199.783.309 1.193.096.362.199.735.303 1.117.003.018.012.036.015.055a145.826 145.826 0 0 0 .34 1.185l.049.174c.078.261.158.533.242.805a4.2 4.2 0 0 1-.293-.135l-.19-.654c-.02-.077-.042-.148-.062-.225l-.002-.004-.004-.002c-.087-.3-.17-.607-.257-.916-.023-.087-.044-.173-.069-.263l-.314-1.178c-.1-.381-.194-.765-.29-1.154-.094-.39-.185-.78-.277-1.172-.093-.401-.181-.8-.265-1.203-.085-.396-.161-.798-.24-1.193a50.315 50.315 0 0 1-.211-1.17c-.004-.013-.006-.03-.01-.041l.004-.002c-.057-.386-.116-.77-.174-1.15a60.905 60.905 0 0 1-.154-1.204 27.447 27.447 0 0 1-.172-2.41l-1.22-.59c-.004.074-.01.15-.013.23-.012.294-.02.605-.023.93a45.3 45.3 0 0 0 .006 1.157c.009.37.025.755.045 1.148.02.336.042.675.07 1.022l.002.039.006.004c.003.023.007.05.006.076.033.368.064.739.107 1.115a34.493 34.493 0 0 0 .303 2.125c.01.064.024.131.035.195a23.418 23.418 0 0 0 .547 2.32c.07.237.14.464.21.68.063.182.13.365.194.545.155.422.327.832.512 1.232l.006.004a.318.318 0 0 0 .02.05c.225.485.475.95.755 1.395.01.013.02.033.03.047-.455-.183-1.259-.098-1.253-.097.83.288 1.557.64 2.016 1.175-.183.2-.523.352-.953.477.594.064.924-.039 1.045-.092-.31.26-.483.732-.635 1.24.35-.57.696-.949 1.033-1.094.078.258.162.524.244.788A147.532 147.532 0 0 0 5.157 24a.56.56 0 0 0 .43-.312c.13-.282.83-1.775 1.908-3.875.413 1.303.88 2.679 1.386 4.109a.494.494 0 0 0 .076-.465 103.735 103.735 0 0 1-1.308-3.945c.154-.299.316-.612.484-.932.125.04.255.094.389.155.203.186.352.491.482.84a1.515 1.515 0 0 0-.334-1.098c1.335.258 2.547.09 3.287-.81a3.97 3.97 0 0 0 .192-.258c-.325.304-.682.404-1.313.273.996-.281 1.523-.617 2.035-1.22.12-.145.244-.303.371-.48-.943.722-1.927.822-2.9.493l-.045-.018c.914.02 2.203-.474 3.092-1.189.41-.33.796-.73 1.17-1.21.28-.359.55-.76.82-1.216.234-.393.468-.824.7-1.293a2.83 2.83 0 0 1-.74.137l-.144.008c-.048.002-.093 0-.146.002.885-.198 1.5-.74 1.994-1.447-.24.117-.628.262-1.07.297-.058.006-.12.006-.182.006-.013-.002-.028 0-.047-.002.306-.078.574-.178.81-.309a3.363 3.363 0 0 0 .358-.236c.044-.037.088-.07.13-.106.099-.086.193-.18.28-.287.028-.034.056-.063.08-.098.036-.05.073-.098.104-.146a8.388 8.388 0 0 0 .51-.828c.015-.031.032-.057.046-.088.04-.084.08-.16.11-.227.042-.099.074-.179.092-.238a.515.515 0 0 1-.108.051c-.273.112-.727.187-1.086.201-.004 0-.008 0-.013.004h-.067c.72-.214 1.067-.45 1.422-.818a13.883 13.883 0 0 0 1.154-1.428c.264-.37.505-.738.692-1.072a6.5 6.5 0 0 0 .298-.592c.066-.157.122-.305.172-.45-.466.01-.986.011-1.48 0 .495.01 1.015.007 1.484-.005.5-1.485.063-2.262.063-2.262s-.526-1.212-1.4-.851c-.426.175-1.172.73-2.083 1.56l.514 1.45a17.561 17.561 0 0 1 1.703-1.602c-.257.22-.807.726-1.615 1.644-.256.29-.537.624-.844.997-.017.02-.035.038-.047.06a51.435 51.435 0 0 0-1.666 2.187c-.248.34-.498.704-.765 1.088h-.016c.002.02-.004.028-.01.032l-.101.152c-.104.155-.213.31-.318.47l-.352.534c-.061.09-.124.181-.186.277-.184.282-.367.573-.558.873a97.351 97.351 0 0 0-1.428 2.338 96.866 96.866 0 0 0-1.341 2.343c-.012.017-.02.04-.034.057a197.256 197.256 0 0 0-.668 1.223l-.097.181c-.17.318-.346.642-.52.979 0 .004-.005.008-.006.013-.026.048-.05.093-.072.141-.117.222-.218.424-.45.87a1.352 1.352 0 0 0-.233-.182l.345-.65c.047-.089.096-.177.143-.27l.04-.077.546-1.001.13-.233v-.006l-.001-.006c.169-.31.345-.62.52-.94.051-.087.102-.173.153-.265.224-.395.454-.794.684-1.197a91.685 91.685 0 0 1 2.135-3.504c.247-.386.503-.77.754-1.152.092-.138.182-.272.279-.41a72.9 72.9 0 0 1 .48-.701c.007-.012.019-.024.026-.037h.006c.26-.356.517-.713.773-1.065.278-.373.554-.735.83-1.09a31.075 31.075 0 0 1 1.777-2.075l-.515-1.446c-.06.057-.126.116-.192.178a32.37 32.37 0 0 0-.758.729c-.295.294-.597.606-.912.935a46.032 46.032 0 0 0-1.632 1.838l-.03.033.002.008c-.017.02-.033.044-.054.064-.266.323-.538.649-.801.985a39.105 39.105 0 0 0-1.445 1.95c-.043.06-.085.126-.127.186a26.458 26.458 0 0 0-1.403 2.303c-.13.247-.256.485-.37.715-.096.195-.187.395-.278.591-.21.463-.398.93-.566 1.399l.002.006a.36.36 0 0 0-.026.058c-.108.303-.203.608-.29.914-.14.174-.302.325-.483.46a3.505 3.505 0 0 0-.131-.153 5.148 5.148 0 0 0 .824-2.211 6.4 6.4 0 0 0-.016-1.488c-.046-.4-.126-.82-.238-1.274-.097-.393-.217-.81-.363-1.248-.091.185-.22.367-.379.545l-.086.094c-.029.032-.06.06-.092.094.434-.674.486-1.397.358-2.148a2.722 2.722 0 0 1-.49.85c-.033.038-.072.077-.11.116-.01.007-.019.018-.033.028.144-.24.25-.467.318-.698a1.29 1.29 0 0 0 .04-.146 2.85 2.85 0 0 0 .038-.225l.018-.146a2.11 2.11 0 0 0-.002-.354c-.003-.04-.004-.076-.01-.113-.01-.055-.016-.105-.027-.154a7.416 7.416 0 0 0-.193-.84c-.01-.028-.015-.056-.026-.084-.027-.079-.048-.149-.072-.209a2.1 2.1 0 0 0-.09-.209.455.455 0 0 1-.035.1c-.102.24-.34.57-.557.8-.003.003-.007.005-.007.01l-.04.043c.318-.58.39-.946.385-1.398a12.274 12.274 0 0 0-.16-1.615 10.68 10.68 0 0 0-.232-1.104 5.853 5.853 0 0 0-.18-.558 6.337 6.337 0 0 0-.172-.391 26.18 26.18 0 0 0 .002-.004C5.576.341 4.82.124 4.82.124s-.27-.11-.582-.123zm3.38 15.783l.032.082v.002c-.06.033-.116.067-.178.097-.012.004-.024.012-.039.018a2.41 2.41 0 0 0 .186-.2zm-.603 1.626c.13.136.25.242.354.32l.07.227a1.866 1.866 0 0 0-.246.053l-.03-.098c-.024-.084-.048-.17-.076-.257l-.021-.073zm.26.875a2.34 2.34 0 0 1 .271.01l.07.229a.778.778 0 0 1 .247-.004l-.326.627a127.643 127.643 0 0 1-.262-.862z"/></symbol>
+    <symbol id="si-typescript" viewBox="0 0 24 24"><path d="M1.125 0C.502 0 0 .502 0 1.125v21.75C0 23.498.502 24 1.125 24h21.75c.623 0 1.125-.502 1.125-1.125V1.125C24 .502 23.498 0 22.875 0zm17.363 9.75c.612 0 1.154.037 1.627.111a6.38 6.38 0 0 1 1.306.34v2.458a3.95 3.95 0 0 0-.643-.361 5.093 5.093 0 0 0-.717-.26 5.453 5.453 0 0 0-1.426-.2c-.3 0-.573.028-.819.086a2.1 2.1 0 0 0-.623.242c-.17.104-.3.229-.393.374a.888.888 0 0 0-.14.49c0 .196.053.373.156.529.104.156.252.304.443.444s.423.276.696.41c.273.135.582.274.926.416.47.197.892.407 1.266.628.374.222.695.473.963.753.268.279.472.598.614.957.142.359.214.776.214 1.253 0 .657-.125 1.21-.373 1.656a3.033 3.033 0 0 1-1.012 1.085 4.38 4.38 0 0 1-1.487.596c-.566.12-1.163.18-1.79.18a9.916 9.916 0 0 1-1.84-.164 5.544 5.544 0 0 1-1.512-.493v-2.63a5.033 5.033 0 0 0 3.237 1.2c.333 0 .624-.03.872-.09.249-.06.456-.144.623-.25.166-.108.29-.234.373-.38a1.023 1.023 0 0 0-.074-1.089 2.12 2.12 0 0 0-.537-.5 5.597 5.597 0 0 0-.807-.444 27.72 27.72 0 0 0-1.007-.436c-.918-.383-1.602-.852-2.053-1.405-.45-.553-.676-1.222-.676-2.005 0-.614.123-1.141.369-1.582.246-.441.58-.804 1.004-1.089a4.494 4.494 0 0 1 1.47-.629 7.536 7.536 0 0 1 1.77-.201zm-15.113.188h9.563v2.166H9.506v9.646H6.789v-9.646H3.375z"/></symbol>
+    <symbol id="si-nodedotjs" viewBox="0 0 24 24"><path d="M11.998,24c-0.321,0-0.641-0.084-0.922-0.247l-2.936-1.737c-0.438-0.245-0.224-0.332-0.08-0.383 c0.585-0.203,0.703-0.25,1.328-0.604c0.065-0.037,0.151-0.023,0.218,0.017l2.256,1.339c0.082,0.045,0.197,0.045,0.272,0l8.795-5.076 c0.082-0.047,0.134-0.141,0.134-0.238V6.921c0-0.099-0.053-0.192-0.137-0.242l-8.791-5.072c-0.081-0.047-0.189-0.047-0.271,0 L3.075,6.68C2.99,6.729,2.936,6.825,2.936,6.921v10.15c0,0.097,0.054,0.189,0.139,0.235l2.409,1.392 c1.307,0.654,2.108-0.116,2.108-0.89V7.787c0-0.142,0.114-0.253,0.256-0.253h1.115c0.139,0,0.255,0.112,0.255,0.253v10.021 c0,1.745-0.95,2.745-2.604,2.745c-0.508,0-0.909,0-2.026-0.551L2.28,18.675c-0.57-0.329-0.922-0.945-0.922-1.604V6.921 c0-0.659,0.353-1.275,0.922-1.603l8.795-5.082c0.557-0.315,1.296-0.315,1.848,0l8.794,5.082c0.57,0.329,0.924,0.944,0.924,1.603 v10.15c0,0.659-0.354,1.273-0.924,1.604l-8.794,5.078C12.643,23.916,12.324,24,11.998,24z M19.099,13.993 c0-1.9-1.284-2.406-3.987-2.763c-2.731-0.361-3.009-0.548-3.009-1.187c0-0.528,0.235-1.233,2.258-1.233 c1.807,0,2.473,0.389,2.747,1.607c0.024,0.115,0.129,0.199,0.247,0.199h1.141c0.071,0,0.138-0.031,0.186-0.081 c0.048-0.054,0.074-0.123,0.067-0.196c-0.177-2.098-1.571-3.076-4.388-3.076c-2.508,0-4.004,1.058-4.004,2.833 c0,1.925,1.488,2.457,3.895,2.695c2.88,0.282,3.103,0.703,3.103,1.269c0,0.983-0.789,1.402-2.642,1.402 c-2.327,0-2.839-0.584-3.011-1.742c-0.02-0.124-0.126-0.215-0.253-0.215h-1.137c-0.141,0-0.254,0.112-0.254,0.253 c0,1.482,0.806,3.248,4.655,3.248C17.501,17.007,19.099,15.91,19.099,13.993z"/></symbol>
+    <symbol id="si-nestjs" viewBox="0 0 24 24"><path d="M14.131.047c-.173 0-.334.037-.483.087.316.21.49.49.576.806.007.043.019.074.025.117a.681.681 0 0 1 .013.112c.024.545-.143.614-.26.936-.18.415-.13.861.086 1.22a.74.74 0 0 0 .074.137c-.235-1.568 1.073-1.803 1.314-2.293.019-.428-.334-.713-.613-.911a1.37 1.37 0 0 0-.732-.21zM16.102.4c-.024.143-.006.106-.012.18-.006.05-.006.112-.012.161-.013.05-.025.1-.044.149-.012.05-.03.1-.05.149l-.067.142c-.02.025-.031.05-.05.075l-.037.055a2.152 2.152 0 0 1-.093.124c-.037.038-.068.081-.112.112v.006c-.037.031-.074.068-.118.1-.13.099-.278.173-.415.266-.043.03-.087.056-.124.093a.906.906 0 0 0-.118.099c-.043.037-.074.074-.111.118-.031.037-.068.08-.093.124a1.582 1.582 0 0 0-.087.13c-.025.05-.043.093-.068.142-.019.05-.037.093-.05.143a2.007 2.007 0 0 0-.043.155c-.006.025-.006.056-.012.08-.007.025-.007.05-.013.075 0 .05-.006.105-.006.155 0 .037 0 .074.006.111 0 .05.006.1.019.155.006.05.018.1.03.15.02.049.032.098.05.148.013.03.031.062.044.087l-1.426-.552c-.241-.068-.477-.13-.719-.186l-.39-.093c-.372-.074-.75-.13-1.128-.167-.013 0-.019-.006-.031-.006A11.082 11.082 0 0 0 8.9 2.855c-.378.025-.756.074-1.134.136a12.45 12.45 0 0 0-.837.174l-.279.074c-.092.037-.18.08-.266.118l-.205.093c-.012.006-.024.006-.03.012-.063.031-.118.056-.174.087a2.738 2.738 0 0 0-.236.118c-.043.018-.086.043-.124.062a.559.559 0 0 1-.055.03c-.056.032-.112.063-.162.094a1.56 1.56 0 0 0-.148.093c-.044.03-.087.055-.124.086-.006.007-.013.007-.019.013-.037.025-.08.056-.118.087l-.012.012-.093.074c-.012.007-.025.019-.037.025-.031.025-.062.056-.093.08-.006.013-.019.02-.025.025-.037.038-.074.069-.111.106-.007 0-.007.006-.013.012a1.742 1.742 0 0 0-.111.106c-.007.006-.007.012-.013.012a1.454 1.454 0 0 0-.093.1c-.012.012-.03.024-.043.036a1.374 1.374 0 0 1-.106.112c-.006.012-.018.019-.024.03-.05.05-.093.1-.143.15l-.018.018c-.1.106-.205.211-.317.304-.111.1-.229.192-.347.273a3.777 3.777 0 0 1-.762.421c-.13.056-.267.106-.403.149-.26.056-.527.161-.756.18-.05 0-.105.012-.155.018l-.155.037-.149.056c-.05.019-.099.044-.148.068-.044.031-.093.056-.137.087a1.011 1.011 0 0 0-.124.106c-.043.03-.087.074-.124.111-.037.043-.074.08-.105.124-.031.05-.068.093-.093.143a1.092 1.092 0 0 0-.087.142c-.025.056-.05.106-.068.161-.019.05-.037.106-.056.161-.012.05-.025.1-.03.15 0 .005-.007.012-.007.018-.012.056-.012.13-.019.167C.006 7.95 0 7.986 0 8.03a.657.657 0 0 0 .074.31v.006c.019.037.044.075.069.112.024.037.05.074.08.111.031.031.068.069.106.1a.906.906 0 0 0 .117.099c.149.13.186.173.378.272.031.019.062.031.1.05.006 0 .012.006.018.006 0 .013 0 .019.006.031a1.272 1.272 0 0 0 .08.298c.02.037.032.074.05.111.007.013.013.025.02.031.024.05.049.093.073.137l.093.13c.031.037.069.08.106.118.037.037.074.068.118.105 0 0 .006.006.012.006.037.031.074.062.112.087a.986.986 0 0 0 .136.08c.043.025.093.05.142.069a.73.73 0 0 0 .124.043c.007.006.013.006.025.012.025.007.056.013.08.019-.018.335-.024.65.026.762.055.124.328-.254.6-.688-.036.428-.061.93 0 1.079.069.155.44-.329.763-.862 4.395-1.016 8.405 2.02 8.826 6.31-.08-.67-.905-1.041-1.283-.948-.186.458-.502 1.047-1.01 1.413.043-.41.025-.83-.062-1.24a4.009 4.009 0 0 1-.769 1.562c-.588.043-1.177-.242-1.487-.67-.025-.018-.031-.055-.05-.08-.018-.043-.037-.087-.05-.13a.515.515 0 0 1-.037-.13c-.006-.044-.006-.087-.006-.137v-.093a.992.992 0 0 1 .031-.13c.013-.043.025-.086.044-.13.024-.043.043-.087.074-.13.105-.298.105-.54-.087-.682a.706.706 0 0 0-.118-.062c-.024-.006-.055-.018-.08-.025l-.05-.018a.847.847 0 0 0-.13-.031.472.472 0 0 0-.13-.019 1.01 1.01 0 0 0-.136-.012c-.031 0-.062.006-.093.006a.484.484 0 0 0-.137.019c-.043.006-.086.012-.13.024a1.068 1.068 0 0 0-.13.044c-.043.018-.08.037-.124.056-.037.018-.074.043-.118.062-1.444.942-.582 3.148.403 3.787-.372.068-.75.148-.855.229l-.013.012c.267.161.546.298.837.416.397.13.818.247 1.004.297v.006a5.996 5.996 0 0 0 1.562.112c2.746-.192 4.996-2.281 5.405-5.033l.037.161c.019.112.043.23.056.347v.006c.012.056.018.112.025.162v.024c.006.056.012.112.012.162.006.068.012.136.012.204v.1c0 .03.007.067.007.098 0 .038-.007.075-.007.112v.087c0 .043-.006.08-.006.124 0 .025 0 .05-.006.08 0 .044-.006.087-.006.137-.006.018-.006.037-.006.055l-.02.143c0 .019 0 .037-.005.056-.007.062-.019.118-.025.18v.012l-.037.174v.018l-.037.167c0 .007-.007.02-.007.025a1.663 1.663 0 0 1-.043.168v.018c-.019.062-.037.118-.05.174-.006.006-.006.012-.006.012l-.056.186c-.024.062-.043.118-.068.18-.025.062-.043.124-.068.18-.025.062-.05.117-.074.18h-.007c-.024.055-.05.117-.08.173a.302.302 0 0 1-.019.043c-.006.006-.006.013-.012.019a5.867 5.867 0 0 1-1.742 2.082c-.05.031-.099.069-.149.106-.012.012-.03.018-.043.03a2.603 2.603 0 0 1-.136.094l.018.037h.007l.26-.037h.006c.161-.025.322-.056.483-.087.044-.006.093-.019.137-.031l.087-.019c.043-.006.086-.018.13-.024.037-.013.074-.02.111-.031.62-.15 1.221-.354 1.798-.595a9.926 9.926 0 0 1-3.85 3.142c.714-.05 1.426-.167 2.114-.366a9.903 9.903 0 0 0 5.857-4.68 9.893 9.893 0 0 1-1.667 3.986 9.758 9.758 0 0 0 1.655-1.376 9.824 9.824 0 0 0 2.61-5.268c.21.98.272 1.99.18 2.987 4.474-6.241.371-12.712-1.346-14.416-.006-.013-.012-.019-.012-.031-.006.006-.006.006-.006.012 0-.006 0-.006-.007-.012 0 .074-.006.148-.012.223a8.34 8.34 0 0 1-.062.415c-.03.136-.068.273-.105.41-.044.13-.093.266-.15.396a5.322 5.322 0 0 1-.185.378 4.735 4.735 0 0 1-.477.688c-.093.111-.192.21-.292.31a3.994 3.994 0 0 1-.18.155l-.142.124a3.459 3.459 0 0 1-.347.241 4.295 4.295 0 0 1-.366.211c-.13.062-.26.118-.39.174a4.364 4.364 0 0 1-.818.223c-.143.025-.285.037-.422.05a4.914 4.914 0 0 1-.297.012 4.66 4.66 0 0 1-.422-.025 3.137 3.137 0 0 1-.421-.062 3.136 3.136 0 0 1-.415-.105h-.007c.137-.013.273-.025.41-.05a4.493 4.493 0 0 0 .818-.223c.136-.05.266-.112.39-.174.13-.062.248-.13.372-.204.118-.08.235-.161.347-.248.112-.087.217-.18.316-.279.105-.093.198-.198.291-.304.093-.111.18-.223.26-.334.013-.019.026-.044.038-.062.062-.1.124-.199.18-.298a4.272 4.272 0 0 0 .334-.775c.044-.13.075-.266.106-.403.025-.142.05-.278.062-.415.012-.142.025-.285.025-.421 0-.1-.007-.199-.013-.298a6.726 6.726 0 0 0-.05-.415 4.493 4.493 0 0 0-.092-.415c-.044-.13-.087-.267-.137-.397-.05-.13-.111-.26-.173-.384-.069-.124-.137-.248-.211-.366a6.843 6.843 0 0 0-.248-.34c-.093-.106-.186-.212-.285-.317a3.878 3.878 0 0 0-.161-.155c-.28-.217-.57-.421-.862-.607a1.154 1.154 0 0 0-.124-.062 2.415 2.415 0 0 0-.589-.26Z"/></symbol>
+    <symbol id="si-prisma" viewBox="0 0 24 24"><path d="M21.8068 18.2848L13.5528.7565c-.207-.4382-.639-.7273-1.1286-.7541-.5023-.0293-.9523.213-1.2062.6253L2.266 15.1271c-.2773.4518-.2718 1.0091.0158 1.4555l4.3759 6.7786c.2608.4046.7127.6388 1.1823.6388.1332 0 .267-.0188.3987-.0577l12.7019-3.7568c.3891-.1151.7072-.3904.8737-.7553s.1633-.7828-.0075-1.1454zm-1.8481.7519L9.1814 22.2242c-.3292.0975-.6448-.1873-.5756-.5194l3.8501-18.4386c.072-.3448.5486-.3996.699-.0803l7.1288 15.138c.1344.2856-.019.6224-.325.7128z"/></symbol>
+    <symbol id="si-jest" viewBox="0 0 24 24"><path d="M22.251 11.82a3.117 3.117 0 0 0-2.328-3.01L22.911 0H8.104L11.1 8.838a3.116 3.116 0 0 0-2.244 2.988c0 1.043.52 1.967 1.313 2.536a8.279 8.279 0 0 1-1.084 1.244 8.14 8.14 0 0 1-2.55 1.647c-.834-.563-1.195-1.556-.869-2.446a3.11 3.11 0 0 0-.91-6.08 3.117 3.117 0 0 0-3.113 3.113c0 .848.347 1.626.903 2.182-.048.097-.097.195-.146.299-.465.959-.993 2.043-1.195 3.259-.403 2.432.257 4.384 1.849 5.489A5.093 5.093 0 0 0 5.999 24c1.827 0 3.682-.917 5.475-1.807 1.279-.632 2.599-1.292 3.898-1.612.48-.118.98-.187 1.508-.264 1.07-.153 2.175-.312 3.168-.89a4.482 4.482 0 0 0 2.182-3.091c.174-.994 0-1.994-.444-2.87.298-.48.465-1.042.465-1.647zm-1.355 0c0 .965-.785 1.75-1.75 1.75a1.753 1.753 0 0 1-1.085-3.126l.007-.007c.056-.042.118-.084.18-.125 0 0 .008 0 .008-.007.028-.014.055-.035.083-.05.007 0 .014-.006.021-.006.028-.014.063-.028.097-.042.035-.014.07-.027.098-.041.007 0 .013-.007.02-.007.028-.007.056-.021.084-.028.007 0 .02-.007.028-.007.034-.007.062-.014.097-.02h.007l.104-.022c.007 0 .02 0 .028-.007.028 0 .055-.007.083-.007h.035c.035 0 .07-.007.111-.007h.09c.028 0 .05 0 .077.007h.014c.055.007.111.014.167.028a1.766 1.766 0 0 1 1.396 1.723zM10.043 1.39h10.93l-2.509 7.4c-.104.02-.208.055-.312.09l-2.64-5.385-2.648 5.35c-.104-.034-.216-.055-.327-.076l-2.494-7.38zm4.968 9.825a3.083 3.083 0 0 0-.938-1.668l1.438-2.904 1.452 2.967c-.43.43-.743.98-.868 1.605H15.01zm-3.481-1.098c.034-.007.062-.014.097-.02h.02c.029-.008.056-.008.084-.015h.028c.028 0 .049-.007.076-.007h.271c.028 0 .049.007.07.007.014 0 .02 0 .035.007.027.007.048.007.076.014.007 0 .014 0 .028.007l.097.02h.007c.028.008.056.015.083.029.007 0 .014.007.028.007.021.007.049.014.07.027.007 0 .014.007.02.007.028.014.056.021.084.035h.007a.374.374 0 0 1 .09.049h.007c.028.014.056.034.084.048.007 0 .007.007.013.007.028.014.05.035.077.049l.007.007c.083.062.16.132.236.201l.007.007a1.747 1.747 0 0 1 .48 1.209 1.752 1.752 0 0 1-3.502 0 1.742 1.742 0 0 1 1.32-1.695zm-6.838-.049c.966 0 1.751.786 1.751 1.751s-.785 1.751-1.75 1.751-1.752-.785-1.752-1.75.786-1.752 1.751-1.752zm16.163 6.025a3.07 3.07 0 0 1-1.508 2.133c-.758.438-1.689.577-2.669.716a17.29 17.29 0 0 0-1.64.291c-1.445.355-2.834 1.05-4.182 1.717-1.724.854-3.35 1.66-4.857 1.66a3.645 3.645 0 0 1-2.154-.688c-1.529-1.056-1.453-3.036-1.272-4.12.167-1.015.632-1.966 1.077-2.877.028-.055.049-.104.077-.16.152.056.312.098.479.126-.264 1.473.486 2.994 1.946 3.745l.264.139.284-.104c1.216-.431 2.342-1.133 3.336-2.071a9.334 9.334 0 0 0 1.445-1.716c.16.027.32.034.48.034a3.117 3.117 0 0 0 3.008-2.327h1.167a3.109 3.109 0 0 0 3.01 2.327c.576 0 1.11-.16 1.57-.43.18.52.236 1.063.139 1.605z"/></symbol>
+    <symbol id="si-npm" viewBox="0 0 24 24"><path d="M1.763 0C.786 0 0 .786 0 1.763v20.474C0 23.214.786 24 1.763 24h20.474c.977 0 1.763-.786 1.763-1.763V1.763C24 .786 23.214 0 22.237 0zM5.13 5.323l13.837.019-.009 13.836h-3.464l.01-10.382h-3.456L12.04 19.17H5.113z"/></symbol>
+    <symbol id="si-python" viewBox="0 0 24 24"><path d="M11.858 0c-.978.005-1.913.088-2.736.234C6.7.662 6.26 1.558 6.26 3.21v2.182h5.725v.727H4.111c-1.664 0-3.121 1-3.577 2.903-.526 2.181-.549 3.542 0 5.82.407 1.694 1.379 2.902 3.043 2.902h1.969v-2.616c0-1.89 1.635-3.557 3.576-3.557h5.72c1.591 0 2.862-1.31 2.862-2.91v-5.45c0-1.553-1.309-2.718-2.863-2.977A18 18 0 0 0 11.858 0M8.762 1.755c.591 0 1.074.491 1.074 1.095 0 .601-.483 1.087-1.074 1.087A1.08 1.08 0 0 1 7.688 2.85c0-.604.48-1.095 1.074-1.095m9.656 4.364v2.543c0 1.971-1.671 3.63-3.577 3.63H9.122c-1.566 0-2.862 1.34-2.862 2.91v5.452c0 1.551 1.349 2.464 2.862 2.91 1.813.532 3.55.628 5.72 0 1.44-.418 2.862-1.258 2.862-2.91V18.47h-5.719v-.727h8.582c1.664 0 2.284-1.16 2.862-2.903.598-1.793.573-3.518 0-5.819-.41-1.656-1.196-2.903-2.862-2.903zm-3.216 13.807a1.08 1.08 0 0 1 1.074 1.088c0 .604-.48 1.094-1.074 1.094-.592 0-1.075-.49-1.075-1.094 0-.601.483-1.088 1.075-1.088"/></symbol>
+    <symbol id="si-fastapi" viewBox="0 0 24 24"><path d="M12 .0387C5.3729.0384.0003 5.3931 0 11.9988c-.001 6.6066 5.372 11.9628 12 11.9625 6.628.0003 12.001-5.3559 12-11.9625-.0003-6.6057-5.3729-11.9604-12-11.96m-.829 5.4153h7.55l-7.5805 5.3284h5.1828L5.279 18.5436q2.9466-6.5444 5.892-13.0896"/></symbol>
+    <symbol id="si-pydantic" viewBox="0 0 24 24"><path d="m23.826 17.316-4.23-5.866-6.847-9.496c-.348-.48-1.151-.48-1.497 0l-6.845 9.494-4.233 5.868a.925.925 0 0 0 .46 1.417l11.078 3.626h.002a.92.92 0 0 0 .572 0h.002l11.077-3.626c.28-.092.5-.31.59-.592a.916.916 0 0 0-.13-.825h.002ZM12.001 4.07l4.44 6.158-4.152-1.36c-.032-.01-.066-.008-.098-.016a.8.8 0 0 0-.096-.016c-.032-.004-.062-.016-.094-.016s-.062.012-.094.016a.74.74 0 0 0-.096.016c-.032.006-.066.006-.096.016L7.59 10.221l-.026.008 4.44-6.158h-.002Zm-6.273 8.7 4.834-1.583.516-.168v9.19L2.41 17.372l3.317-4.6Zm7.197 7.437V11.02l5.35 1.752 3.316 4.598-8.666 2.838Z"/></symbol>
+    <symbol id="si-sqlalchemy" viewBox="0 0 24 24"><path d="M11.8 15.955a44.068 44.068 0 0 1-1.673-.691c-1.736-.757-1.981-.772-2.499-.143-.119.146-.25.236-.287.2-.111-.111.219-.644.617-.993.325-.285.433-.325.791-.285.228.025.985.29 1.682.586 1.573.669 2.034.811 2.635.811.731 0 1.106-.512.876-1.192-.057-.171-.04-.228.074-.228.213 0 .322.797.168 1.255a1.617 1.617 0 0 1-.424.614c-.251.211-.41.257-.879.254a3.853 3.853 0 0 1-1.082-.188h.001Zm.301-2.225c0-.048.179-.134.401-.188l.401-.099.086-1.446c.094-1.599.025-3.172-.148-3.383-.063-.074-.253-.165-.427-.205-.705-.156-.236-.264 1.133-.264 1.368 0 1.803.099 1.152.264-.561.14-.564.148-.564 2.43 0 1.266.046 2.22.111 2.342.092.171.228.207.752.207 1.081 0 1.453-.255 1.747-1.203.088-.284.315-.233.236.054-.037.134-.097.54-.134.91l-.068.669H14.44c-1.286 0-2.339-.04-2.339-.088Zm5.312-.068c0-.086.083-.171.219-.236.183-.086.302-.265.734-1.11.686-1.337 1.767-3.634 1.87-3.978.079-.262.097-.276.392-.31.171-.02.313-.031.316-.025l.527 1.152c.284.628.856 1.824 1.271 2.654.695 1.397.772 1.523 1.005 1.636.142.069.253.174.253.237 0 .099-.122.111-1.175.111-1.056 0-1.175-.012-1.175-.114 0-.068.091-.142.236-.191.134-.043.236-.122.236-.182 0-.057-.139-.432-.31-.834l-.31-.731h-2.35l-.225.495c-.421.928-.43 1.147-.037 1.252.196.054.25.097.227.185-.025.103-.127.117-.867.117-.794.006-.837 0-.837-.128Zm-15.652.025a10.933 10.933 0 0 1-.808-.196l-.549-.154.282-.518.281-.518-.227-.281c-.322-.399-.737-1.272-.74-1.554-.003-.657.851-1.61 1.898-2.122.72-.353 1.291-.362 2.009-.026l.54.253.157-.224c.085-.123.156-.285.156-.356 0-.071.071-.134.157-.134.085 0 .156.023.156.048 0 .063-.629 1.651-.669 1.691-.017.016-.187-.063-.381-.177-.546-.321-1.232-.535-1.764-.549-1.238-.031-1.667 1.178-.794 2.236l.308.373.839-.68c.942-.76 1.05-.777 1.784-.27.825.569.839 1.434.042 2.339-.705.805-1.431 1.027-2.677.819Zm5.984-.165c-.646-.301-1.229-.876-1.565-1.547-.538-1.076-.373-1.765.646-2.695.856-.782 1.556-1.087 2.498-1.087.68 0 .825.037 1.266.307 1.044.646 1.303 1.878.675 3.221-.737 1.577-2.294 2.37-3.52 1.801Zm-3.872-.702c.409-.322.381-.917-.063-1.389-.558-.592-.731-.566-1.713.253-.976.814-.982.783.185 1.155.771.251 1.255.242 1.591-.019Zm6.034-.046c.484-.239.817-1.343.68-2.259-.17-1.13-1.698-1.901-2.819-1.423-1.153.493-1.17 1.804-.037 2.985.791.828 1.471 1.044 2.176.697Zm11.359-1.414c.04-.071-.845-2.003-.928-2.023-.06-.017-.976 1.872-.976 2.014 0 .072 1.861.08 1.904.009Z"/></symbol>
+    <symbol id="si-pytest" viewBox="0 0 24 24"><path d="M2.6152 0v.8867h3.8399V0zm5.0215 0v.8867h3.8418V0zm4.957 0v.8867h3.8418V0zm4.9356 0v.8867h3.8418V0zM2.4473 1.8945a.935.935 0 0 0-.9356.9356c0 .517.4185.9375.9356.9375h19.1054c.5171 0 .9356-.4204.9356-.9375a.935.935 0 0 0-.9356-.9356zm.168 2.8477V24H6.455V4.7422zm5.0214 0V20.543h3.8418V4.7422zm4.957 0V15.291h3.8497V4.7422zm4.9356 0v6.4941h3.8418V4.7422z"/></symbol>
+    <symbol id="si-uv" viewBox="0 0 24 24"><path d="m0 .1058.0504 11.9496.0403 9.5597c.0055 1.3199 1.08 2.3854 2.4 2.3798l9.5596-.0403 5.9749-.0252.6075-.0026c1.316-.0056 2.3799-1.0963 2.3799-2.4123h1.0946v2.3894L24 23.9042 23.8992.005 12.9056.0513l.0463 9.5245v5.9637h-1.9583L11.04 9.584 10.9936.0594Z"/></symbol>
+    <symbol id="i-pause" viewBox="0 0 16 16"><rect x="3" y="2" width="3.5" height="12" rx="1"/><rect x="9.5" y="2" width="3.5" height="12" rx="1"/></symbol>
+    <symbol id="i-play" viewBox="0 0 16 16"><path d="M4 2.5v11a.8.8 0 0 0 1.2.7l9-5.5a.8.8 0 0 0 0-1.4l-9-5.5A.8.8 0 0 0 4 2.5z"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5 9.5-10"/></symbol>
   </svg>
   <a class="skip" href="#conteudo">Pular para o conteúdo</a>
 
@@ -472,190 +481,218 @@
   </header>
 
   <main id="conteudo">
-    <!-- Hero -->
-    <section class="hero" aria-labelledby="titulo" data-dot-field>
-      <div class="wrap hero-grid">
-        <div class="hero-copy">
-          <h1 id="titulo">Uma vaga real vira um projeto no seu GitHub.</h1>
-          <p class="lead">Cole o texto de uma vaga de emprego. Você recebe um repositório com missões, testes que falham até você implementar e um revisor que faz perguntas em vez de dar a resposta.</p>
+    <!-- Hero: the claim, the two actions, and the real student flow recorded from the app (site/media/aluno.mp4:
+         the sample posting, its reading, the plan and the repository, with the API answering canned data). -->
+    <div class="frame">
+      <section class="hero" aria-labelledby="titulo" data-dot-field>
+        <h1 id="titulo" data-enter="1">Uma vaga real vira um <mark>projeto</mark> no seu GitHub.</h1>
+        <p class="lead" data-enter="2">Cole o texto de uma vaga de emprego. Você recebe um repositório com missões, testes que falham até você implementar e um revisor que faz perguntas em vez de dar a resposta.</p>
+        <div data-enter="3">
           <div class="actions">
-            <a class="btn" href="#como-funciona">Ver como funciona <span class="arrow" aria-hidden="true">↓</span></a>
-            <a class="btn ghost" href="https://github.com/precavidos/vaga-viva"><svg class="ico" aria-hidden="true"><use href="#i-github"/></svg>Código no GitHub</a>
+            <a class="btn" href="https://vaga-viva-49kj.onrender.com">Testar a demo <span class="arrow" aria-hidden="true">→</span></a>
+            <a class="btn ghost" href="#como-funciona">Ver como funciona</a>
+          </div>
+          <p class="hint">Sem login até criar o repositório. Na primeira visita, a demo pode levar um minuto para abrir.</p>
+        </div>
+        <div class="window" data-enter="4" data-video>
+          <div class="win-bar">
+            <span class="win-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+            <span class="win-url">vaga-viva-49kj.onrender.com</span>
+            <button type="button" class="vid-toggle" aria-pressed="false"><svg class="ico" aria-hidden="true"><use href="#i-pause"/></svg><span class="label">Pausar</span><span class="sr"> o vídeo</span></button>
+          </div>
+          <video muted loop playsinline preload="metadata" poster="media/aluno-poster.jpg" width="1280" height="800" aria-label="Gravação do Vaga Viva: a vaga de exemplo é lida, as competências são marcadas, o plano aparece com 6 missões e o repositório é criado no GitHub.">
+            <source src="media/aluno.mp4" type="video/mp4">
+          </video>
+        </div>
+      </section>
+    </div>
+
+    <!-- Facts -->
+    <div class="band-row">
+      <div class="frame">
+        <ul class="facts" aria-label="O Vaga Viva em números" style="list-style:none;margin:0;padding:0">
+          <li class="fact"><b>5 a 6</b><span>missões por vaga, da mais simples à mais difícil</span></li>
+          <li class="fact"><b>3</b><span>stacks: Java com Spring Boot, TypeScript com NestJS e Python com FastAPI</span></li>
+          <li class="fact"><b>3</b><span>níveis de dica, um por vez, quando o aluno comenta <code>/dica</code></span></li>
+          <li class="fact"><b>0</b><span>linhas de código da solução em 10 pull requests feitos para arrancar a resposta</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- How it works: sticky steps. While the section is pinned, scrolling moves the active step down the list, the
+         marker square hops to it and the stack of real screens follows. Without JS, below 900px, or with reduced motion
+         it is a plain list, each step followed by its screen. -->
+    <section class="band-row" id="como-funciona" aria-labelledby="como-funciona-titulo">
+      <div class="frame">
+        <div class="steps" data-steps>
+          <div class="steps-pin">
+            <div class="steps-text">
+              <h2 id="como-funciona-titulo">Da vaga ao primeiro pull request.</h2>
+              <p class="steps-lead">Tudo acontece no GitHub. O repositório fica na sua conta, com o seu histórico de commits, e continua seu depois do curso.</p>
+              <div class="steps-track">
+                <span class="steps-mark" aria-hidden="true"><i></i></span>
+                <ol class="steps-list">
+                <li class="step is-active"><h3><button type="button" class="step-btn"><span class="num" aria-hidden="true">01</span>Cole a vaga</button></h3><p>O texto, o link ou um e-mail encaminhado para <code>vagas@bueska.resend.app</code>. A vaga é lida em memória e não fica guardada.</p></li>
+                <li class="step"><h3><button type="button" class="step-btn"><span class="num" aria-hidden="true">02</span>Confira o plano</button></h3><p>De 5 a 6 missões, em ordem de dificuldade e no nível que a vaga pede. Cada uma diz se entrou por ser central ou pela vaga.</p></li>
+                <li class="step"><h3><button type="button" class="step-btn"><span class="num" aria-hidden="true">03</span>Crie o repositório</button></h3><p>O GitHub App cria o projeto na sua conta. Cada missão vira uma issue, com testes que falham até você implementar.</p></li>
+                <li class="step"><h3><button type="button" class="step-btn"><span class="num" aria-hidden="true">04</span>Abra um pull request</button></h3><p>A cada push, os testes rodam no GitHub Actions e o revisor comenta no pull request com o progresso de cada missão.</p></li>
+                </ol>
+              </div>
+            </div>
+            <div class="steps-media">
+              <div class="stack">
+                <div class="pane stack-item" data-pos="0"><img src="media/vaga.webp" width="1242" height="1211" loading="lazy" alt="O campo da vaga preenchido com a vaga de exemplo, o link Usar uma vaga de exemplo e o botão Montar meu plano."></div>
+                <div class="pane stack-item" data-pos="1"><img src="media/plano.webp" width="1210" height="1147" loading="lazy" alt="Seu plano tem 6 missões: Cadastro de pacientes e Pacientes no banco de dados, marcadas como centrais, e Caça ao bug, pela vaga."></div>
+                <div class="pane stack-item" data-pos="2"><img src="media/issues.webp" width="1300" height="770" loading="lazy" alt="Issues de um repositório criado pelo Vaga Viva no GitHub: Missão 1 a Missão 6, uma por missão do plano."></div>
+                <div class="pane stack-item" data-pos="3"><img src="media/revisao.webp" width="1632" height="893" loading="lazy" alt="Comentário Revisão do seu PR no GitHub: a missão em foco e o progresso por missão, com quadrados verdes e vermelhos e a contagem de testes."></div>
+              </div>
+              <p class="steps-count" aria-hidden="true"><b>01</b><span>/ 04</span></p>
+            </div>
           </div>
         </div>
-
-        <!-- Fictional posting in the product's format: every mark is a recognized term, every competency
-             names the term that is its evidence, and the missions are the first ones of the plan. -->
-        <figure class="demo" id="demo" aria-labelledby="demo-titulo">
-          <figcaption class="demo-head">
-            <span id="demo-titulo">Vaga de exemplo</span>
-            <span class="demo-state" id="demo-state" aria-hidden="true">Plano pronto</span>
-          </figcaption>
-
-          <article class="demo-clip">
-            <span class="clip-tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="6" r="2.5"/><circle cx="6" cy="18" r="2.5"/><path d="M8 7.5L20 18M8 16.5L20 6"/></svg>vaga</span>
-            <p class="demo-job">Pessoa desenvolvedora backend <mark data-kind="level">Júnior</mark></p>
-            <p>Buscamos quem tenha experiência com <mark>Java</mark> e <mark>Spring Boot</mark>, construção de <mark>APIs REST</mark> e banco de dados <mark>SQL</mark>. Trabalho híbrido, em equipe pequena.</p>
-            <span class="demo-scan" aria-hidden="true"></span>
-          </article>
-
-          <div>
-            <p class="demo-label">Competências</p>
-            <ul class="demo-skills">
-              <li><span data-demo-decrypt>Programação em Java</span> <small>por "Java"</small></li>
-              <li><span data-demo-decrypt>Spring Framework</span> <small>por "Spring Boot"</small></li>
-              <li><span data-demo-decrypt>Design de APIs</span> <small>por "APIs REST"</small></li>
-              <li><span data-demo-decrypt>SQL</span> <small>por "SQL"</small></li>
-            </ul>
-          </div>
-
-          <div class="demo-plan">
-            <p class="demo-label">Primeiras missões de 6</p>
-            <ol>
-              <li><span class="num" aria-hidden="true">01</span><span>Cadastro de pacientes</span><span class="demo-dots" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span class="demo-count"><span aria-hidden="true">0/4</span><span class="sr">: 4 testes, nenhum passando ainda</span></span></li>
-              <li><span class="num" aria-hidden="true">02</span><span>Pacientes no banco de dados</span><span class="demo-dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="demo-count"><span aria-hidden="true">0/3</span><span class="sr">: 3 testes, nenhum passando ainda</span></span></li>
-              <li><span class="num" aria-hidden="true">03</span><span>Listagem paginada de consultas</span><span class="demo-dots" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span class="demo-count"><span aria-hidden="true">0/4</span><span class="sr">: 4 testes, nenhum passando ainda</span></span></li>
-            </ol>
-            <p class="demo-note">Os testes ficam vermelhos até você implementar.</p>
-          </div>
-        </figure>
       </div>
     </section>
 
-    <!-- How it works: the four steps, then the plan of the hero's posting and its repository being created. -->
-    <section class="section" id="como-funciona" aria-labelledby="como-funciona-titulo">
-      <div class="wrap">
+    <!-- Stacks: one folder per template repository. The technologies drop into the folder when it comes into view and
+         float back out on hover, tap or keyboard. Without JS or with reduced motion they stay out, readable. -->
+    <section class="band-row" id="stacks" aria-labelledby="stacks-titulo">
+      <div class="frame">
         <div class="sec-head">
-          <h2 id="como-funciona-titulo">Da vaga ao primeiro pull request.</h2>
-          <p>Tudo acontece no GitHub. O repositório fica na sua conta, com o seu histórico de commits, e continua seu depois do curso.</p>
+          <h2 id="stacks-titulo">Três stacks, o mesmo projeto.</h2>
+          <p>A vaga escolhe a stack. Cada uma tem um repositório-modelo com as mesmas 11 missões, das quais o plano escolhe 5 ou 6, no mesmo domínio fictício: agendamento de clínica, com PostgreSQL 17 e Docker.</p>
         </div>
-        <ol class="how-steps">
-          <li><span class="n" aria-hidden="true">1</span><h3>Cole a vaga</h3><p>O texto de uma vaga real. Ele é lido em memória e não fica guardado.</p></li>
-          <li><span class="n" aria-hidden="true">2</span><h3>Confira o plano</h3><p>De 5 a 6 missões, em ordem de dificuldade e no nível que a vaga pede.</p></li>
-          <li><span class="n" aria-hidden="true">3</span><h3>Crie o repositório</h3><p>Cada missão vira uma tarefa no GitHub, com testes que falham até você implementar.</p></li>
-          <li><span class="n" aria-hidden="true">4</span><h3>Abra um pull request</h3><p>O revisor comenta com uma pergunta sobre os testes que falharam.</p></li>
-        </ol>
-
-        <!-- Fictional data in the product's format: the plan of the hero's posting (prototype PLAN) and the stages of the
-             repository's creation. The last stage turns green only at the end of the run, as when the server answers. -->
-        <div class="build" id="build-demo">
-          <figure class="demo" aria-labelledby="plano-titulo">
-            <figcaption class="demo-head"><span id="plano-titulo">O plano</span><span class="demo-state">Java e Spring Boot · júnior</span></figcaption>
-            <ol class="missions">
-              <li><span class="num" aria-hidden="true">01</span><span><span class="m-title">Cadastro de pacientes</span><span class="m-sum">Criar e consultar pacientes por uma API REST.</span></span><span class="m-side"><span class="tag core">central</span><span class="diff" role="img" aria-label="Dificuldade 1 de 3"><i class="on"></i><i></i><i></i></span></span></li>
-              <li><span class="num" aria-hidden="true">02</span><span><span class="m-title">Pacientes no banco de dados</span><span class="m-sum">Guardar os pacientes no PostgreSQL, com migrações.</span></span><span class="m-side"><span class="tag core">central</span><span class="diff" role="img" aria-label="Dificuldade 1 de 3"><i class="on"></i><i></i><i></i></span></span></li>
-              <li><span class="num" aria-hidden="true">03</span><span><span class="m-title">Listagem paginada de consultas</span><span class="m-sum">Listar as consultas em páginas, com ordenação.</span><span class="m-chips"><span>APIs REST</span><span>SQL</span></span></span><span class="m-side"><span class="tag match">pela vaga</span><span class="diff" role="img" aria-label="Dificuldade 2 de 3"><i class="on"></i><i class="on"></i><i></i></span></span></li>
-              <li><span class="num" aria-hidden="true">04</span><span><span class="m-title">Regras de agendamento</span><span class="m-sum">Impedir horários em conflito e fora do expediente.</span></span><span class="m-side"><span class="tag core">central</span><span class="diff" role="img" aria-label="Dificuldade 2 de 3"><i class="on"></i><i class="on"></i><i></i></span></span></li>
-              <li><span class="num" aria-hidden="true">05</span><span><span class="m-title">Consulta de horários livres</span><span class="m-sum">Responder quais horários um médico tem livres num dia.</span><span class="m-chips"><span>SQL</span></span></span><span class="m-side"><span class="tag match">pela vaga</span><span class="diff" role="img" aria-label="Dificuldade 3 de 3"><i class="on"></i><i class="on"></i><i class="on"></i></span></span></li>
-              <li><span class="num" aria-hidden="true">06</span><span><span class="m-title">Aplicação em contêiner</span><span class="m-sum">Empacotar a aplicação numa imagem Docker.</span></span><span class="m-side"><span class="tag">padrão</span><span class="diff" role="img" aria-label="Dificuldade 2 de 3"><i class="on"></i><i class="on"></i><i></i></span></span></li>
-            </ol>
-          </figure>
-
-          <figure class="demo" aria-labelledby="repo-titulo">
-            <figcaption class="demo-head">
-              <span id="repo-titulo">No seu GitHub</span>
-              <span class="demo-state">
-                <span class="status-line on-night" id="repo-line" role="none" aria-hidden="true" hidden><span data-dot-matrix="flip"></span><span class="status-label"></span><span class="status-timer"></span></span>
-                <span class="repo-ready">Repositório pronto</span>
-              </span>
-            </figcaption>
-            <ol class="stage-list">
-              <li class="is-done"><span class="step-mark is-done"></span><span>Copiando o modelo<span class="sr">: feito</span></span></li>
-              <li class="is-done"><span class="step-mark is-done"></span><span>Gravando o plano<span class="sr">: feito</span></span></li>
-              <li class="is-done"><span class="step-mark is-done"></span><span>Abrindo as missões<span class="sr">: feito</span></span></li>
-              <li class="is-done"><span class="step-mark is-done"></span><span>Escrevendo o README<span class="sr">: feito</span></span></li>
-            </ol>
-            <div class="repo-result">
-              <p class="repo-name"><svg class="ico" aria-hidden="true"><use href="#i-github"/></svg>maria/vaga-viva-clinic-scheduling</p>
-              <ul class="issues" aria-label="Missões abertas no GitHub">
-                <li><span class="dot" aria-hidden="true"></span><span class="n">#1</span><span>Cadastro de pacientes</span></li>
-                <li><span class="dot" aria-hidden="true"></span><span class="n">#2</span><span>Pacientes no banco de dados</span></li>
-                <li><span class="dot" aria-hidden="true"></span><span class="n">#3</span><span>Listagem paginada de consultas</span></li>
-                <li><span class="dot" aria-hidden="true"></span><span class="n">#4</span><span>Regras de agendamento</span></li>
-                <li><span class="dot" aria-hidden="true"></span><span class="n">#5</span><span>Consulta de horários livres</span></li>
-                <li><span class="dot" aria-hidden="true"></span><span class="n">#6</span><span>Aplicação em contêiner</span></li>
+        <div class="grid c3">
+          <article class="cell">
+            <div class="repo is-open" data-repo>
+              <div class="f-back" aria-hidden="true"></div>
+              <ul class="repo-pages" aria-label="Tecnologias do modelo Java e Spring Boot">
+                <li style="--i:0; --c:#000000"><svg class="si" aria-hidden="true"><use href="#si-openjdk"/></svg><span>Java 21</span></li>
+                <li style="--i:1; --c:#6DB33F"><svg class="si" aria-hidden="true"><use href="#si-springboot"/></svg><span>Spring Boot</span></li>
+                <li style="--i:2; --c:#59666C"><svg class="si" aria-hidden="true"><use href="#si-hibernate"/></svg><span>Hibernate</span></li>
+                <li style="--i:3; --c:#CC0200"><svg class="si" aria-hidden="true"><use href="#si-flyway"/></svg><span>Flyway</span></li>
+                <li style="--i:4; --c:#25A162"><svg class="si" aria-hidden="true"><use href="#si-junit5"/></svg><span>JUnit 5</span></li>
+                <li style="--i:5; --c:#C71A36"><svg class="si" aria-hidden="true"><use href="#si-apachemaven"/></svg><span>Maven</span></li>
               </ul>
-              <p class="demo-note">Os 19 testes falham até você implementar cada missão.</p>
+              <div class="f-front" aria-hidden="true"><span>template-java-spring</span><b>6 tecnologias</b></div>
+              <button type="button" class="folder-btn" aria-expanded="true"><span class="sr">Abrir ou fechar a pasta do modelo Java e Spring Boot</span></button>
             </div>
-          </figure>
+            <div><h3>Java e Spring Boot</h3><p>Testes de uma missão: <code>./mvnw test -Dgroups=&lt;missão&gt;</code></p><a class="more" href="https://github.com/precavidos/vaga-viva-template-java-spring">Ver o repositório-modelo <span aria-hidden="true">→</span></a></div>
+          </article>
+          <article class="cell">
+            <div class="repo is-open" data-repo>
+              <div class="f-back" aria-hidden="true"></div>
+              <ul class="repo-pages" aria-label="Tecnologias do modelo TypeScript e NestJS">
+                <li style="--i:0; --c:#3178C6"><svg class="si" aria-hidden="true"><use href="#si-typescript"/></svg><span>TypeScript</span></li>
+                <li style="--i:1; --c:#5FA04E"><svg class="si" aria-hidden="true"><use href="#si-nodedotjs"/></svg><span>Node.js 22</span></li>
+                <li style="--i:2; --c:#E0234E"><svg class="si" aria-hidden="true"><use href="#si-nestjs"/></svg><span>NestJS</span></li>
+                <li style="--i:3; --c:#2D3748"><svg class="si" aria-hidden="true"><use href="#si-prisma"/></svg><span>Prisma</span></li>
+                <li style="--i:4; --c:#C21325"><svg class="si" aria-hidden="true"><use href="#si-jest"/></svg><span>Jest</span></li>
+                <li style="--i:5; --c:#CB3837"><svg class="si" aria-hidden="true"><use href="#si-npm"/></svg><span>npm</span></li>
+              </ul>
+              <div class="f-front" aria-hidden="true"><span>template-typescript-node</span><b>6 tecnologias</b></div>
+              <button type="button" class="folder-btn" aria-expanded="true"><span class="sr">Abrir ou fechar a pasta do modelo TypeScript e NestJS</span></button>
+            </div>
+            <div><h3>TypeScript e NestJS</h3><p>Testes de uma missão: <code>npm test -- missions/&lt;missão&gt;</code></p><a class="more" href="https://github.com/precavidos/vaga-viva-template-typescript-node">Ver o repositório-modelo <span aria-hidden="true">→</span></a></div>
+          </article>
+          <article class="cell">
+            <div class="repo is-open" data-repo>
+              <div class="f-back" aria-hidden="true"></div>
+              <ul class="repo-pages" aria-label="Tecnologias do modelo Python e FastAPI">
+                <li style="--i:0; --c:#3776AB"><svg class="si" aria-hidden="true"><use href="#si-python"/></svg><span>Python 3.13</span></li>
+                <li style="--i:1; --c:#009688"><svg class="si" aria-hidden="true"><use href="#si-fastapi"/></svg><span>FastAPI</span></li>
+                <li style="--i:2; --c:#E92063"><svg class="si" aria-hidden="true"><use href="#si-pydantic"/></svg><span>Pydantic</span></li>
+                <li style="--i:3; --c:#D71F00"><svg class="si" aria-hidden="true"><use href="#si-sqlalchemy"/></svg><span>SQLAlchemy</span></li>
+                <li style="--i:4; --c:#0A9EDC"><svg class="si" aria-hidden="true"><use href="#si-pytest"/></svg><span>pytest</span></li>
+                <li style="--i:5; --c:#DE5FE9"><svg class="si" aria-hidden="true"><use href="#si-uv"/></svg><span>uv</span></li>
+              </ul>
+              <div class="f-front" aria-hidden="true"><span>template-python-fastapi</span><b>6 tecnologias</b></div>
+              <button type="button" class="folder-btn" aria-expanded="true"><span class="sr">Abrir ou fechar a pasta do modelo Python e FastAPI</span></button>
+            </div>
+            <div><h3>Python e FastAPI</h3><p>Testes de uma missão: <code>uv run pytest --mission &lt;missão&gt;</code></p><a class="more" href="https://github.com/precavidos/vaga-viva-template-python-fastapi">Ver o repositório-modelo <span aria-hidden="true">→</span></a></div>
+          </article>
         </div>
       </div>
     </section>
 
-    <!-- Reviewer: a pull request on mission 3 and the reviewer's question. Hints (/dica) are not built yet: announced as next. -->
-    <section class="section" id="revisor" aria-labelledby="revisor-titulo">
-      <div class="wrap reviewer-grid">
-        <div class="reviewer-copy">
+    <!-- Reviewer: real comments from public pull requests (precavidos/vaga-viva-bateria#14 and
+         davsilvam/vaga-viva-clinic-scheduling#7), captured from github.com. -->
+    <section class="band-row" id="revisor" aria-labelledby="revisor-titulo">
+      <div class="frame">
+        <div class="sec-head">
           <h2 id="revisor-titulo">O revisor responde com uma pergunta.</h2>
-          <p>A cada pull request, ele lê os testes que falharam e aponta onde olhar, sem o código da solução.</p>
-          <p>A seguir: dicas pedidas com <code>/dica</code> no pull request, uma por vez.</p>
+          <p>Ele lê os testes que falharam e o contrato da missão e aponta onde olhar, sem o código da solução. Quem decide se a missão está pronta são os testes, não a IA.</p>
         </div>
-
-        <div class="demo" role="group" aria-label="Exemplo de pull request com o revisor">
-          <div class="pr-bar"><svg class="ico" aria-hidden="true"><use href="#i-github"/></svg><span class="pr-open">Aberto</span>Listagem paginada de consultas <span class="pr-num">#3</span></div>
-          <pre class="term" role="group" aria-label="Saída dos testes"><span class="d">$ ./mvnw test</span>
-<span class="r">FAIL</span> devolveASegundaPagina
-  esperava 10 consultas na página 2, veio 20</pre>
-          <div class="thread">
-            <div class="msg">
-              <span class="avatar bot" aria-hidden="true">?</span>
-              <div class="bubble bot"><span class="meta">revisor · pergunta</span>O teste <code>devolveASegundaPagina</code> espera 10 consultas na página 2, e a sua resposta trouxe 20. Onde a sua consulta define o tamanho da página?</div>
+        <div class="grid bento">
+          <article class="cell span2">
+            <div class="pane" style="--pane: 3 / 1"><img src="media/perguntas.webp" width="1660" height="438" loading="lazy" alt="Perguntas para pensar, num comentário real do revisor: se o método olha a data completa ou só a hora, e como calcular a duração quando o fim cruza a meia-noite."></div>
+            <div><h3>Perguntas sobre o teste que falhou</h3><p>O teste <code>endsOnTheNextDay</code> esperava 60 minutos entre 23:30 e 00:30. O revisor não conserta: pergunta se o cálculo olha a data inteira ou só a hora.</p></div>
+          </article>
+          <article class="cell">
+            <ol class="levels" aria-label="Os três níveis de dica" data-demo="levels">
+              <li><span class="lv" aria-hidden="true"><i class="on"></i><i></i><i></i></span><span><b>Direção</b><span>Para onde olhar no código.</span></span><code class="cmd" aria-hidden="true">/dica</code></li>
+              <li><span class="lv" aria-hidden="true"><i class="on"></i><i class="on"></i><i></i></span><span><b>Caminho</b><span>O que falta ligar, passo a passo.</span></span><code class="cmd" aria-hidden="true">/dica</code></li>
+              <li><span class="lv" aria-hidden="true"><i class="on"></i><i class="on"></i><i class="on"></i></span><span><b>Quase lá</b><span>O ponto exato, ainda sem código.</span></span><code class="cmd" aria-hidden="true">/dica</code></li>
+            </ol>
+            <div><h3>Dicas com <code>/dica</code></h3><p>Travou? Comente <code>/dica</code> no pull request. Cada dica é mais concreta que a anterior.</p></div>
+          </article>
+          <article class="cell">
+            <div class="battery-wrap">
+              <div class="battery" aria-hidden="true" data-demo="battery"><i><svg viewBox="0 0 24 24"><use href="#i-check"/></svg></i><i><svg viewBox="0 0 24 24"><use href="#i-check"/></svg></i><i><svg viewBox="0 0 24 24"><use href="#i-check"/></svg></i><i><svg viewBox="0 0 24 24"><use href="#i-check"/></svg></i><i><svg viewBox="0 0 24 24"><use href="#i-check"/></svg></i><i><svg viewBox="0 0 24 24"><use href="#i-check"/></svg></i><i><svg viewBox="0 0 24 24"><use href="#i-check"/></svg></i><i><svg viewBox="0 0 24 24"><use href="#i-check"/></svg></i><i><svg viewBox="0 0 24 24"><use href="#i-check"/></svg></i><i><svg viewBox="0 0 24 24"><use href="#i-check"/></svg></i></div>
+              <small><b class="bat-count">10</b> de 10<br>sem código</small>
             </div>
-          </div>
+            <div><h3>Testado contra quem quer a resposta</h3><p>Em 10 pull requests reais, a bateria tentou fazer o revisor e o <code>/dica</code> entregarem a solução, com ordens escondidas no diff e nos testes. Nenhum comentário trouxe código.</p><a class="more" href="https://github.com/precavidos/vaga-viva/blob/main/docs/bateria-revisor.md">Ler a bateria do revisor <span aria-hidden="true">→</span></a></div>
+          </article>
+          <article class="cell span2">
+            <div class="pane" style="--pane: 9 / 4"><img src="media/dica.webp" width="1632" height="625" loading="lazy" alt="Dica 2 de 3, Caminho, num pull request de exemplo: falta apontar a classe Patient como entidade e ligá-la à tabela certa."></div>
+            <div><h3>Uma dica por vez, no próprio pull request</h3><p>A segunda dica da missão Pacientes no banco de dados, no pull request de exemplo do projeto.</p><a class="more" href="https://github.com/davsilvam/vaga-viva-clinic-scheduling/pull/7">Abrir o pull request de exemplo <span aria-hidden="true">→</span></a></div>
+          </article>
         </div>
       </div>
     </section>
 
-    <!-- Teachers: the class dashboard. Fictitious students in alphabetical order, never sorted by green dots
-         (DESIGN.md 4.16): one advancing, one stuck, one completed; missions after the current one are empty. -->
-    <section class="section" id="professores" aria-labelledby="professores-titulo">
-      <div class="wrap">
+    <!-- Teachers: the class dashboard recorded from the app with a fictitious class (site/media/painel.mp4). -->
+    <section class="band-row" id="professores" aria-labelledby="professores-titulo">
+      <div class="frame">
         <div class="sec-head">
           <h2 id="professores-titulo">O painel mostra onde cada aluno está e por quê.</h2>
           <p>O professor cria uma turma a partir de uma vaga e manda um link. Cada aluno recebe o mesmo projeto no próprio GitHub e aparece no painel na missão em que está. Travado e parado são avisos para uma conversa, sempre com o motivo.</p>
         </div>
-
-        <figure class="demo board-demo" id="board-demo" aria-labelledby="painel-titulo">
-          <figcaption class="demo-head"><span id="painel-titulo">Turma piloto · 3 alunos</span><span class="demo-state">Atualizado às 14:05</span></figcaption>
-          <div class="meter" aria-hidden="true"><i data-status="STUCK"></i><i data-status="ADVANCING"></i><i data-status="COMPLETED"></i></div>
-          <ul class="legend">
-            <li data-status="STUCK"><i aria-hidden="true"></i>1 travado</li>
-            <li data-status="ADVANCING"><i aria-hidden="true"></i>1 avançando</li>
-            <li data-status="COMPLETED"><i aria-hidden="true"></i>1 concluído</li>
-          </ul>
-          <ul class="students">
-            <li class="student" data-status="ADVANCING">
-              <span class="avatar" aria-hidden="true">AB</span>
-              <span class="name">Ana Beatriz<span class="status" data-status="ADVANCING"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7M9 7h8v8"/></svg>avançando</span></span>
-              <span class="test-grid"><span class="test-row" data-order="1" data-state="counted"><span class="sr">Missão 1: 4 de 4 testes passando.</span><span class="test-mission" aria-hidden="true">01</span><span class="test-dots" aria-hidden="true"><i class="td is-pass"></i><i class="td is-pass"></i><i class="td is-pass"></i><i class="td is-pass"></i></span><span class="test-count" aria-hidden="true">4/4</span></span><span class="test-row" data-order="2" data-state="counted"><span class="sr">Missão 2: 3 de 3 testes passando.</span><span class="test-mission" aria-hidden="true">02</span><span class="test-dots" aria-hidden="true"><i class="td is-pass"></i><i class="td is-pass"></i><i class="td is-pass"></i></span><span class="test-count" aria-hidden="true">3/3</span></span><span class="test-row" data-order="3" data-state="counted"><span class="sr">Missão 3: 2 de 4 testes passando.</span><span class="test-mission" aria-hidden="true">03</span><span class="test-dots" aria-hidden="true"><i class="td is-pass"></i><i class="td is-pass"></i><i class="td is-fail"></i><i class="td is-fail"></i></span><span class="test-count" aria-hidden="true">2/4</span></span><span class="test-row" data-order="4" data-state="future"><span class="sr">Missão 4: ainda não começou.</span><span class="test-mission" aria-hidden="true">04</span><span class="test-dots" aria-hidden="true"><i class="td is-empty"></i><i class="td is-empty"></i><i class="td is-empty"></i></span><span class="test-count" aria-hidden="true">—</span></span><span class="test-row" data-order="5" data-state="future"><span class="sr">Missão 5: ainda não começou.</span><span class="test-mission" aria-hidden="true">05</span><span class="test-dots" aria-hidden="true"><i class="td is-empty"></i><i class="td is-empty"></i><i class="td is-empty"></i></span><span class="test-count" aria-hidden="true">—</span></span><span class="test-row" data-order="6" data-state="future"><span class="sr">Missão 6: ainda não começou.</span><span class="test-mission" aria-hidden="true">06</span><span class="test-dots" aria-hidden="true"><i class="td is-empty"></i><i class="td is-empty"></i></span><span class="test-count" aria-hidden="true">—</span></span></span>
-              <p class="reason">Há 2 dias na missão 3.</p>
-            </li>
-            <li class="student" data-status="STUCK">
-              <span class="avatar" aria-hidden="true">CR</span>
-              <span class="name">Caio Ramos<span class="status" data-status="STUCK"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.6-5.900M20 4v5h-5"/></svg>travado</span></span>
-              <span class="test-grid"><span class="test-row" data-order="1" data-state="counted"><span class="sr">Missão 1: 4 de 4 testes passando.</span><span class="test-mission" aria-hidden="true">01</span><span class="test-dots" aria-hidden="true"><i class="td is-pass"></i><i class="td is-pass"></i><i class="td is-pass"></i><i class="td is-pass"></i></span><span class="test-count" aria-hidden="true">4/4</span></span><span class="test-row" data-order="2" data-state="counted"><span class="sr">Missão 2: 1 de 3 testes passando.</span><span class="test-mission" aria-hidden="true">02</span><span class="test-dots" aria-hidden="true"><i class="td is-pass"></i><i class="td is-fail"></i><i class="td is-fail"></i></span><span class="test-count" aria-hidden="true">1/3</span></span><span class="test-row" data-order="3" data-state="future"><span class="sr">Missão 3: ainda não começou.</span><span class="test-mission" aria-hidden="true">03</span><span class="test-dots" aria-hidden="true"><i class="td is-empty"></i><i class="td is-empty"></i><i class="td is-empty"></i><i class="td is-empty"></i></span><span class="test-count" aria-hidden="true">—</span></span><span class="test-row" data-order="4" data-state="future"><span class="sr">Missão 4: ainda não começou.</span><span class="test-mission" aria-hidden="true">04</span><span class="test-dots" aria-hidden="true"><i class="td is-empty"></i><i class="td is-empty"></i><i class="td is-empty"></i></span><span class="test-count" aria-hidden="true">—</span></span><span class="test-row" data-order="5" data-state="future"><span class="sr">Missão 5: ainda não começou.</span><span class="test-mission" aria-hidden="true">05</span><span class="test-dots" aria-hidden="true"><i class="td is-empty"></i><i class="td is-empty"></i><i class="td is-empty"></i></span><span class="test-count" aria-hidden="true">—</span></span><span class="test-row" data-order="6" data-state="future"><span class="sr">Missão 6: ainda não começou.</span><span class="test-mission" aria-hidden="true">06</span><span class="test-dots" aria-hidden="true"><i class="td is-empty"></i><i class="td is-empty"></i></span><span class="test-count" aria-hidden="true">—</span></span></span>
-              <p class="reason">4 dias na missão 2, 3 PRs nesse período.</p>
-            </li>
-            <li class="student" data-status="COMPLETED">
-              <span class="avatar" aria-hidden="true">JT</span>
-              <span class="name">Júlia Torres<span class="status" data-status="COMPLETED"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5 9.5-10"/></svg>concluído</span></span>
-              <span class="test-grid"><span class="test-row" data-order="1" data-state="counted"><span class="sr">Missão 1: 4 de 4 testes passando.</span><span class="test-mission" aria-hidden="true">01</span><span class="test-dots" aria-hidden="true"><i class="td is-pass"></i><i class="td is-pass"></i><i class="td is-pass"></i><i class="td is-pass"></i></span><span class="test-count" aria-hidden="true">4/4</span></span><span class="test-row" data-order="2" data-state="counted"><span class="sr">Missão 2: 3 de 3 testes passando.</span><span class="test-mission" aria-hidden="true">02</span><span class="test-dots" aria-hidden="true"><i class="td is-pass"></i><i class="td is-pass"></i><i class="td is-pass"></i></span><span class="test-count" aria-hidden="true">3/3</span></span><span class="test-row" data-order="3" data-state="counted"><span class="sr">Missão 3: 4 de 4 testes passando.</span><span class="test-mission" aria-hidden="true">03</span><span class="test-dots" aria-hidden="true"><i class="td is-pass"></i><i class="td is-pass"></i><i class="td is-pass"></i><i class="td is-pass"></i></span><span class="test-count" aria-hidden="true">4/4</span></span><span class="test-row" data-order="4" data-state="counted"><span class="sr">Missão 4: 3 de 3 testes passando.</span><span class="test-mission" aria-hidden="true">04</span><span class="test-dots" aria-hidden="true"><i class="td is-pass"></i><i class="td is-pass"></i><i class="td is-pass"></i></span><span class="test-count" aria-hidden="true">3/3</span></span><span class="test-row" data-order="5" data-state="counted"><span class="sr">Missão 5: 3 de 3 testes passando.</span><span class="test-mission" aria-hidden="true">05</span><span class="test-dots" aria-hidden="true"><i class="td is-pass"></i><i class="td is-pass"></i><i class="td is-pass"></i></span><span class="test-count" aria-hidden="true">3/3</span></span><span class="test-row" data-order="6" data-state="counted"><span class="sr">Missão 6: 2 de 2 testes passando.</span><span class="test-mission" aria-hidden="true">06</span><span class="test-dots" aria-hidden="true"><i class="td is-pass"></i><i class="td is-pass"></i></span><span class="test-count" aria-hidden="true">2/2</span></span></span>
-              <p class="reason">Todas as missões passando.</p>
-            </li>
-          </ul>
-          <p class="demo-note">Dados de exemplo. Os alunos aparecem em ordem alfabética, nunca do pior para o melhor.</p>
-        </figure>
-
-        <div class="sees">
+        <div class="cell" style="border-top:1px solid var(--line)">
+          <div class="window flat" data-video style="--ar: 16 / 10">
+            <div class="win-bar">
+              <span class="win-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+              <span class="win-url">vaga-viva-49kj.onrender.com/turmas/turma-piloto</span>
+              <button type="button" class="vid-toggle" aria-pressed="false"><svg class="ico" aria-hidden="true"><use href="#i-pause"/></svg><span class="label">Pausar</span><span class="sr"> o vídeo</span></button>
+            </div>
+            <video muted loop playsinline preload="none" poster="media/painel-poster.jpg" width="1440" height="900" aria-label="Gravação do painel de uma turma de exemplo: alunos fictícios nas colunas das missões; ao clicar em João Pedro, abre a ficha com os testes que falham e a última pergunta do revisor.">
+              <source src="media/painel.mp4" type="video/mp4">
+            </video>
+          </div>
+        </div>
+        <div class="grid c3">
+          <article class="cell">
+            <div class="pane tall"><img src="media/convite.webp" width="1520" height="1256" loading="lazy" alt="Convite para a Turma piloto: a stack e as 6 missões em ordem."></div>
+            <div><h3>Convite por link</h3><p>Antes de entrar, o aluno vê as missões e o que o professor vai ver, e dá o consentimento.</p></div>
+          </article>
+          <article class="cell">
+            <div class="pane tall"><img src="media/ficha.webp" width="960" height="1194" loading="lazy" alt="Ficha de João Pedro: missão 2, os testes que falham e a última pergunta do revisor."></div>
+            <div><h3>A ficha do aluno</h3><p>Os testes que falham, a última pergunta do revisor e quantas dicas o aluno pediu na missão.</p></div>
+          </article>
+          <article class="cell">
+            <div class="pane tall"><img src="media/email.webp" width="1200" height="1175" loading="lazy" alt="E-mail Resumo da semana da Turma piloto: 2 travados, 1 parado, 2 avançando e a lista Vale uma conversa."></div>
+            <div><h3>Resumo da semana</h3><p>Toda segunda, se o professor pedir, um e-mail com quem vale uma conversa e por quê.</p></div>
+          </article>
+        </div>
+        <div class="sees band-row">
           <div>
             <h3>O professor vê</h3>
             <ul>
               <li>O nome que o aluno escolheu ao entrar</li>
               <li>A missão atual e os testes que falham</li>
-              <li>As perguntas do revisor</li>
+              <li>As perguntas do revisor e quantas dicas foram pedidas</li>
             </ul>
           </div>
-          <div>
+          <div class="not">
             <h3>O professor não vê</h3>
             <ul>
               <li>O código do aluno</li>
@@ -667,50 +704,73 @@
       </div>
     </section>
 
-    <!-- Principles -->
-    <section class="section" id="principios" aria-labelledby="principios-titulo">
-      <div class="wrap">
+    <!-- Principles: one drawing of dots per rule. -->
+    <section class="band-row" id="principios" aria-labelledby="principios-titulo">
+      <div class="frame">
         <div class="sec-head">
           <h2 id="principios-titulo">As regras escolhem as missões; a IA só escreve os textos.</h2>
           <p>O mesmo texto de vaga sempre gera o mesmo plano, e dá para conferir de onde veio cada missão.</p>
         </div>
-        <ul class="rules">
-          <li><h3>Competências com nome</h3><p>Cada termo marcado na vaga vira uma competência de um vocabulário fechado, baseado na ESCO. Um termo que o vocabulário não tem fica sem marca.</p></li>
-          <li><h3>Regras fixas para o plano</h3><p>A escolha e a ordem das missões seguem regras fixas. Se a IA falhar ao escrever os textos, o projeto sai com os textos padrão.</p></li>
-          <li><h3>A vaga não fica guardada</h3><p>O texto da vaga é lido em memória e descartado. Do aluno que entra numa turma, ficam o usuário do GitHub, o nome que ele escolheu, o nome do repositório e o andamento no projeto: a missão atual, os testes que falham e quantos passam, a última pergunta do revisor, quantas dicas ele pediu e o link do último PR.</p></li>
-        </ul>
+        <div class="grid c3">
+          <article class="cell">
+            <div class="art" aria-hidden="true" data-demo="art">
+              <svg viewBox="0 0 220 120"><rect class="bar" x="0" y="14" width="60" height="12" rx="4"/><rect class="hl st" data-k="0" x="66" y="10" width="40" height="20" rx="4"/><rect class="bar" x="112" y="14" width="72" height="12" rx="4"/><rect class="bar" x="0" y="48" width="34" height="12" rx="4"/><rect class="bar" x="40" y="48" width="58" height="12" rx="4"/><rect class="hl st" data-k="2" x="104" y="44" width="70" height="20" rx="4"/><rect class="bar" x="0" y="82" width="88" height="12" rx="4"/><rect class="bar" x="94" y="82" width="46" height="12" rx="4"/><circle class="out" cx="160" cy="88" r="7"/><circle class="out" cx="182" cy="88" r="7"/><circle class="ink pop st" cx="204" cy="20" r="7" data-k="1"/><circle class="ink pop st" cx="204" cy="54" r="7" data-k="3"/></svg>
+            </div>
+            <div><h3>Competências com nome</h3><p>Cada termo marcado na vaga vira uma competência de um vocabulário fechado, baseado na ESCO. Um termo que o vocabulário não tem fica sem marca.</p></div>
+          </article>
+          <article class="cell">
+            <div class="art" aria-hidden="true" data-demo="art" data-gap="110">
+              <svg viewBox="0 0 220 120"><g class="ink"><rect class="pop st" x="0" y="96" width="24" height="24" rx="4"/><rect class="pop st" x="36" y="96" width="24" height="24" rx="4"/><rect class="pop st" x="36" y="60" width="24" height="24" rx="4"/><rect class="pop st" x="72" y="96" width="24" height="24" rx="4"/><rect class="pop st" x="72" y="60" width="24" height="24" rx="4"/><rect class="pop st" x="108" y="96" width="24" height="24" rx="4"/><rect class="pop st" x="108" y="60" width="24" height="24" rx="4"/><rect class="pop st" x="108" y="24" width="24" height="24" rx="4"/><rect class="pop st" x="144" y="96" width="24" height="24" rx="4"/><rect class="pop st" x="144" y="60" width="24" height="24" rx="4"/><rect class="pop st" x="144" y="24" width="24" height="24" rx="4"/><rect class="pop st" x="180" y="96" width="24" height="24" rx="4"/><rect class="pop st" x="180" y="60" width="24" height="24" rx="4"/><rect class="pop st" x="180" y="24" width="24" height="24" rx="4"/></g></svg>
+            </div>
+            <div><h3>Regras fixas para o plano</h3><p>A escolha e a ordem das missões seguem regras fixas. Se a IA falhar ao escrever os textos, o projeto sai com os textos padrão.</p></div>
+          </article>
+          <article class="cell">
+            <div class="art" aria-hidden="true" data-demo="art" data-gap="220">
+              <svg viewBox="0 0 220 120"><rect class="dash" x="2" y="2" width="132" height="116" rx="8"/><rect class="bar gone st" x="18" y="22" width="84" height="10" rx="4"/><rect class="bar gone st" x="18" y="44" width="100" height="10" rx="4"/><rect class="bar gone st" x="18" y="66" width="64" height="10" rx="4"/><g class="bar gone st"><circle cx="24" cy="96" r="5"/><circle cx="44" cy="96" r="4"/><circle cx="62" cy="96" r="3"/><circle cx="78" cy="96" r="2"/></g><circle class="out keep st" cx="170" cy="40" r="9"/><circle class="out keep st" cx="200" cy="40" r="9"/><circle class="out keep st" cx="170" cy="80" r="9"/><circle class="out keep st" cx="200" cy="80" r="9"/></svg>
+            </div>
+            <div><h3>A vaga não fica guardada</h3><p>O texto da vaga é lido em memória e descartado. Do aluno numa turma ficam só o login, o nome escolhido, o repositório e o andamento no projeto.</p></div>
+          </article>
+        </div>
       </div>
     </section>
 
     <!-- Status -->
-    <section class="section" id="status" aria-labelledby="status-titulo">
-      <div class="wrap roadmap-grid">
-        <div>
+    <section class="band-row" id="status" aria-labelledby="status-titulo">
+      <div class="frame">
+        <div class="sec-head">
           <h2 id="status-titulo">Feito durante o Hack Brasil 2026.</h2>
           <p>Na trilha Acesso à educação, com submissão em 30/11. O código é aberto desde o primeiro commit.</p>
-          <p class="stack-line">Construído com Java 21, Spring Boot, PostgreSQL, Flyway, JUnit, Docker, um GitHub App, GitHub Actions e o vocabulário ESCO; os projetos dos alunos saem em Java com Spring Boot ou em TypeScript com NestJS.</p>
         </div>
-        <ol class="roadmap">
-          <li><span class="state">pronto</span><div><h3>Leitura da vaga</h3><p>Nível, tecnologias e competências reconhecidos no texto.</p></div></li>
-          <li><span class="state">pronto</span><div><h3>Plano do projeto</h3><p>Missões escolhidas e ordenadas pelas competências da vaga, em Java e Spring Boot ou em TypeScript e NestJS.</p></div></li>
-          <li><span class="state">pronto</span><div><h3>Repositório do aluno</h3><p>Criado pelo GitHub App na conta do aluno, com cada missão aberta como tarefa.</p></div></li>
-          <li><span class="state">pronto</span><div><h3>Revisor de pull requests</h3><p>Lê os testes que falham e comenta com perguntas, sem o código da solução.</p></div></li>
-          <li><span class="state">pronto</span><div><h3>Modo turma</h3><p>Convite por link e painel da turma, com a missão e os testes de cada aluno.</p></div></li>
-          <li><span class="state next">a seguir</span><div><h3>Dicas em 3 níveis</h3><p>Uma dica por vez, quando o aluno comenta <code>/dica</code>.</p></div></li>
-          <li><span class="state next">a seguir</span><div><h3>Resumo semanal</h3><p>Um e-mail para o professor com quem vale uma conversa.</p></div></li>
-        </ol>
+        <div class="status-grid band-row">
+          <div>
+            <p>Construído com</p>
+            <div class="chips"><span>Java 21</span><span>Spring Boot</span><span>PostgreSQL</span><span>Flyway</span><span>JUnit</span><span>Docker</span><span>GitHub App</span><span>GitHub Actions</span><span>ESCO</span></div>
+          </div>
+          <div>
+            <ol class="roadmap">
+              <li><span class="state">pronto</span><div><h3>Leitura da vaga</h3><p>Pelo texto, pelo link ou por e-mail: nível, tecnologias e competências.</p></div></li>
+              <li><span class="state">pronto</span><div><h3>Plano e repositório do aluno</h3><p>Missões escolhidas pelas competências da vaga, criadas como issues na conta do aluno.</p></div></li>
+              <li><span class="state">pronto</span><div><h3>Revisor e dicas em 3 níveis</h3><p>Perguntas a cada push e uma dica por vez com <code>/dica</code>, sem o código da solução.</p></div></li>
+              <li><span class="state">pronto</span><div><h3>Modo turma e resumo semanal</h3><p>Convite por link, painel da turma e um e-mail toda segunda para o professor.</p></div></li>
+              <li><span class="state next">a seguir</span><div><h3>Páginas de carreira montadas por JavaScript</h3><p>Ler vagas de páginas que chegam vazias para um leitor simples.</p></div></li>
+              <li><span class="state next">a seguir</span><div><h3>Avisar de vagas novas</h3><p>O aluno segue empresas e recebe um aviso quando abre uma vaga na página de carreira delas.</p></div></li>
+            </ol>
+          </div>
+        </div>
       </div>
     </section>
 
-    <!-- Closing -->
-    <section class="cta" aria-labelledby="cta-titulo">
-      <div class="wrap">
-        <div class="cta-box">
-          <div>
-            <h2 id="cta-titulo">O código é aberto.</h2>
-            <p>Licença MIT. Se uma vaga sua não foi reconhecida ou uma pergunta do revisor não ajudou, abra uma issue com o exemplo.</p>
+    <!-- Closing: the dot band, then the second purple button of the page, far from the hero's. -->
+    <section class="band-row" aria-labelledby="cta-titulo">
+      <div class="frame">
+        <div class="band"><svg class="band-svg" viewBox="0 0 1112 72" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false"><rect class="f" x="0" y="0" width="12" height="12" rx="4"/><rect class="f" x="0" y="20" width="12" height="12" rx="4"/><rect class="f" x="0" y="40" width="12" height="12" rx="4"/><rect class="f" x="0" y="60" width="12" height="12" rx="4"/><rect class="f" x="20" y="0" width="12" height="12" rx="4"/><rect class="f" x="20" y="20" width="12" height="12" rx="4"/><rect class="f" x="20" y="40" width="12" height="12" rx="4"/><rect class="f" x="20" y="60" width="12" height="12" rx="4"/><rect class="f" data-c="2" x="40" y="0" width="12" height="12" rx="4"/><rect class="f" x="40" y="20" width="12" height="12" rx="4"/><rect class="e" x="41" y="41" width="10" height="10" rx="3"/><rect class="f" x="40" y="60" width="12" height="12" rx="4"/><rect class="f" x="60" y="0" width="12" height="12" rx="4"/><rect class="f" x="60" y="20" width="12" height="12" rx="4"/><rect class="f" x="60" y="40" width="12" height="12" rx="4"/><rect class="e" x="61" y="61" width="10" height="10" rx="3"/><rect class="f" x="80" y="0" width="12" height="12" rx="4"/><rect class="f" x="80" y="20" width="12" height="12" rx="4"/><rect class="f" x="80" y="40" width="12" height="12" rx="4"/><rect class="f" x="80" y="60" width="12" height="12" rx="4"/><rect class="e" x="101" y="1" width="10" height="10" rx="3"/><rect class="f" x="100" y="20" width="12" height="12" rx="4"/><rect class="f" data-c="5" x="100" y="40" width="12" height="12" rx="4"/><rect class="f" x="100" y="60" width="12" height="12" rx="4"/><rect class="f" x="120" y="0" width="12" height="12" rx="4"/><rect class="f" x="120" y="20" width="12" height="12" rx="4"/><rect class="p" x="120" y="40" width="12" height="12" rx="4"/><rect class="f" x="120" y="60" width="12" height="12" rx="4"/><rect class="f" x="140" y="0" width="12" height="12" rx="4"/><rect class="f" data-c="7" x="140" y="20" width="12" height="12" rx="4"/><rect class="f" x="140" y="40" width="12" height="12" rx="4"/><rect class="f" x="140" y="60" width="12" height="12" rx="4"/><rect class="f" x="160" y="0" width="12" height="12" rx="4"/><rect class="f" x="160" y="20" width="12" height="12" rx="4"/><rect class="e" x="161" y="41" width="10" height="10" rx="3"/><rect class="f" x="160" y="60" width="12" height="12" rx="4"/><rect class="f" x="180" y="0" width="12" height="12" rx="4"/><rect class="f" x="180" y="20" width="12" height="12" rx="4"/><rect class="f" x="180" y="40" width="12" height="12" rx="4"/><rect class="f" x="180" y="60" width="12" height="12" rx="4"/><rect class="f" x="200" y="0" width="12" height="12" rx="4"/><rect class="f" x="200" y="20" width="12" height="12" rx="4"/><rect class="f" x="200" y="40" width="12" height="12" rx="4"/><rect class="f" data-c="10" x="200" y="60" width="12" height="12" rx="4"/><rect class="f" data-c="11" x="220" y="0" width="12" height="12" rx="4"/><rect class="f" data-c="11" x="220" y="20" width="12" height="12" rx="4"/><rect class="p" x="220" y="40" width="12" height="12" rx="4"/><rect class="e" x="221" y="61" width="10" height="10" rx="3"/><rect class="f" x="240" y="0" width="12" height="12" rx="4"/><rect class="p" x="240" y="20" width="12" height="12" rx="4"/><rect class="f" x="240" y="40" width="12" height="12" rx="4"/><rect class="p" x="240" y="60" width="12" height="12" rx="4"/><rect class="e" x="261" y="1" width="10" height="10" rx="3"/><rect class="f" x="260" y="20" width="12" height="12" rx="4"/><rect class="f" x="260" y="40" width="12" height="12" rx="4"/><rect class="f" data-c="13" x="260" y="60" width="12" height="12" rx="4"/><rect class="p" x="280" y="0" width="12" height="12" rx="4"/><rect class="f" data-c="14" x="280" y="20" width="12" height="12" rx="4"/><rect class="p" x="280" y="40" width="12" height="12" rx="4"/><rect class="f" data-c="14" x="280" y="60" width="12" height="12" rx="4"/><rect class="f" x="300" y="0" width="12" height="12" rx="4"/><rect class="f" data-c="15" x="300" y="20" width="12" height="12" rx="4"/><rect class="f" data-c="15" x="300" y="40" width="12" height="12" rx="4"/><rect class="f" x="300" y="60" width="12" height="12" rx="4"/><rect class="p" x="320" y="0" width="12" height="12" rx="4"/><rect class="f" data-c="16" x="320" y="20" width="12" height="12" rx="4"/><rect class="e" x="321" y="41" width="10" height="10" rx="3"/><rect class="f" x="320" y="60" width="12" height="12" rx="4"/><rect class="p" x="340" y="0" width="12" height="12" rx="4"/><rect class="e" x="341" y="21" width="10" height="10" rx="3"/><rect class="p" x="340" y="40" width="12" height="12" rx="4"/><rect class="e" x="341" y="61" width="10" height="10" rx="3"/><rect class="f" x="360" y="0" width="12" height="12" rx="4"/><rect class="p" x="360" y="20" width="12" height="12" rx="4"/><rect class="p" x="360" y="40" width="12" height="12" rx="4"/><rect class="p" x="360" y="60" width="12" height="12" rx="4"/><rect class="f" data-c="19" x="380" y="0" width="12" height="12" rx="4"/><rect class="f" x="380" y="20" width="12" height="12" rx="4"/><rect class="f" data-c="19" x="380" y="40" width="12" height="12" rx="4"/><rect class="p" x="380" y="60" width="12" height="12" rx="4"/><rect class="p" x="400" y="0" width="12" height="12" rx="4"/><rect class="e" x="401" y="21" width="10" height="10" rx="3"/><rect class="p" x="400" y="40" width="12" height="12" rx="4"/><rect class="f" x="400" y="60" width="12" height="12" rx="4"/><rect class="p" x="420" y="0" width="12" height="12" rx="4"/><rect class="f" x="420" y="20" width="12" height="12" rx="4"/><rect class="e" x="421" y="41" width="10" height="10" rx="3"/><rect class="e" x="421" y="61" width="10" height="10" rx="3"/><rect class="f" data-c="22" x="440" y="0" width="12" height="12" rx="4"/><rect class="p" x="440" y="20" width="12" height="12" rx="4"/><rect class="f" x="440" y="40" width="12" height="12" rx="4"/><rect class="f" data-c="22" x="440" y="60" width="12" height="12" rx="4"/><rect class="p" x="460" y="0" width="12" height="12" rx="4"/><rect class="f" data-c="23" x="460" y="20" width="12" height="12" rx="4"/><rect class="p" x="460" y="40" width="12" height="12" rx="4"/><rect class="f" x="460" y="60" width="12" height="12" rx="4"/><rect class="p" x="480" y="0" width="12" height="12" rx="4"/><rect class="f" data-c="24" x="480" y="20" width="12" height="12" rx="4"/><rect class="p" x="480" y="40" width="12" height="12" rx="4"/><rect class="p" x="480" y="60" width="12" height="12" rx="4"/><rect class="e" x="501" y="1" width="10" height="10" rx="3"/><rect class="e" x="501" y="21" width="10" height="10" rx="3"/><rect class="f" x="500" y="40" width="12" height="12" rx="4"/><rect class="e" x="501" y="61" width="10" height="10" rx="3"/><rect class="p" x="520" y="0" width="12" height="12" rx="4"/><rect class="f" data-c="26" x="520" y="20" width="12" height="12" rx="4"/><rect class="f" data-c="26" x="520" y="40" width="12" height="12" rx="4"/><rect class="f" x="520" y="60" width="12" height="12" rx="4"/><rect class="p" x="540" y="0" width="12" height="12" rx="4"/><rect class="p" x="540" y="20" width="12" height="12" rx="4"/><rect class="p" x="540" y="40" width="12" height="12" rx="4"/><rect class="p" x="540" y="60" width="12" height="12" rx="4"/><rect class="f" data-c="28" x="560" y="0" width="12" height="12" rx="4"/><rect class="f" data-c="28" x="560" y="20" width="12" height="12" rx="4"/><rect class="f" data-c="28" x="560" y="40" width="12" height="12" rx="4"/><rect class="f" data-c="28" x="560" y="60" width="12" height="12" rx="4"/><rect class="p" x="580" y="0" width="12" height="12" rx="4"/><rect class="f" data-c="29" x="580" y="20" width="12" height="12" rx="4"/><rect class="f" data-c="29" x="580" y="40" width="12" height="12" rx="4"/><rect class="p" x="580" y="60" width="12" height="12" rx="4"/><rect class="f" data-c="30" x="600" y="0" width="12" height="12" rx="4"/><rect class="p" x="600" y="20" width="12" height="12" rx="4"/><rect class="f" data-c="30" x="600" y="40" width="12" height="12" rx="4"/><rect class="e" x="601" y="61" width="10" height="10" rx="3"/><rect class="e" x="621" y="1" width="10" height="10" rx="3"/><rect class="f" x="620" y="20" width="12" height="12" rx="4"/><rect class="p" x="620" y="40" width="12" height="12" rx="4"/><rect class="f" data-c="31" x="620" y="60" width="12" height="12" rx="4"/><rect class="f" data-c="32" x="640" y="0" width="12" height="12" rx="4"/><rect class="p" x="640" y="20" width="12" height="12" rx="4"/><rect class="p" x="640" y="40" width="12" height="12" rx="4"/><rect class="p" x="640" y="60" width="12" height="12" rx="4"/><rect class="p" x="660" y="0" width="12" height="12" rx="4"/><rect class="p" x="660" y="20" width="12" height="12" rx="4"/><rect class="p" x="660" y="40" width="12" height="12" rx="4"/><rect class="p" x="660" y="60" width="12" height="12" rx="4"/><rect class="e" x="681" y="1" width="10" height="10" rx="3"/><rect class="p" x="680" y="20" width="12" height="12" rx="4"/><rect class="p" x="680" y="40" width="12" height="12" rx="4"/><rect class="p" x="680" y="60" width="12" height="12" rx="4"/><rect class="f" data-c="35" x="700" y="0" width="12" height="12" rx="4"/><rect class="p" x="700" y="20" width="12" height="12" rx="4"/><rect class="e" x="701" y="41" width="10" height="10" rx="3"/><rect class="p" x="700" y="60" width="12" height="12" rx="4"/><rect class="f" data-c="36" x="720" y="0" width="12" height="12" rx="4"/><rect class="p" x="720" y="20" width="12" height="12" rx="4"/><rect class="p" x="720" y="40" width="12" height="12" rx="4"/><rect class="p" x="720" y="60" width="12" height="12" rx="4"/><rect class="p" x="740" y="0" width="12" height="12" rx="4"/><rect class="f" data-c="37" x="740" y="20" width="12" height="12" rx="4"/><rect class="p" x="740" y="40" width="12" height="12" rx="4"/><rect class="e" x="741" y="61" width="10" height="10" rx="3"/><rect class="p" x="760" y="0" width="12" height="12" rx="4"/><rect class="p" x="760" y="20" width="12" height="12" rx="4"/><rect class="p" x="760" y="40" width="12" height="12" rx="4"/><rect class="p" x="760" y="60" width="12" height="12" rx="4"/><rect class="p" x="780" y="0" width="12" height="12" rx="4"/><rect class="p" x="780" y="20" width="12" height="12" rx="4"/><rect class="p" x="780" y="40" width="12" height="12" rx="4"/><rect class="p" x="780" y="60" width="12" height="12" rx="4"/><rect class="p" x="800" y="0" width="12" height="12" rx="4"/><rect class="p" x="800" y="20" width="12" height="12" rx="4"/><rect class="e" x="801" y="41" width="10" height="10" rx="3"/><rect class="p" x="800" y="60" width="12" height="12" rx="4"/><rect class="p" x="820" y="0" width="12" height="12" rx="4"/><rect class="p" x="820" y="20" width="12" height="12" rx="4"/><rect class="p" x="820" y="40" width="12" height="12" rx="4"/><rect class="p" x="820" y="60" width="12" height="12" rx="4"/><rect class="p" x="840" y="0" width="12" height="12" rx="4"/><rect class="p" x="840" y="20" width="12" height="12" rx="4"/><rect class="p" x="840" y="40" width="12" height="12" rx="4"/><rect class="e" x="841" y="61" width="10" height="10" rx="3"/><rect class="p" x="860" y="0" width="12" height="12" rx="4"/><rect class="p" x="860" y="20" width="12" height="12" rx="4"/><rect class="p" x="860" y="40" width="12" height="12" rx="4"/><rect class="f" data-c="43" x="860" y="60" width="12" height="12" rx="4"/><rect class="p" x="880" y="0" width="12" height="12" rx="4"/><rect class="p" x="880" y="20" width="12" height="12" rx="4"/><rect class="p" x="880" y="40" width="12" height="12" rx="4"/><rect class="p" x="880" y="60" width="12" height="12" rx="4"/><rect class="p" x="900" y="0" width="12" height="12" rx="4"/><rect class="p" x="900" y="20" width="12" height="12" rx="4"/><rect class="p" x="900" y="40" width="12" height="12" rx="4"/><rect class="p" x="900" y="60" width="12" height="12" rx="4"/><rect class="p" x="920" y="0" width="12" height="12" rx="4"/><rect class="p" x="920" y="20" width="12" height="12" rx="4"/><rect class="p" x="920" y="40" width="12" height="12" rx="4"/><rect class="p" x="920" y="60" width="12" height="12" rx="4"/><rect class="p" x="940" y="0" width="12" height="12" rx="4"/><rect class="p" x="940" y="20" width="12" height="12" rx="4"/><rect class="e" x="941" y="41" width="10" height="10" rx="3"/><rect class="p" x="940" y="60" width="12" height="12" rx="4"/><rect class="p" x="960" y="0" width="12" height="12" rx="4"/><rect class="e" x="961" y="21" width="10" height="10" rx="3"/><rect class="e" x="961" y="41" width="10" height="10" rx="3"/><rect class="p" x="960" y="60" width="12" height="12" rx="4"/><rect class="p" x="980" y="0" width="12" height="12" rx="4"/><rect class="p" x="980" y="20" width="12" height="12" rx="4"/><rect class="p" x="980" y="40" width="12" height="12" rx="4"/><rect class="p" x="980" y="60" width="12" height="12" rx="4"/><rect class="p" x="1000" y="0" width="12" height="12" rx="4"/><rect class="e" x="1001" y="21" width="10" height="10" rx="3"/><rect class="p" x="1000" y="40" width="12" height="12" rx="4"/><rect class="p" x="1000" y="60" width="12" height="12" rx="4"/><rect class="p" x="1020" y="0" width="12" height="12" rx="4"/><rect class="p" x="1020" y="20" width="12" height="12" rx="4"/><rect class="p" x="1020" y="40" width="12" height="12" rx="4"/><rect class="p" x="1020" y="60" width="12" height="12" rx="4"/><rect class="p" x="1040" y="0" width="12" height="12" rx="4"/><rect class="p" x="1040" y="20" width="12" height="12" rx="4"/><rect class="p" x="1040" y="40" width="12" height="12" rx="4"/><rect class="p" x="1040" y="60" width="12" height="12" rx="4"/><rect class="p" x="1060" y="0" width="12" height="12" rx="4"/><rect class="p" x="1060" y="20" width="12" height="12" rx="4"/><rect class="p" x="1060" y="40" width="12" height="12" rx="4"/><rect class="p" x="1060" y="60" width="12" height="12" rx="4"/><rect class="p" x="1080" y="0" width="12" height="12" rx="4"/><rect class="p" x="1080" y="20" width="12" height="12" rx="4"/><rect class="p" x="1080" y="40" width="12" height="12" rx="4"/><rect class="p" x="1080" y="60" width="12" height="12" rx="4"/><rect class="p" x="1100" y="0" width="12" height="12" rx="4"/><rect class="p" x="1100" y="20" width="12" height="12" rx="4"/><rect class="p" x="1100" y="40" width="12" height="12" rx="4"/><rect class="p" x="1100" y="60" width="12" height="12" rx="4"/></svg></div>
+        <div class="cta band-row">
+          <h2 id="cta-titulo">Cole uma vaga e veja o seu plano.</h2>
+          <p>Licença MIT. Se uma vaga sua não foi reconhecida ou uma pergunta do revisor não ajudou, abra uma issue com o exemplo.</p>
+          <div class="actions">
+            <a class="btn" href="https://vaga-viva-49kj.onrender.com">Testar a demo <span class="arrow" aria-hidden="true">→</span></a>
+            <a class="btn ghost" href="https://github.com/precavidos/vaga-viva"><svg class="ico" aria-hidden="true"><use href="#i-github"/></svg>Abrir o repositório</a>
           </div>
-          <a class="btn" href="https://github.com/precavidos/vaga-viva"><svg class="ico" aria-hidden="true"><use href="#i-github"/></svg>Abrir o repositório <span class="arrow" aria-hidden="true">→</span></a>
         </div>
       </div>
     </section>
@@ -736,6 +796,7 @@
         <div>
           <h2>Links</h2>
           <ul>
+            <li><a href="https://vaga-viva-49kj.onrender.com">Demo do Vaga Viva</a></li>
             <li><a href="https://github.com/precavidos/vaga-viva"><svg class="ico" aria-hidden="true"><use href="#i-github"/></svg>Código no GitHub</a></li>
             <li><a href="https://github.com/precavidos/vaga-viva/blob/main/LICENSE">Licença MIT</a></li>
             <li><a href="https://hackbrasil.com">Site do Hack Brasil</a></li>
@@ -750,517 +811,252 @@
   </footer>
 
   <script>
-    /* copied from docs/design/prototipos/vv-motion.* */
-    // Only the components the landing uses: the dot matrix, the status line, the step mark, the dot field and decrypt.
-    // Keep in sync with the source.
-    (() => {
-      const REDUCED = '(prefers-reduced-motion: reduce)';
-      const reduced = () => window.matchMedia(REDUCED).matches;
-      const easeOutCubic = (p) => 1 - (1 - p) ** 3;
+    (function () {
+      var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)');
 
-      // ---------- Registry ----------
-      const components = [];
-      const bound = new WeakMap(); // element -> Set of component indexes already bound to it
-      const register = (selector, bind) => components.push({ selector, bind });
+      // Hero entrance, once on load.
+      var hero = document.querySelector('.hero');
+      requestAnimationFrame(function () { requestAnimationFrame(function () { hero.classList.add('is-in'); }); });
 
-      function init(root = document) {
-        components.forEach(({ selector, bind }, index) => {
-          const matches = [...root.querySelectorAll(selector)];
-          if (root instanceof Element && root.matches(selector)) matches.unshift(root);
-          for (const el of matches) {
-            let done = bound.get(el);
-            if (!done) bound.set(el, (done = new Set()));
-            if (done.has(index)) continue;
-            done.add(index);
-            bind(el);
-          }
-        });
-      }
-
-      // ---------- Dot matrix ----------
-      // The element is empty in the HTML; 16 dots are injected with their row and column as custom properties.
-      // scan and wave are CSS loops (.is-running); flip is stepped here because each dot stays green until the reset.
-      const FLIP_ORDER = [5, 0, 10, 3, 12, 7, 1, 14, 9, 4, 15, 2, 11, 6, 13, 8];
-      const FLIP_STEP = 90; // 16 dots × 90 ms = 1.44 s, then all green until the 1.6 s cycle resets.
-      const CYCLE = 1600;
-      const matrices = new WeakMap();
-
-      function bindMatrix(el) {
-        el.setAttribute('aria-hidden', 'true');
-        el.innerHTML = Array.from({ length: 16 }, (_, i) => `<i style="--r:${Math.floor(i / 4)};--c:${i % 4}"></i>`).join('');
-        const dots = [...el.children];
-        let timer = 0;
-        // Off screen the loop pauses: the CSS animations through .is-offscreen, the flip steps through `visible`.
-        // The element is watched only while the loop runs, so a stopped matrix that leaves the page is not kept alive.
-        let visible = true;
-        const watcher = 'IntersectionObserver' in window ? new IntersectionObserver((entries) => {
-          if (!el.isConnected) { watcher.disconnect(); return; } // replaced, as a busy button's content is
-          visible = entries[entries.length - 1].isIntersecting; // the newest entry wins when several are queued
-          el.classList.toggle('is-offscreen', !visible);
-        }) : null;
-
-        const clear = () => { clearInterval(timer); timer = 0; watcher?.disconnect(); };
-        const ctrl = {
-          start() {
-            clear();
-            watcher?.observe(el);
-            el.classList.remove('is-done');
-            dots.forEach((d) => d.classList.remove('is-on'));
-            if (reduced()) { el.classList.add('is-still'); el.classList.remove('is-running'); return; }
-            el.classList.remove('is-still');
-            el.classList.add('is-running');
-            if (el.dataset.dotMatrix !== 'flip') return;
-            const t0 = performance.now();
-            let lit = 0;
-            let cycle = 0;
-            timer = setInterval(() => {
-              if (!el.isConnected) { clear(); return; } // removed without stop(): end the steps
-              if (!visible) return;
-              const elapsed = performance.now() - t0;
-              const t = elapsed % CYCLE;
-              const want = t >= CYCLE - FLIP_STEP ? 0 : Math.min(16, Math.floor(t / FLIP_STEP) + 1);
-              const turn = Math.floor(elapsed / CYCLE);
-              if (want === lit && turn === cycle) return;
-              if (want < lit || turn !== cycle) { // a new cycle: reset without the fade, so the grid snaps back to coral
-                cycle = turn;
-                el.classList.add('is-reset');
-                dots.forEach((d) => d.classList.remove('is-on'));
-                void el.offsetWidth;
-                el.classList.remove('is-reset');
-                lit = 0;
-              }
-              for (; lit < want; lit++) dots[FLIP_ORDER[lit]].classList.add('is-on');
-            }, 30);
-          },
-          // Ends the loop. done: the final state of the pattern (flip all green); otherwise still as it is drawn at rest.
-          stop(done) {
-            clear();
-            el.classList.remove('is-running');
-            el.classList.toggle('is-still', reduced());
-            el.classList.toggle('is-done', !!done);
-            if (!done) dots.forEach((d) => d.classList.remove('is-on'));
-          },
-        };
-        matrices.set(el, ctrl);
-        // Inside a status line the loop waits for statusLine(); a matrix on its own runs from the start.
-        if (el.closest('.status-line')) ctrl.stop(false);
-        else ctrl.start();
-      }
-      register('[data-dot-matrix]', bindMatrix);
-
-      // ---------- Status line ----------
-      // statusLine(el, label) shows the line, writes the label, counts "0,0 s" and runs the matrix.
-      // done() / stop() freeze the timer and end the matrix loop. `since` (a performance.now() reading) is for a wait
-      // that began before its line appeared, as a request sent before the screen changed: the timer counts from it.
-      const lines = new WeakMap();
-      const generations = new WeakMap();
-      const seconds = (ms) => `${(ms / 1000).toFixed(1).replace('.', ',')} s`;
-
-      function statusLine(el, label, since) {
-        lines.get(el)?.stop();
-        init(el);
-        const labelEl = el.querySelector('.status-label');
-        const timerEl = el.querySelector('.status-timer');
-        const matrixEl = el.querySelector('[data-dot-matrix]');
-        const matrix = matrixEl && matrices.get(matrixEl);
-        if (!el.hasAttribute('role')) el.setAttribute('role', 'status');
-        timerEl?.setAttribute('aria-hidden', 'true');
-        // The live region is shown empty and the label is written after a rendered frame: a region that appears
-        // and fills in the same tick is often not announced. A newer call on the same line cancels the write.
-        const gen = (generations.get(el) ?? 0) + 1;
-        generations.set(el, gen);
-        if (labelEl) labelEl.textContent = '';
-        el.hidden = false;
-        el.classList.remove('is-done', 'is-stopped');
-        const write = () => { if (labelEl && generations.get(el) === gen && labelEl.textContent !== label) labelEl.textContent = label; };
-        requestAnimationFrame(() => setTimeout(write, 0));
-        setTimeout(write, 100); // rAF does not run in a background tab; the timeout still does
-        const t0 = typeof since === 'number' && since <= performance.now() ? since : performance.now();
-        const tick = () => { if (timerEl) timerEl.textContent = seconds(performance.now() - t0); };
-        tick();
-        const timer = setInterval(tick, 100);
-        matrix?.start();
-
-        let open = true;
-        const end = (done) => {
-          if (!open) return;
-          open = false;
-          clearInterval(timer);
-          tick();
-          matrix?.stop(done);
-          el.classList.add(done ? 'is-done' : 'is-stopped');
-          if (lines.get(el) === handle) lines.delete(el);
-        };
-        const handle = { done: () => end(true), stop: () => end(false) };
-        lines.set(el, handle);
-        return handle;
-      }
-
-      // ---------- Step mark ----------
-      // The state is the class (is-todo, is-current, is-done), switched by the page; the SVG is injected once.
-      const STEP_SVG = '<svg viewBox="0 0 18 18" aria-hidden="true" focusable="false">'
-        + '<circle class="sm-ring" cx="9" cy="9" r="7"/>'
-        + '<g class="sm-spin"><circle class="sm-arc" cx="9" cy="9" r="7" pathLength="100"/></g>'
-        + '<circle class="sm-disc" cx="9" cy="9" r="9"/>'
-        + '<path class="sm-check" d="M5.3 9.4l2.4 2.4 5-5.1" pathLength="1"/></svg>';
-
-      register('.step-mark', (el) => {
-        if (!el.querySelector('svg')) el.innerHTML = STEP_SVG;
-        el.setAttribute('aria-hidden', 'true');
-        if (reduced()) el.classList.add('is-still');
+      // Videos: they play muted in a loop only while on screen, and the button pauses them for good (WCAG 2.2.2).
+      // With reduced motion they wait on their poster until the button is pressed.
+      document.querySelectorAll('[data-video]').forEach(function (box) {
+        var video = box.querySelector('video');
+        var button = box.querySelector('.vid-toggle');
+        var label = button.querySelector('.label');
+        var icon = button.querySelector('use');
+        var held = REDUCED.matches; // paused by the person (or by reduced motion)
+        var visible = false;
+        function paint() {
+          var paused = held;
+          button.setAttribute('aria-pressed', String(paused));
+          label.textContent = paused ? 'Continuar' : 'Pausar';
+          icon.setAttribute('href', paused ? '#i-play' : '#i-pause');
+        }
+        function sync() {
+          if (!held && visible) { var p = video.play(); if (p && p.catch) p.catch(function () {}); }
+          else video.pause();
+        }
+        button.addEventListener('click', function () { held = !held; paint(); sync(); });
+        if ('IntersectionObserver' in window) {
+          new IntersectionObserver(function (entries) {
+            visible = entries[entries.length - 1].isIntersecting;
+            if (visible && video.preload === 'none') video.preload = 'auto';
+            sync();
+          }, { threshold: 0.25 }).observe(video);
+        } else { visible = true; sync(); }
+        paint();
       });
 
-      // ---------- Dot field ----------
-      // The only <canvas> of a page, inserted behind the wrapper's content. Near the cursor the dots turn green and
-      // move a few px away, then drift back slowly. The rAF loop runs only while something moves and the field is
-      // on screen; with touch (pointer: coarse) or reduced motion the grid is drawn once and stays still.
-      const FIELD = { gap: 22, radius: 1.6, reach: 96, push: 6, baseAlpha: 0.5, tauIn: 70, tauOut: 650 };
-      const COARSE = '(pointer: coarse)';
-      const DARK = '(prefers-color-scheme: dark)';
-
-      function bindDotField(el) {
-        if (document.querySelector('canvas.dot-field-canvas')) return; // one canvas per page (DESIGN.md 3.2)
-        const canvas = document.createElement('canvas');
-        canvas.className = 'dot-field-canvas';
-        canvas.setAttribute('aria-hidden', 'true');
-        el.prepend(canvas);
-        const ctx = canvas.getContext('2d');
-        let width = 0, height = 0, dots = [], base = [0, 0, 0], hot = [0, 0, 0];
-        let pointer = null, raf = 0, last = 0, visible = false;
-        const still = () => reduced() || window.matchMedia(COARSE).matches;
-
-        // Reads a CSS colour through the canvas, which normalises any notation to #rrggbb.
-        const rgb = (value) => {
-          ctx.fillStyle = '#000';
-          ctx.fillStyle = value.trim() || '#000';
-          const hex = ctx.fillStyle.startsWith('#') ? ctx.fillStyle : '#000000';
-          return [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
-        };
-        const readColors = () => {
-          const style = getComputedStyle(el);
-          base = rgb(style.getPropertyValue('--df-dot'));
-          hot = rgb(style.getPropertyValue('--df-hot'));
-        };
-
-        const layout = () => {
-          const box = el.getBoundingClientRect();
-          width = box.width; height = box.height;
-          const dpr = Math.min(2, window.devicePixelRatio || 1);
-          canvas.width = Math.round(width * dpr); canvas.height = Math.round(height * dpr);
-          ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-          const cols = Math.floor(width / FIELD.gap), rows = Math.floor(height / FIELD.gap);
-          const x0 = (width - (cols - 1) * FIELD.gap) / 2, y0 = (height - (rows - 1) * FIELD.gap) / 2;
-          dots = [];
-          for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) dots.push({ x: x0 + c * FIELD.gap, y: y0 + r * FIELD.gap, dx: 0, dy: 0, heat: 0 });
-        };
-
-        const draw = () => {
-          ctx.clearRect(0, 0, width, height);
-          const [br, bg, bb] = base;
-          ctx.fillStyle = `rgba(${br},${bg},${bb},${FIELD.baseAlpha})`; // the resting dots in one path
-          ctx.beginPath();
-          for (const d of dots) if (d.heat < 0.01) { ctx.moveTo(d.x + FIELD.radius, d.y); ctx.arc(d.x, d.y, FIELD.radius, 0, Math.PI * 2); }
-          ctx.fill();
-          for (const d of dots) {
-            if (d.heat < 0.01) continue;
-            const h = d.heat, mix = (a, b) => Math.round(a + (b - a) * h);
-            ctx.fillStyle = `rgba(${mix(br, hot[0])},${mix(bg, hot[1])},${mix(bb, hot[2])},${FIELD.baseAlpha + (1 - FIELD.baseAlpha) * h})`;
-            ctx.beginPath();
-            ctx.arc(d.x + d.dx, d.y + d.dy, FIELD.radius + h * 0.8, 0, Math.PI * 2);
-            ctx.fill();
-          }
-        };
-
-        const stopLoop = () => { cancelAnimationFrame(raf); raf = 0; };
-        const frame = (now) => {
-          raf = 0;
-          if (!el.isConnected) return teardown();
-          // A frame's timestamp can precede the performance.now() read in wake(): never step with a negative dt.
-          const dt = now > last ? Math.min(64, now - last) : 16; last = now;
-          let moving = 0;
-          for (const d of dots) {
-            let tx = 0, ty = 0, th = 0;
-            if (pointer) {
-              const vx = d.x - pointer.x, vy = d.y - pointer.y, dist = Math.hypot(vx, vy);
-              if (dist < FIELD.reach) {
-                const f = 1 - dist / FIELD.reach, s = f * f * (3 - 2 * f);
-                th = s;
-                if (dist > 0.01) { tx = (vx / dist) * FIELD.push * s; ty = (vy / dist) * FIELD.push * s; }
-              }
-            }
-            const k = 1 - Math.exp(-dt / (th > d.heat ? FIELD.tauIn : FIELD.tauOut)); // fast towards the cursor, slow back
-            const ndx = d.dx + (tx - d.dx) * k, ndy = d.dy + (ty - d.dy) * k, nh = d.heat + (th - d.heat) * k;
-            moving = Math.max(moving, Math.abs(ndx - d.dx), Math.abs(ndy - d.dy), Math.abs(nh - d.heat) * 10);
-            d.dx = ndx; d.dy = ndy; d.heat = nh < 0.002 && th === 0 ? 0 : nh;
-          }
-          draw();
-          if (moving > 0.01) raf = requestAnimationFrame(frame); // settled: the loop ends until the next pointer move
-        };
-        const wake = () => {
-          if (raf || !visible || still()) return;
-          last = performance.now();
-          raf = requestAnimationFrame(frame);
-        };
-        const rest = () => { stopLoop(); for (const d of dots) { d.dx = 0; d.dy = 0; d.heat = 0; } draw(); };
-
-        const onMove = (event) => {
-          if (event.pointerType === 'touch' || still()) return;
-          const box = el.getBoundingClientRect();
-          pointer = { x: event.clientX - box.left, y: event.clientY - box.top };
-          wake();
-        };
-        const onLeave = () => { pointer = null; wake(); };
-        const onScheme = () => { readColors(); draw(); };
-        const onMotion = () => { if (still()) { pointer = null; rest(); } };
-        const media = [[DARK, onScheme], [REDUCED, onMotion], [COARSE, onMotion]].map(([q, fn]) => {
-          const mq = window.matchMedia(q);
-          mq.addEventListener?.('change', fn);
-          return () => mq.removeEventListener?.('change', fn);
-        });
-        const sizer = new ResizeObserver(() => { layout(); draw(); wake(); });
-        const watcher = new IntersectionObserver(([entry]) => {
-          if (!el.isConnected) return teardown();
-          visible = entry.isIntersecting;
-          if (visible) wake(); else { stopLoop(); pointer = null; } // off screen: no frames at all, and no stale cursor on return
-        });
-        function teardown() {
-          stopLoop(); sizer.disconnect(); watcher.disconnect(); media.forEach((off) => off());
-          el.removeEventListener('pointermove', onMove); el.removeEventListener('pointerleave', onLeave);
+      // Sticky steps: while the section is pinned, the scroll position picks the active step. The marker hops to it,
+      // the stack moves, and a step's button scrolls to that step's place. Only in the pinned layout (CSS decides).
+      var steps = document.querySelector('[data-steps]');
+      if (steps) {
+        var PINNED = window.matchMedia('(min-width: 901px) and (prefers-reduced-motion: no-preference)');
+        var items = [].slice.call(steps.querySelectorAll('.step'));
+        var shots = [].slice.call(steps.querySelectorAll('.stack-item'));
+        var mark = steps.querySelector('.steps-mark');
+        var count = steps.querySelector('.steps-count b');
+        var n = items.length, active = -1, ticking = false;
+        function show(i) {
+          if (i === active) return;
+          active = i;
+          items.forEach(function (li, k) { li.classList.toggle('is-active', k === i); });
+          shots.forEach(function (el, k) { el.setAttribute('data-pos', String(k - i)); el.setAttribute('aria-hidden', String(k !== i)); });
+          count.textContent = ('0' + (i + 1)).slice(-2);
+          var h3 = items[i].querySelector('h3').getBoundingClientRect();
+          var track = mark.parentNode.getBoundingClientRect();
+          mark.style.setProperty('--y', (h3.top - track.top + h3.height / 2 - 7) + 'px');
+          mark.style.setProperty('--r', (i * 90) + 'deg');
+          mark.classList.remove('hop'); void mark.offsetWidth; mark.classList.add('hop');
         }
-        el.addEventListener('pointermove', onMove);
-        el.addEventListener('pointerleave', onLeave);
-        readColors(); layout(); draw();
-        sizer.observe(el);
-        watcher.observe(el);
-      }
-      register('[data-dot-field]', bindDotField);
-
-      // ---------- Decrypt ----------
-      // The name resolves left to right from symbols in up to 600 ms. The final text in the DOM is the source of truth:
-      // during the run the noise is aria-hidden and a visually hidden copy holds the final text; at the end the element
-      // holds the plain final text. No aria-label, which screen readers ignore or double-read on a generic span.
-      const GLYPHS = '·:•+×#%&/<>=*';
-      const decrypting = new WeakMap(); // element -> { raf, resolve }
-      const noise = () => GLYPHS[Math.floor(Math.random() * GLYPHS.length)];
-
-      function decrypt(el, text) {
-        const final = String(text ?? '');
-        const prev = decrypting.get(el);
-        if (prev) { cancelAnimationFrame(prev.raf); prev.resolve(); decrypting.delete(el); }
-        el.classList.remove('is-decrypting');
-        if (reduced() || !final.trim()) { el.textContent = final; return Promise.resolve(); }
-
-        el.classList.add('is-decrypting');
-        el.innerHTML = '<span class="dc-ghost" aria-hidden="true"></span><span class="dc-run" aria-hidden="true"><span class="dc-done"></span><span class="dc-noise"></span></span><span class="dc-sr"></span>';
-        const [ghost, , sr] = el.children;
-        const done = el.querySelector('.dc-done'), rest = el.querySelector('.dc-noise');
-        ghost.textContent = final; sr.textContent = final; // the ghost alone sizes the box; the run layer sits over it
-        const chars = [...final];
-        rest.textContent = chars.map((c) => (c.trim() ? noise() : c)).join(''); // all noise from the first paint, never a blank
-        const duration = Math.min(580, 180 + chars.length * 22); // 580 leaves a frame of slack inside the 600 ms
-        const t0 = performance.now();
-        let shown = -1, tick = -1;
-        return new Promise((resolve) => {
-          const job = { raf: 0, resolve };
-          decrypting.set(el, job);
-          const frame = (now) => {
-            const p = Math.min(1, (now - t0) / duration);
-            const resolvedCount = Math.floor(p * chars.length);
-            const step = Math.floor((now - t0) / 45); // the noise changes about 22 times a second, not every frame
-            if (resolvedCount !== shown || step !== tick) {
-              shown = resolvedCount; tick = step;
-              done.textContent = chars.slice(0, resolvedCount).join('');
-              rest.textContent = chars.slice(resolvedCount).map((c) => (c.trim() ? noise() : c)).join('');
-            }
-            if (p < 1) { job.raf = requestAnimationFrame(frame); return; }
-            el.classList.remove('is-decrypting');
-            el.textContent = final;
-            decrypting.delete(el);
-            resolve();
-          };
-          job.raf = requestAnimationFrame(frame);
+        function read() {
+          ticking = false;
+          if (!PINNED.matches) return;
+          var travel = steps.offsetHeight - window.innerHeight;
+          var p = Math.min(1, Math.max(0, -steps.getBoundingClientRect().top / Math.max(1, travel)));
+          show(Math.min(n - 1, Math.floor(p * n)));
+        }
+        function onScroll() { if (!ticking) { ticking = true; requestAnimationFrame(read); } }
+        function reset() {
+          active = -1;
+          if (PINNED.matches) { read(); return; }
+          items.forEach(function (li) { li.classList.remove('is-active'); });
+          shots.forEach(function (el) { el.removeAttribute('aria-hidden'); });
+        }
+        items.forEach(function (li, k) {
+          li.querySelector('.step-btn').addEventListener('click', function () {
+            if (!PINNED.matches) return;
+            var travel = steps.offsetHeight - window.innerHeight;
+            var top = steps.getBoundingClientRect().top + window.scrollY;
+            window.scrollTo({ top: top + travel * (k + 0.5) / n, behavior: 'smooth' });
+          });
         });
+        window.addEventListener('scroll', onScroll, { passive: true });
+        window.addEventListener('resize', function () { active = -1; onScroll(); });
+        PINNED.addEventListener('change', reset);
+        reset();
       }
-      register('[data-decrypt]', (el) => { decrypt(el, el.dataset.decrypt || el.textContent.trim()); });
 
-      window.VVMotion = { init, statusLine, decrypt };
+      // Stacks: each folder starts open, drops its sheets in once it is in view, and opens again on hover, tap or
+      // keyboard. With reduced motion (or without IntersectionObserver) the folders stay open.
+      document.querySelectorAll('[data-repo]').forEach(function (repo) {
+        var button = repo.querySelector('.folder-btn');
+        var settled = false;
+        function set(open) { repo.classList.toggle('is-open', open); button.setAttribute('aria-expanded', String(open)); }
+        if (REDUCED.matches || !('IntersectionObserver' in window)) return;
+        var seen = new IntersectionObserver(function (entries) {
+          if (!entries[0].isIntersecting) return;
+          seen.disconnect();
+          setTimeout(function () { settled = true; if (!repo.matches(':hover')) set(false); }, 700);
+        }, { threshold: 0.7 });
+        seen.observe(repo);
+        repo.addEventListener('pointerenter', function (e) { if (settled && e.pointerType === 'mouse') set(true); });
+        repo.addEventListener('pointerleave', function (e) { if (settled && e.pointerType === 'mouse') set(false); });
+        // A mouse already opens it on hover; the click toggles for touch and the keyboard (pointerType '' or 'touch').
+        button.addEventListener('click', function (e) { if (e.pointerType === 'mouse') return; settled = true; set(!repo.classList.contains('is-open')); });
+      });
+
+      // The reviewer's two demos: a list of steps that runs once in view and again on hover, never while running.
+      function demo(el, hover, steps, reset) {
+        if (REDUCED.matches || !('IntersectionObserver' in window)) return;
+        var timers = [], running = false;
+        function play() {
+          if (running) return;
+          running = true; reset(); el.classList.add('is-armed');
+          timers = steps.map(function (st) { return setTimeout(st[1], st[0]); });
+          timers.push(setTimeout(function () { running = false; }, steps[steps.length - 1][0] + 400));
+        }
+        reset(); el.classList.add('is-armed');
+        var io = new IntersectionObserver(function (entries) {
+          if (entries[0].isIntersecting) { io.disconnect(); play(); }
+        }, { threshold: 0.6 });
+        io.observe(el);
+        hover.addEventListener('pointerenter', function (e) { if (e.pointerType === 'mouse') play(); });
+      }
+      var levels = document.querySelector('[data-demo="levels"]');
+      if (levels) {
+        var rows = [].slice.call(levels.children);
+        demo(levels, levels.closest('.cell'), rows.map(function (li, k) { return [300 + k * 900, function () { li.classList.add('on'); }]; }),
+          function () { rows.forEach(function (li) { li.classList.remove('on'); }); });
+      }
+      document.querySelectorAll('[data-demo="art"]').forEach(function (art) {
+        // Document order, unless a part names its place with data-k.
+        var parts = [].slice.call(art.querySelectorAll('.st')).map(function (el, i) {
+          return { el: el, k: el.hasAttribute('data-k') ? +el.getAttribute('data-k') : i };
+        }).sort(function (a, b) { return a.k - b.k; }).map(function (p) { return p.el; });
+        var gap = +art.getAttribute('data-gap') || 450;
+        demo(art, art.closest('.cell'), parts.map(function (el, k) { return [300 + k * gap, function () { el.classList.add('on'); }]; }),
+          function () { parts.forEach(function (el) { el.classList.remove('on'); }); });
+      });
+      var battery = document.querySelector('[data-demo="battery"]');
+      if (battery) {
+        var cases = [].slice.call(battery.children);
+        var counter = battery.parentNode.querySelector('.bat-count');
+        demo(battery, battery.closest('.cell'), cases.map(function (sq, k) {
+          return [300 + k * 220, function () { sq.classList.add('on'); counter.textContent = String(k + 1); }];
+        }), function () { cases.forEach(function (sq) { sq.classList.remove('on'); }); counter.textContent = '0'; });
+      }
+
+      // The dot band: the coral dots marked data-c turn green once, left to right, when the band is in view.
+      var band = document.querySelector('.band-svg');
+      if (band) {
+        band.querySelectorAll('.f[data-c]').forEach(function (r) { r.style.setProperty('--d', r.getAttribute('data-c') * 28); });
+        if (REDUCED.matches || !('IntersectionObserver' in window)) band.classList.add('is-on');
+        else {
+          var io = new IntersectionObserver(function (entries) {
+            if (entries[0].isIntersecting) { band.classList.add('is-on'); io.disconnect(); }
+          }, { threshold: 0.6 });
+          io.observe(band);
+        }
+      }
     })();
-    // end of the copy
   </script>
   <script>
-    // The landing's demos are illustrative (DESIGN.md 3.2): each runs once, from the moment it is on screen, and its
-    // clock stops while it is off screen. A demo starts in its first frame only when it will play (.is-armed); without
-    // JS, with reduced motion or without IntersectionObserver the HTML is already the final state.
+    /* copied from docs/design/prototipos/vv-motion.* : only the dot field, the page's one canvas. */
     (function () {
-      var canPlay = !!window.VVMotion && 'IntersectionObserver' in window && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      if (window.VVMotion) window.VVMotion.init(); // the dot field behind the hero, the matrices and the step marks
-      function on(el) { el.classList.add('on'); }
-      function all(root, selector) { return Array.prototype.slice.call(root.querySelectorAll(selector)); }
-
-      // Walks [time in ms, step] pairs once with a clock that only advances while `el` is on screen. A tall block
-      // needs less of itself in view, so it can start on a short screen too. hooks.pause / hooks.resume follow the clock.
-      function playOnce(el, steps, ratio, hooks) {
-        hooks = hooks || {};
-        steps.sort(function (a, b) { return a[0] - b[0]; }); // stable: steps at the same time keep their order
-        var next = 0, elapsed = 0, since = 0, timer = 0, running = false;
-        var clock = { now: function () { return elapsed + (running ? performance.now() - since : 0); } };
-        var need = 1, io = null;
-        function tick() {
-          timer = 0;
-          var now = clock.now();
-          while (next < steps.length && steps[next][0] <= now) steps[next++][1]();
-          if (next < steps.length) { timer = setTimeout(tick, steps[next][0] - now); return; }
-          elapsed = now; running = false;
-          io.disconnect();
-          el.classList.remove('is-paused');
-        }
-        function resume() {
-          if (running || next >= steps.length) return;
-          running = true; since = performance.now();
-          el.classList.remove('is-paused');
-          if (hooks.resume) hooks.resume();
-          tick();
-        }
-        function pause() {
-          if (!running) return;
-          running = false; clearTimeout(timer); timer = 0;
-          elapsed += performance.now() - since;
-          el.classList.add('is-paused');
-          if (hooks.pause) hooks.pause();
-        }
-        el.classList.add('is-armed');
-        // A tall block needs less of itself in view. The share is measured again when the window changes size
-        // (a phone turned sideways), so the block can always reach it and never stays armed.
-        function observe() {
-          if (io) io.disconnect();
-          need = Math.min(ratio, Math.max(0.05, 0.5 * window.innerHeight / Math.max(1, el.offsetHeight)));
-          io = new IntersectionObserver(function (entries) {
-            var e = entries[entries.length - 1];
-            if (e.isIntersecting && e.intersectionRatio >= need) resume(); else pause();
-          }, { threshold: need });
-          io.observe(el);
-        }
-        observe();
-        var resized = 0;
-        window.addEventListener('resize', function () {
-          clearTimeout(resized);
-          resized = setTimeout(function () { if (next < steps.length) observe(); }, 200);
-        });
-        return clock;
+      var el = document.querySelector('[data-dot-field]');
+      if (!el) return;
+      var FIELD = { gap: 22, radius: 1.6, reach: 96, push: 6, baseAlpha: 0.5, tauIn: 70, tauOut: 650 };
+      var REDUCED = '(prefers-reduced-motion: reduce)', COARSE = '(pointer: coarse)', DARK = '(prefers-color-scheme: dark)';
+      var canvas = document.createElement('canvas');
+      canvas.className = 'dot-field-canvas';
+      canvas.setAttribute('aria-hidden', 'true');
+      el.prepend(canvas);
+      var ctx = canvas.getContext('2d');
+      var width = 0, height = 0, dots = [], base = [0, 0, 0], hot = [0, 0, 0];
+      var pointer = null, raf = 0, last = 0, visible = false;
+      function still() { return window.matchMedia(REDUCED).matches || window.matchMedia(COARSE).matches; }
+      function rgb(value) {
+        ctx.fillStyle = '#000';
+        ctx.fillStyle = value.trim() || '#000';
+        var hex = ctx.fillStyle.charAt(0) === '#' ? ctx.fillStyle : '#000000';
+        return [1, 3, 5].map(function (i) { return parseInt(hex.slice(i, i + 2), 16); });
       }
-
-      // Hero: the posting is read (sweep), its recognized terms light up, the competencies resolve from the terms,
-      // and the first missions of the plan come in.
-      (function () {
-        var demo = document.getElementById('demo');
-        if (!demo) return;
-        var state = document.getElementById('demo-state');
-        var scan = demo.querySelector('.demo-scan');
-        var marks = all(demo, 'mark');
-        var skills = all(demo, '.demo-skills li');
-        var missions = all(demo, '.demo-plan li');
-        var note = demo.querySelector('.demo-note');
-
-        function setState(label, pattern) {
-          state.textContent = '';
-          if (pattern) {
-            var matrix = document.createElement('span');
-            matrix.setAttribute('data-dot-matrix', pattern);
-            state.appendChild(matrix);
-            window.VVMotion.init(state);
+      function readColors() { var s = getComputedStyle(el); base = rgb(s.getPropertyValue('--df-dot')); hot = rgb(s.getPropertyValue('--df-hot')); }
+      function layout() {
+        var box = el.getBoundingClientRect();
+        width = box.width; height = box.height;
+        var dpr = Math.min(2, window.devicePixelRatio || 1);
+        canvas.width = Math.round(width * dpr); canvas.height = Math.round(height * dpr);
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        var cols = Math.floor(width / FIELD.gap), rows = Math.floor(height / FIELD.gap);
+        var x0 = (width - (cols - 1) * FIELD.gap) / 2, y0 = (height - (rows - 1) * FIELD.gap) / 2;
+        dots = [];
+        for (var r = 0; r < rows; r++) for (var c = 0; c < cols; c++) dots.push({ x: x0 + c * FIELD.gap, y: y0 + r * FIELD.gap, dx: 0, dy: 0, heat: 0 });
+      }
+      function draw() {
+        ctx.clearRect(0, 0, width, height);
+        ctx.fillStyle = 'rgba(' + base[0] + ',' + base[1] + ',' + base[2] + ',' + FIELD.baseAlpha + ')';
+        ctx.beginPath();
+        dots.forEach(function (d) { if (d.heat < 0.01) { ctx.moveTo(d.x + FIELD.radius, d.y); ctx.arc(d.x, d.y, FIELD.radius, 0, Math.PI * 2); } });
+        ctx.fill();
+        dots.forEach(function (d) {
+          if (d.heat < 0.01) return;
+          var h = d.heat, mix = function (a, b) { return Math.round(a + (b - a) * h); };
+          ctx.fillStyle = 'rgba(' + mix(base[0], hot[0]) + ',' + mix(base[1], hot[1]) + ',' + mix(base[2], hot[2]) + ',' + (FIELD.baseAlpha + (1 - FIELD.baseAlpha) * h) + ')';
+          ctx.beginPath(); ctx.arc(d.x + d.dx, d.y + d.dy, FIELD.radius + h * 0.8, 0, Math.PI * 2); ctx.fill();
+        });
+      }
+      function frame(now) {
+        raf = 0;
+        var dt = now > last ? Math.min(64, now - last) : 16; last = now;
+        var moving = 0;
+        dots.forEach(function (d) {
+          var tx = 0, ty = 0, th = 0;
+          if (pointer) {
+            var vx = d.x - pointer.x, vy = d.y - pointer.y, dist = Math.hypot(vx, vy);
+            if (dist < FIELD.reach) {
+              var f = 1 - dist / FIELD.reach, s = f * f * (3 - 2 * f);
+              th = s;
+              if (dist > 0.01) { tx = (vx / dist) * FIELD.push * s; ty = (vy / dist) * FIELD.push * s; }
+            }
           }
-          state.appendChild(document.createTextNode(label)); // the old matrix leaves the page, and its CSS loop with it
-        }
-        function finalState() {
-          marks.concat(skills, missions, [note]).forEach(on);
-          setState('Plano pronto');
-          demo.classList.remove('is-armed', 'is-paused');
-        }
-        if (!canPlay) { finalState(); return; }
-
-        var steps = [[0, function () { setState('Lendo a vaga', 'scan'); scan.style.setProperty('--sweep', (scan.parentNode.offsetHeight - 52) + 'px'); scan.classList.add('run'); }]];
-        marks.forEach(function (m, i) { steps.push([900 + i * 240, function () { on(m); }]); });
-        skills.forEach(function (li, i) {
-          steps.push([2000 + i * 130, function () {
-            var name = li.querySelector('[data-demo-decrypt]');
-            on(li);
-            window.VVMotion.decrypt(name, name.textContent.trim());
-          }]);
+          var k = 1 - Math.exp(-dt / (th > d.heat ? FIELD.tauIn : FIELD.tauOut));
+          var ndx = d.dx + (tx - d.dx) * k, ndy = d.dy + (ty - d.dy) * k, nh = d.heat + (th - d.heat) * k;
+          moving = Math.max(moving, Math.abs(ndx - d.dx), Math.abs(ndy - d.dy), Math.abs(nh - d.heat) * 10);
+          d.dx = ndx; d.dy = ndy; d.heat = nh < 0.002 && th === 0 ? 0 : nh;
         });
-        steps.push([2750, function () { setState('Montando o plano', 'wave'); }]);
-        missions.forEach(function (li, i) { steps.push([3350 + i * 60, function () { on(li); }]); });
-        steps.push([3600, function () { on(note); }]);
-        steps.push([3700, function () { scan.classList.remove('run'); finalState(); }]);
-        playOnce(demo, steps, 0.35);
-        setState('');
-      })();
-
-      // The plan: the missions come in as a cascade (DESIGN.md 3).
-      (function () {
-        var list = document.querySelector('#build-demo .missions');
-        if (!list || !canPlay) return;
-        var panel = list.closest('.demo');
-        var items = all(list, 'li');
-        var steps = items.map(function (li, i) { return [i * 70, function () { on(li); }]; });
-        steps.push([items.length * 70 + 300, function () { panel.classList.remove('is-armed'); }]);
-        playOnce(panel, steps, 0.35);
-      })();
-
-      // The repository: the status line in flip and one step mark per stage (DESIGN.md 4.14, 4.15, 5.1). The last
-      // stage is marked done only at the end, where the server would answer; then the line goes and the repository
-      // shows its missions, all with failing tests.
-      (function () {
-        var line = document.getElementById('repo-line');
-        if (!line || !canPlay) return;
-        var panel = line.closest('.demo');
-        var ready = panel.querySelector('.repo-ready');
-        var result = panel.querySelector('.repo-result');
-        var issues = all(result, '.issues li');
-        var stages = all(panel, '.stage-list li');
-        var LABEL = 'Criando o repositório';
-        var STEP = 850, START = 600;
-        var handle = null, lineStart = -1, clock = null;
-        function mark(li, state) { li.className = state; li.querySelector('.step-mark').className = 'step-mark ' + state; }
-
-        stages.forEach(function (li) { mark(li, 'is-todo'); });
-        var steps = [[START, function () {
-          lineStart = clock.now();
-          handle = window.VVMotion.statusLine(line, LABEL);
-          mark(stages[0], 'is-current');
-        }]];
-        stages.forEach(function (li, i) {
-          if (i > 0) steps.push([START + i * STEP, function () { mark(stages[i - 1], 'is-done'); mark(li, 'is-current'); }]);
-        });
-        var answer = START + stages.length * STEP + 250;
-        steps.push([answer, function () {
-          mark(stages[stages.length - 1], 'is-done');
-          handle.done(); handle = null; lineStart = -1;
-          line.hidden = true;
-          on(ready); on(result);
-        }]);
-        issues.forEach(function (li, i) { steps.push([answer + 150 + i * 60, function () { on(li); }]); });
-        steps.push([answer + 150 + issues.length * 60 + 300, function () { panel.classList.remove('is-armed'); }]);
-        clock = playOnce(panel, steps, 0.35, {
-          // Off screen the timer stops with the clock; back on screen it goes on from where it was.
-          pause: function () { if (handle) handle.stop(); },
-          resume: function () { if (lineStart >= 0) handle = window.VVMotion.statusLine(line, LABEL, performance.now() - (clock.now() - lineStart)); }
-        });
-      })();
-
-      // The dashboard: the bar grows and the cards come in with their test grids, once.
-      (function () {
-        var board = document.getElementById('board-demo');
-        if (!board || !canPlay) return;
-        var bars = all(board, '.meter i');
-        var cards = all(board, '.student');
-        var steps = [];
-        bars.forEach(function (b) { steps.push([0, function () { on(b); }]); });
-        cards.forEach(function (c, i) { steps.push([200 + i * 90, function () { on(c); }]); });
-        steps.push([200 + cards.length * 90 + 400, function () { board.classList.remove('is-armed'); }]);
-        playOnce(board, steps, 0.35);
-      })();
-
+        draw();
+        if (moving > 0.01) raf = requestAnimationFrame(frame);
+      }
+      function wake() { if (raf || !visible || still()) return; last = performance.now(); raf = requestAnimationFrame(frame); }
+      el.addEventListener('pointermove', function (e) {
+        if (e.pointerType === 'touch' || still()) return;
+        var box = el.getBoundingClientRect();
+        pointer = { x: e.clientX - box.left, y: e.clientY - box.top };
+        wake();
+      });
+      el.addEventListener('pointerleave', function () { pointer = null; wake(); });
+      window.matchMedia(DARK).addEventListener('change', function () { readColors(); draw(); });
+      new ResizeObserver(function () { layout(); draw(); wake(); }).observe(el);
+      new IntersectionObserver(function (entries) {
+        visible = entries[0].isIntersecting;
+        if (visible) wake(); else { cancelAnimationFrame(raf); raf = 0; pointer = null; }
+      }).observe(el);
+      readColors(); layout(); draw();
     })();
+    /* end of the copy */
   </script>
 </body>
 </html>
