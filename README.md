@@ -221,8 +221,13 @@ A configuração do GitHub App está em [`docs/github-app.md`](docs/github-app.m
 
 - Os testes de integração sobem um PostgreSQL de verdade com **Testcontainers** (precisa do Docker).
 - O CI (`.github/workflows/ci.yml`) roda os testes em cada PR e push no `main`, e só publica no Render se passar.
-- A [bateria do revisor](docs/bateria-revisor.md) tenta fazer o revisor e o `/dica` entregarem a solução, em 10 casos com PRs reais: injeções no diff, no contrato da missão, nos nomes e nas mensagens dos testes. A rodada sem LLM achou um vazamento por eco (corrigido, com testes); a rodada com LLM, com os mesmos casos, está pendente no mesmo documento.
+- A [bateria do revisor](docs/bateria-revisor.md) tenta fazer o revisor e o `/dica` entregarem a solução, em 10 casos com PRs reais: injeções no diff, no contrato da missão, nos nomes e nas mensagens dos testes. A rodada sem LLM achou um vazamento por eco (corrigido, com testes); a rodada com LLM, com os mesmos casos, não achou vazamento e está no mesmo documento.
 - As páginas passaram por uma auditoria de acessibilidade com axe ([`docs/design/auditoria-axe.md`](docs/design/auditoria-axe.md)).
+
+## Próximos passos
+
+- **Páginas de carreira montadas por JavaScript:** hoje o app lê a vaga a partir do link com um leitor simples, que recebe essas páginas vazias. O próximo passo é ler essas páginas com o Firecrawl.
+- **Avisar de vagas novas:** depois disso, o aluno escolhe as empresas que quer seguir, e o Vaga Viva avisa quando aparece uma vaga nova na página de carreira delas.
 
 ## Licença
 
