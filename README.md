@@ -230,6 +230,7 @@ A configuração do GitHub App está em [`docs/github-app.md`](docs/github-app.m
 ## Próximos passos
 
 - **Avisar de vagas novas:** o app já lê páginas de carreira montadas por JavaScript com o Firecrawl. O próximo passo é o aluno escolher as empresas que quer seguir, e o Vaga Viva avisar quando aparece uma vaga nova na página de carreira delas.
+- **Lembretes e avisos por WhatsApp, com a Nvoip:** o lembrete semanal e o aviso de vaga nova chegam também pelo WhatsApp, onde o aluno está. A API da Nvoip envia modelos de mensagem aprovados pela Meta. Para isso, o app passa a guardar o telefone do aluno, com consentimento e descadastro, como já faz com o e-mail.
 
 ## Licença
 
