@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.util.Map;
+import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -67,6 +68,49 @@ class JobPostingUrlExtractionApiTests {
 
 	@MockitoSpyBean
 	PageReadLimiter limiter;
+
+	@MockitoBean
+	RenderedPageReader rendered;
+
+	/** What the rendered reader gives back for a page built by JavaScript. */
+	private static final String RENDERED_TEXT = "Pessoa Desenvolvedora Back-end Júnior\n\n"
+			+ "Vamos construir APIs com Java e Spring Boot, gravando os dados em PostgreSQL. "
+			+ "Você vai escrever testes automatizados, revisar código com o time e aprender com pessoas mais experientes.";
+
+	@Test
+	void readsAPageBuiltByJavaScriptThroughTheRenderedReader() {
+		given(fetcher.fetch(URL)).willReturn(fixture("spa-shell.html"));
+		given(rendered.read(URL)).willReturn(Optional.of(RENDERED_TEXT));
+
+		MvcTestResult response = postUrl(URL);
+
+		assertThat(response).hasStatusOk();
+		assertThat(response).bodyJson().extractingPath("$.technologies[*].id").asArray().contains("spring-boot");
+	}
+
+	@Test
+	void readsAPageWhoseSiteRefusesTheDownloadThroughTheRenderedReader() {
+		given(fetcher.fetch(URL)).willThrow(new PageFetchException());
+		given(rendered.read(URL)).willReturn(Optional.of(RENDERED_TEXT));
+
+		assertThat(postUrl(URL)).hasStatusOk();
+	}
+
+	@Test
+	void anUnsafeUrlNeverReachesTheRenderedReader() {
+		given(fetcher.fetch(anyString())).willThrow(new UnsafeUrlException());
+
+		assertThat(postUrl("http://169.254.169.254/latest/meta-data/")).hasStatus(HttpStatus.BAD_REQUEST);
+		verifyNoInteractions(rendered);
+	}
+
+	@Test
+	void aPageReadableWithoutRenderingNeverReachesTheRenderedReader() {
+		given(fetcher.fetch(URL)).willReturn(fixture("json-ld.html"));
+
+		assertThat(postUrl(URL)).hasStatusOk();
+		verifyNoInteractions(rendered);
+	}
 
 	@Test
 	void returnsTheSameExtractionAsPastingTheText() throws Exception {

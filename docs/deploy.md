@@ -52,6 +52,8 @@ Exclusão manual de um aluno ou de uma turma (procedimento de privacidade do pil
 
 Cadastre também `ANTHROPIC_API_KEY` com a chave da conta do time na Anthropic. Sem ela, a API funciona e os alunos recebem os textos padrão.
 
+Cadastre `FIRECRAWL_API_KEY` com a chave do Firecrawl. Ela só é usada quando o link de uma vaga leva a uma página montada por JavaScript, ou a um site que recusa o download do app. Sem ela, essas páginas pedem que o aluno cole o texto da vaga.
+
 ## 3. Ligar o CI ao Render
 
 1. No serviço do Render, em *Settings → Deploy Hook*, copie a URL do hook.
