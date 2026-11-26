@@ -54,6 +54,17 @@ class HintPromptTests {
 			.contains("Nunca escreva código");
 	}
 
+	@Test
+	void tellsTheModelWhenThePullRequestDoesNotChangeTheCode() {
+		assertThat(HintPrompt.user(context(), PERSISTENCE, 1, List.of(), "# Contrato", List.of()))
+			.contains(ReviewPrompt.NO_CODE_CHANGE);
+	}
+
+	@Test
+	void systemPromptForbidsAnUncheckedPath() {
+		assertThat(HintPrompt.SYSTEM).contains(ReviewPrompt.CHECKED_PATH_RULE);
+	}
+
 	private static ReviewContext context() {
 		return new ReviewContext("secret-token", "maria/repo", 7, "abc",
 				new StudentPlan("java-spring", "clinic-scheduling", List.of(PERSISTENCE)), "diff --git a/X b/X", true,
