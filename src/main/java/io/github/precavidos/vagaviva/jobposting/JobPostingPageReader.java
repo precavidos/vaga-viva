@@ -155,7 +155,7 @@ class JobPostingPageReader {
 		return "";
 	}
 
-	private static String truncate(String text) {
+	static String truncate(String text) {
 		if (text.length() <= JobPostingExtractor.MAX_LENGTH) {
 			return text;
 		}

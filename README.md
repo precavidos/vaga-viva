@@ -96,6 +96,7 @@ flowchart LR
 | GitHub App | Cria o repositório a partir do modelo, grava o plano, abre as issues e recebe os webhooks de fim de workflow e de comentários `/dica`. Login do aluno por OAuth. |
 | GitHub Actions (no repositório do aluno) | Roda os testes e publica o relatório JUnit XML que o revisor lê. |
 | Claude Haiku (`claude-haiku-5-5`) | Redige o README, o contexto das missões, as perguntas do revisor e as dicas. Toda resposta passa pelo filtro anti-código; recusada ou indisponível, vale um texto fixo. Sem `ANTHROPIC_API_KEY`, tudo funciona com os textos fixos. |
+| Firecrawl | Lê a página de carreira quando ela é montada por JavaScript ou recusa o download do app. Só entra quando o leitor do próprio app não acha o texto da vaga. Sem `FIRECRAWL_API_KEY`, essas páginas pedem que o aluno cole o texto. |
 | Resend | Recebe vagas encaminhadas por e-mail e envia a resposta com o plano, o e-mail semanal do aluno e o resumo do professor. |
 | Front end | Páginas estáticas em `src/main/resources/static`, servidas pela própria API. A página do projeto fica em `site/` (GitHub Pages). |
 
@@ -177,6 +178,7 @@ O Vaga Viva é para **maiores de 18 anos**: toda rota que cria um repositório e
 | Serviço | O que recebe |
 | --- | --- |
 | Anthropic (Claude) | Os dados do plano (arquétipo, nível, competências, tecnologias e missões), nunca o texto da vaga. Na revisão e nas dicas: o diff do PR, o contrato da missão, os nomes e as mensagens dos testes que falham e os comentários anteriores do próprio app. Nenhum e-mail ou nome. |
+| Firecrawl | Só o link público da página de vaga, quando o leitor do próprio app não consegue lê-la. Nada sobre o aluno. |
 | Resend | O e-mail encaminhado pelo aluno (com a vaga) e os e-mails enviados: endereço do destinatário e conteúdo, que no resumo do professor inclui os nomes escolhidos pelos alunos. |
 | Render | Hospeda a API; todas as requisições passam por ele. Região nos EUA, a mesma do banco. |
 | Neon | Hospeda o banco com os dados da tabela acima, em `AWS us-east-1`. |
@@ -206,6 +208,7 @@ set -a; . ./.env; set +a; ./mvnw spring-boot:run
 | `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET` | Login com GitHub | Sem login, sem criação de repositório |
 | `GITHUB_APP_ID`, `GITHUB_APP_PRIVATE_KEY`, `GITHUB_WEBHOOK_SECRET` | GitHub App: repositório, webhooks, revisor e dicas | Webhook desligado |
 | `ANTHROPIC_API_KEY` | Textos do Claude | Textos padrão |
+| `FIRECRAWL_API_KEY` | Leitura de páginas montadas por JavaScript | Essas páginas pedem o texto colado |
 | `RESEND_API_KEY`, `RESEND_WEBHOOK_SECRET`, `RESEND_FROM`, `VAGAVIVA_PUBLIC_URL` | Vaga por e-mail e envios | Endpoints de e-mail respondem 503 |
 | `WEEKLY_EMAIL_SECRET` | Disparo do e-mail semanal | Endpoint responde 503 |
 | `CLASSROOM_TEACHERS`, `CLASSROOM_SUMMARY_SECRET` | Modo turma (logins dos professores) e resumo semanal | Ninguém cria turma; resumo responde 404 |
@@ -226,8 +229,7 @@ A configuração do GitHub App está em [`docs/github-app.md`](docs/github-app.m
 
 ## Próximos passos
 
-- **Páginas de carreira montadas por JavaScript:** hoje o app lê a vaga a partir do link com um leitor simples, que recebe essas páginas vazias. O próximo passo é ler essas páginas com o Firecrawl.
-- **Avisar de vagas novas:** depois disso, o aluno escolhe as empresas que quer seguir, e o Vaga Viva avisa quando aparece uma vaga nova na página de carreira delas.
+- **Avisar de vagas novas:** o app já lê páginas de carreira montadas por JavaScript com o Firecrawl. O próximo passo é o aluno escolher as empresas que quer seguir, e o Vaga Viva avisar quando aparece uma vaga nova na página de carreira delas.
 
 ## Licença
 
