@@ -60,6 +60,16 @@ class HintTextsTests {
 	}
 
 	@Test
+	void dropsTheLevelPrefixTheHeaderAlreadyShows() {
+		assertThat(HintTexts.withoutLevelPrefix("Nível 2: o PUT já existe.")).isEqualTo("O PUT já existe.");
+		assertThat(HintTexts.withoutLevelPrefix("Nível 3, quase lá: o teste espera 404.")).isEqualTo("O teste espera 404.");
+		assertThat(HintTexts.withoutLevelPrefix("Dica 1 de 3 · Direção: pense no banco.")).isEqualTo("Pense no banco.");
+		assertThat(HintTexts.withoutLevelPrefix("Quase lá: falta apagar.")).isEqualTo("Falta apagar.");
+		assertThat(HintTexts.withoutLevelPrefix("Pense na direção em que o dado vai.")).isEqualTo("Pense na direção em que o dado vai.");
+		assertThat(HintTexts.withoutLevelPrefix("O caminho certo passa pelo banco.")).isEqualTo("O caminho certo passa pelo banco.");
+	}
+
+	@Test
 	void earlierHintsReachTheWriterWithoutTheirHeader() {
 		var comment = new ReviewContext.PreviousComment(1, HintTexts.comment(PERSISTENCE, 1, "Olhe a data"));
 
