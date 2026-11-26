@@ -98,6 +98,17 @@ class ClaudeReviewWriterTests {
 	}
 
 	@Test
+	void warnsAboutAnUnchangedCodeOnlyWhenTheDiffChangesNone() {
+		assertThat(ReviewPrompt.user(context(), PERSISTENCE, List.of(failed()), "c"))
+			.contains(ReviewPrompt.NO_CODE_CHANGE);
+		var changed = new ReviewContext("t", "maria/repo", 7, "abc", context().plan(),
+				DiffChangesTests.diff("src/main/java/Patient.java", "+@Entity"), true, List.of(failed()), List.of());
+		assertThat(ReviewPrompt.user(changed, PERSISTENCE, List.of(failed()), "c"))
+			.doesNotContain(ReviewPrompt.NO_CODE_CHANGE);
+		assertThat(ReviewPrompt.SYSTEM).contains(ReviewPrompt.CHECKED_PATH_RULE);
+	}
+
+	@Test
 	void givesNothingWhenClaudeRefusesOrStopsEarly() {
 		responseBody = message("{\"working\": \"parcial\", \"questions\": []}", "max_tokens");
 		assertThat(writer.write(context(), PERSISTENCE, List.of(failed()), "c")).isEmpty();

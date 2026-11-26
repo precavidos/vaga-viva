@@ -18,7 +18,8 @@ import io.github.precavidos.vagaviva.review.ReviewContext.PreviousComment;
  * Comments on a student's pull request after the Vaga Viva workflow ran: the progress of the plan, which mission
  * still fails and questions that lead to the fix, never the fix. Which tests fail and how many pass come from the
  * report, not from the LLM (ADR 0002); the LLM only writes what already works and the questions, and each part goes
- * through {@link ReviewTextFilter} on its own. A new comment on each run, with the previous one collapsed.
+ * through {@link ReviewTextFilter} on its own. What already works is the LLM's only when the diff changes code
+ * ({@link DiffChanges}). A new comment on each run, with the previous one collapsed.
  */
 @Component
 class SocraticReviewer implements PullRequestReviewer {
@@ -69,7 +70,9 @@ class SocraticReviewer implements PullRequestReviewer {
 	private Summary summary(ReviewContext context, Mission focus, List<FailedTest> failing) {
 		Optional<ReviewWriter.Written> written = writer.write(context, focus, failing,
 				MissionContract.read(github, context, focus));
-		String raw = written.map(ReviewWriter.Written::working).orElse("");
+		// Without a change in the code there is nothing to praise, whatever the LLM wrote.
+		String raw = DiffChanges.changesCode(context.diff()) ? written.map(ReviewWriter.Written::working).orElse("")
+				: "";
 		String working = raw.isEmpty() ? "" : ReviewTextFilter.fromLlm(raw).orElse("");
 		if (!raw.isEmpty() && working.isEmpty()) {
 			log.warn("Review text (working) refused by the filter for {}#{}", context.repositoryFullName(),

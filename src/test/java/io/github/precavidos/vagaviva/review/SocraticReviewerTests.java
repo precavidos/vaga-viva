@@ -46,6 +46,8 @@ class SocraticReviewerTests {
 	private static final Map<String, MissionTally> TALLIES = Map.of("patients-api", new MissionTally(5, 5),
 			"persistence", new MissionTally(1, 4));
 
+	private static final String CODE_DIFF = DiffChangesTests.diff("src/main/java/Patient.java", "+@Entity");
+
 	private final GitHubApi github = mock(GitHubApi.class);
 
 	private final List<Mission> focuses = new ArrayList<>();
@@ -126,6 +128,16 @@ class SocraticReviewerTests {
 
 		assertThat(ReviewTexts.reviewText(postedBody())).contains("Você já criou a entidade Patient e a tabela aparece no diff."
 				+ "\n\n1. De onde o repositório lê os pacientes hoje?\n2. O que acontece com eles quando a aplicação reinicia?");
+	}
+
+	@Test
+	void neverPraisesAPullRequestThatDoesNotChangeTheCode() {
+		reviewer.review(context(DiffChangesTests.diff("README.md", "+comecei"), true,
+				List.of(failed("persistence", "gravaNoBanco")), List.of()));
+
+		assertThat(postedBody()).doesNotContain("Você já criou a entidade")
+			.contains("Na missão **Pacientes no banco de dados**, 1 de 4 testes já passam.")
+			.contains("1. De onde o repositório lê os pacientes hoje?");
 	}
 
 	@Test
@@ -313,7 +325,12 @@ class SocraticReviewerTests {
 	}
 
 	private static ReviewContext context(boolean reportRead, List<FailedTest> failed, List<PreviousComment> comments) {
-		return new ReviewContext("token", REPO, 7, "abc1234def", PLAN, "diff --git a/x b/x", reportRead, failed, comments,
+		return context(CODE_DIFF, reportRead, failed, comments);
+	}
+
+	private static ReviewContext context(String diff, boolean reportRead, List<FailedTest> failed,
+			List<PreviousComment> comments) {
+		return new ReviewContext("token", REPO, 7, "abc1234def", PLAN, diff, reportRead, failed, comments,
 				reportRead ? TALLIES : Map.of());
 	}
 
