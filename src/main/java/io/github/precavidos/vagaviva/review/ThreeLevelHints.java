@@ -96,7 +96,7 @@ class ThreeLevelHints implements HintResponder {
 				log.warn("Hint text refused by the filter for {}#{}", context.repositoryFullName(),
 						context.pullRequestNumber());
 			}
-			written = accepted;
+			written = accepted.map(HintTexts::withoutLevelPrefix).filter(text -> !text.isBlank());
 		}
 		String text = written.orElseGet(() -> HintTexts.fallback(level, mission, failing));
 		post(context, HintTexts.comment(mission, level, text));

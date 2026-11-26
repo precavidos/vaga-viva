@@ -61,6 +61,23 @@ final class HintTexts {
 		return hintsGiven(List.of(comment), missionId) == 1;
 	}
 
+	/**
+	 * A leading "Nível 2:", "Dica 1 de 3 · Direção:" or "Quase lá:" the model writes although the header already
+	 * says it, as on davsilvam/vaga-viva-clinic-scheduling#7.
+	 */
+	private static final Pattern LEVEL_PREFIX = Pattern.compile(
+			"^\\s*(?:(?:n[íi]vel|dica)\\s*\\d+(?:\\s*de\\s*\\d+)?\\s*(?:[·,–-]\\s*)?(?:dire[çc][ãa]o|caminho|quase\\s+l[áa])?|dire[çc][ãa]o|caminho|quase\\s+l[áa])\\s*[:–-]\\s*",
+			Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
+
+	/** The LLM's hint without a level prefix the header already shows, starting with a capital letter. */
+	static String withoutLevelPrefix(String text) {
+		String stripped = LEVEL_PREFIX.matcher(text).replaceFirst("");
+		if (stripped.length() == text.length() || stripped.isEmpty()) {
+			return text;
+		}
+		return Character.toUpperCase(stripped.charAt(0)) + stripped.substring(1);
+	}
+
 	/** The text a hint comment carries, without its marker, header and footer. */
 	static String text(PreviousComment comment) {
 		String body = comment.body();
