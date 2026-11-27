@@ -132,7 +132,7 @@
   // Static icons.
   document.querySelectorAll('[data-icon]').forEach((el) => { el.innerHTML = ICON[el.dataset.icon]; });
   document.querySelectorAll('[data-tile]').forEach((el) => { el.innerHTML = VV.ic(el.dataset.tile); });
-  VV.chrome('Professor');
+  VV.chrome();
   VVMotion.init();
 
   const say = (text) => { $('#status').textContent = text; };
@@ -142,20 +142,16 @@
   async function start() {
     show('loading');
     const line = VVMotion.statusLine($('#loading-line'), 'Abrindo a área do professor');
-    let response;
-    try {
-      response = await fetch('/api/me');
-    } catch {
-      line.stop();
-      show('failed'); say('Sem conexão com o Vaga Viva.');
-      return;
-    }
-    if (response.status === 401) { line.done(); showSignedOut(); return; }
-    if (!response.ok) { line.stop(); $('#failed-text').textContent = 'O Vaga Viva não respondeu como esperado.'; show('failed'); return; }
     let me;
-    try { me = await response.json(); } catch { line.stop(); $('#failed-text').textContent = 'O Vaga Viva não respondeu como esperado.'; show('failed'); return; }
+    try {
+      me = await VV.me();
+    } catch (error) {
+      line.stop();
+      if (error instanceof TypeError) { show('failed'); say('Sem conexão com o Vaga Viva.'); return; }
+      $('#failed-text').textContent = 'O Vaga Viva não respondeu como esperado.'; show('failed'); return;
+    }
+    if (!me) { line.done(); showSignedOut(); return; }
     line.done();
-    VV.setUser(me.login);
     show('signed-in');
     loadClassrooms();
   }
@@ -304,6 +300,7 @@
     say('Turma criada.');
     $('#done-title').focus();
     loadClassrooms();
+    VV.me({ fresh: true }).catch(() => { /* the bar gains "Minhas turmas" on the next page */ });
   }
 
   $('#again').addEventListener('click', () => {

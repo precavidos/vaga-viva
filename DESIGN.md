@@ -340,6 +340,19 @@ Regras:
 
 ## 5. Telas
 
+### 5.0 Barra do topo (todas as telas, menos o descadastro)
+
+A barra liga as telas entre si. Os links dependem do que a pessoa tem, e aparecem quando `/api/me` responde (antes disso, só o logo):
+
+- **Nova vaga** (`/`): sempre.
+- **Empresas** (`/companies`): para quem está logado, mesmo sem nenhuma empresa seguida.
+- **Minhas turmas** (`/classrooms`): só para quem tem turma (`teaches`).
+- **Para professores** (`/classrooms`): deslogado, ao lado de "Entrar"; logado sem turma, no menu da conta.
+
+O link da tela atual leva `aria-current` e o sublinhado roxo. Deslogado, a barra tem "Entrar" (botão `ghost`: o roxo fica para a ação da tela). Logado, o `@login` abre o menu da conta, que termina em "Sair". Abaixo de 640 px, os links vão para dentro desse menu, e, deslogado, o logo fica sem o nome para caber "Entrar".
+
+Os links de contexto continuam: "← Suas turmas" no painel e o aviso "Siga até 3 empresas" depois de criar o repositório.
+
 ### 5.1 Aluno: da vaga ao repositório (`aluno.html`, rota `/`)
 
 Fluxo em três passos. Os dois primeiros usam a largura de 1160 px; o terceiro, a coluna de 760 px.

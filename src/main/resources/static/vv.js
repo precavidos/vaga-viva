@@ -15,6 +15,7 @@ const VV = (() => {
     arrow: svg('<path d="M5 12h14M13 6l6 6-6 6"/>'),
     check: svg('<path d="M5 12.5l4.5 4.5 9.5-10"/>'),
     close: svg('<path d="M6 6l12 12M18 6L6 18"/>'),
+    chevron: svg('<path d="M7 10l5 5 5-5"/>'),
     lock: svg('<rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>'),
     eye: svg('<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>'),
     eyeOff: svg('<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><path d="M4 4l16 16"/>'),
@@ -256,15 +257,98 @@ const VV = (() => {
     location.assign('/oauth2/authorization/github');
   }
 
-  // The top bar; `setUser` fills in who is signed in once the page knows.
-  function chrome(area = '') {
-    const logo = '<svg class="logo" width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="6" fill="#141414"/><path d="M8 17l5 5 11-12" stroke="#33c47a" stroke-width="3.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-    document.body.insertAdjacentHTML('afterbegin', `<header class="top"><div class="wrap">
-      <a class="brand" href="/" aria-label="Vaga Viva, início">${logo}Vaga Viva${area ? `<small>${esc(area)}</small>` : ''}</a><span id="who"></span></div></header>`);
-  }
-  function setUser(login) {
-    $('#who').innerHTML = login ? `<span class="user">${avatar(login, 'sm')}@${esc(login)}</span>` : '';
+  // Who is signed in: { login, teaches }, or null when nobody is. Asked once per page and shared by the bar and the
+  // page; `fresh` asks again. Rejects with a TypeError when the server cannot be reached, with an Error when it
+  // answers something unexpected.
+  let mePromise = null;
+  function me({ fresh = false } = {}) {
+    if (fresh || !mePromise) {
+      mePromise = fetch('/api/me', { headers: { Accept: 'application/json' } }).then(async (response) => {
+        if (response.status === 401) return null;
+        if (!response.ok) throw new Error(`/api/me answered ${response.status}`);
+        return response.json();
+      });
+      mePromise.then(setUser, () => { mePromise = null; });
+    }
+    return mePromise;
   }
 
-  return { $, $$, esc, wait, ICON, ic, STATUS, LEVELS, avatar, statusBadge, testGrid, missionItem, repoPanel, runProgress, paintStages, countUp, toast, copyField, busy, idle, setStep, invalid, csrfToken, problemDetail, gitHubUrl, rememberReturn, signIn, chrome, setUser };
+  // The top bar (DESIGN.md 5.0). Its links depend on who is signed in, so they appear once `me` answers.
+  const NAV = [
+    { href: '/', label: 'Nova vaga', shown: () => true, here: (path) => path === '/' },
+    { href: '/companies', label: 'Empresas', shown: (user) => Boolean(user), here: (path) => path === '/companies' },
+    { href: '/classrooms', label: 'Minhas turmas', shown: (user) => Boolean(user?.teaches), here: (path) => path === '/classrooms' || path.startsWith('/classrooms/') },
+  ];
+  const FOR_TEACHERS = { href: '/classrooms', label: 'Para professores', here: (path) => path === '/classrooms' };
+
+  // aria-current: "page" on the page itself, "true" inside its section (a classroom's dashboard under "Minhas turmas").
+  function navLink(item, className) {
+    const path = location.pathname;
+    const current = path === item.href ? ' aria-current="page"' : item.here(path) ? ' aria-current="true"' : '';
+    return `<a class="${className}" href="${item.href}"${current}>${esc(item.label)}</a>`;
+  }
+
+  function chrome() {
+    const logo = '<svg class="logo" width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="6" fill="#141414"/><path d="M8 17l5 5 11-12" stroke="#33c47a" stroke-width="3.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    document.body.insertAdjacentHTML('afterbegin', `<header class="top"><div class="wrap">
+      <a class="brand" href="/" aria-label="Vaga Viva, início">${logo}<span class="brand-name">Vaga Viva</span></a>
+      <nav class="nav" aria-label="Principal"></nav><div class="account"></div></div></header>`);
+    document.addEventListener('click', (event) => { if (!event.target.closest('.account')) closeMenu(); });
+    me().catch(() => { /* the bar stays with the logo only */ });
+  }
+
+  // Fills the bar for `user` ({ login, teaches }) or for nobody (null). Pages call it with null when a session ends.
+  function setUser(user) {
+    const nav = $('.top .nav');
+    const account = $('.top .account');
+    if (!nav || !account) return;
+    const links = NAV.filter((item) => item.shown(user));
+    nav.innerHTML = links.map((item) => navLink(item, 'nav-link')).join('');
+    if (!user) {
+      account.innerHTML = `${navLink(FOR_TEACHERS, 'nav-link')}<button type="button" class="btn ghost sm" id="bar-sign-in">Entrar</button>`;
+      $('#bar-sign-in').addEventListener('click', signIn);
+      return;
+    }
+    // On a narrow screen the links move into this menu (vv.css hides .nav and shows .menu-nav).
+    const items = [
+      ...links.map((item) => `<li class="menu-nav">${navLink(item, 'menu-item')}</li>`),
+      ...(user.teaches ? [] : [`<li>${navLink(FOR_TEACHERS, 'menu-item')}</li>`]),
+      '<li><button type="button" class="menu-item" id="sign-out">Sair</button></li>',
+    ];
+    account.innerHTML = `<button type="button" class="user" aria-expanded="false" aria-controls="account-menu" aria-label="Conta de @${esc(user.login)}">${avatar(user.login, 'sm')}<span class="user-login">@${esc(user.login)}</span>${ICON.chevron}</button>
+      <div class="menu" id="account-menu" hidden><ul>${items.join('')}</ul></div>`;
+    const toggle = $('.user', account);
+    toggle.addEventListener('click', () => (toggle.getAttribute('aria-expanded') === 'true' ? closeMenu() : openMenu()));
+    account.addEventListener('keydown', (event) => { if (event.key === 'Escape') closeMenu(true); });
+    account.addEventListener('focusout', (event) => { if (!account.contains(event.relatedTarget)) closeMenu(); });
+    $('#sign-out').addEventListener('click', signOut);
+  }
+
+  function openMenu() {
+    const toggle = $('.top .user');
+    if (!toggle) return;
+    toggle.setAttribute('aria-expanded', 'true');
+    $('#account-menu').hidden = false;
+  }
+  function closeMenu(refocus = false) {
+    const toggle = $('.top .user');
+    if (!toggle || toggle.getAttribute('aria-expanded') !== 'true') return;
+    toggle.setAttribute('aria-expanded', 'false');
+    $('#account-menu').hidden = true;
+    if (refocus) toggle.focus();
+  }
+
+  // Spring's logout wants a POST with the CSRF token, then sends everyone to the start page.
+  async function signOut() {
+    const button = $('#sign-out');
+    try {
+      const response = await fetch('/logout', { method: 'POST', headers: { 'X-XSRF-TOKEN': csrfToken() } });
+      if (!response.ok) throw new Error(`/logout answered ${response.status}`);
+      location.assign('/');
+    } catch {
+      button.textContent = 'Não deu para sair. Tentar de novo';
+    }
+  }
+
+  return { $, $$, esc, wait, ICON, ic, STATUS, LEVELS, avatar, statusBadge, testGrid, missionItem, repoPanel, runProgress, paintStages, countUp, toast, copyField, busy, idle, setStep, invalid, csrfToken, problemDetail, gitHubUrl, rememberReturn, signIn, chrome, me, setUser };
 })();

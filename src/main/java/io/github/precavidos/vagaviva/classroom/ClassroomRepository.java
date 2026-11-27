@@ -12,6 +12,8 @@ interface ClassroomRepository extends JpaRepository<Classroom, UUID> {
 
 	List<Classroom> findByTeacherLoginOrderByCreatedAtDesc(String teacherLogin);
 
+	boolean existsByTeacherLogin(String teacherLogin);
+
 	/** The classrooms whose teacher gave an e-mail and agreed to the weekly summary. */
 	List<Classroom> findByTeacherEmailIsNotNullAndTeacherEmailConsentAtIsNotNullOrderByCreatedAt();
 
