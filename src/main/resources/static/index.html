@@ -37,7 +37,7 @@
         <div class="stack" style="gap:8px">
           <div class="clip">
             <label class="clip-tag" for="posting"><span data-icon="scissors"></span>Texto da vaga</label>
-            <textarea id="posting" maxlength="20000" aria-describedby="posting-error" placeholder="Cole aqui a descrição da vaga: requisitos, nível, tecnologias…"></textarea>
+            <textarea id="posting" maxlength="20000" aria-describedby="posting-error" placeholder="Cole aqui a descrição da vaga (requisitos, nível, tecnologias…) ou o link dela"></textarea>
           </div>
           <div class="row between small"><span id="posting-error" class="error-text" hidden></span><span></span><span class="mono muted" id="posting-count">0 / 20.000</span></div>
         </div>
@@ -223,6 +223,19 @@ Modelo híbrido, em São Paulo.`;
   }
   const extract = (text) => postText('/api/job-postings/extraction', text, 'Não foi possível ler a vaga.');
   const requestPlan = (text) => postText('/api/project-plans', text, 'Não foi possível ler a vaga.');
+
+  // A posting's address alone in the field is read from its page; anything else is the posting's text.
+  const LINK = /^https?:\/\/\S+$/i;
+  async function textFromLink(url) {
+    try {
+      const response = await fetch('/api/job-postings/text-from-url', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url }) });
+      const body = await VV.problemDetail(response);
+      if (response.ok && typeof body.text === 'string') return { ok: true, text: body.text };
+      return { ok: false, message: body.detail ?? 'Não foi possível ler a página da vaga. Cole o texto da vaga.' };
+    } catch {
+      return { ok: false, message: NO_CONNECTION };
+    }
+  }
 
   // ---- Step 2: the reading, built only from what the extraction answered (DESIGN.md 3.1) ----
 
@@ -435,6 +448,22 @@ Modelo híbrido, em São Paulo.`;
   async function start(text) {
     const button = $('#plan-button');
     postingError('');
+    if (LINK.test(text.trim())) {
+      // The page's text replaces the link, so the clipping, the plan and the repository all use the posting itself.
+      VV.busy(button, 'Abrindo o link da vaga', 'scan');
+      const page = await textFromLink(text.trim());
+      if (!page.ok) {
+        VV.idle(button, false);
+        postingError(page.message);
+        say(page.message);
+        $('#posting').focus();
+        return;
+      }
+      VV.idle(button);
+      text = page.text;
+      $('#posting').value = text;
+      $('#posting').dispatchEvent(new Event('input'));
+    }
     VV.busy(button, 'Lendo a vaga', 'scan');
     const extraction = await extract(text);
     if (!extraction.ok) {
@@ -601,7 +630,7 @@ Modelo híbrido, em São Paulo.`;
     e.preventDefault();
     const text = $('#posting').value;
     if (!text.trim()) {
-      postingError('Cole o texto da vaga para montarmos o plano.');
+      postingError('Cole o texto ou o link da vaga para montarmos o plano.');
       $('#posting').focus();
       return;
     }
@@ -648,10 +677,10 @@ Modelo híbrido, em São Paulo.`;
   const params = new URLSearchParams(window.location.search);
   const pending = recall();
 
-  // The teacher and invite pages leave their own address here before sending someone to GitHub.
+  // The other pages leave their own address here before sending someone to GitHub.
   // It is read once and followed only when it is one of those pages, so it cannot become an open redirect.
   const RETURN_KEY = 'vagaviva.voltar';
-  const RETURN_PATH = /^\/(professor|empresas|turma\/[a-z0-9]{10}|turmas\/[0-9a-f-]{36})$/;
+  const RETURN_PATH = /^\/(classrooms|companies|join\/[a-z0-9]{10}|classrooms\/[0-9a-f-]{36})$/;
   function takeReturnPath() {
     try {
       const path = sessionStorage.getItem(RETURN_KEY);
