@@ -225,9 +225,53 @@ class JobPostingUrlExtractionApiTests {
 		assertThat(log.getAll()).doesNotContain("vaga-sigilosa-123").doesNotContain("Spring Boot, PostgreSQL");
 	}
 
+	/** The start page reads a link pasted in the posting field this way, then plans from the text as if pasted. */
+	@Test
+	void givesBackThePostingTextOfALink() {
+		FetchedPage page = fixture("json-ld.html");
+		given(fetcher.fetch(URL)).willReturn(page);
+
+		MvcTestResult response = postUrl("/api/job-postings/text-from-url", URL);
+
+		assertThat(response).hasStatusOk();
+		assertThat(response).bodyJson().extractingPath("$.text").isEqualTo(reader.read(page));
+	}
+
+	@Test
+	void givesBackTheRenderedTextOfAPageBuiltByJavaScript() {
+		given(fetcher.fetch(URL)).willReturn(fixture("spa-shell.html"));
+		given(rendered.read(URL)).willReturn(Optional.of(RENDERED_TEXT));
+
+		assertThat(postUrl("/api/job-postings/text-from-url", URL)).hasStatusOk()
+			.bodyJson()
+			.extractingPath("$.text")
+			.isEqualTo(RENDERED_TEXT);
+	}
+
+	@Test
+	void theTextOfALinkFailsWithTheSameMessages() {
+		given(fetcher.fetch(anyString())).willThrow(new UnsafeUrlException());
+		assertThat(postUrl("/api/job-postings/text-from-url", "http://169.254.169.254/")).hasStatus(HttpStatus.BAD_REQUEST)
+			.bodyJson()
+			.extractingPath("$.detail")
+			.isEqualTo(URL_MESSAGE);
+		verifyNoInteractions(rendered);
+
+		willReturn(fixture("spa-shell.html")).given(fetcher).fetch(URL);
+		given(rendered.read(URL)).willReturn(Optional.empty());
+		assertThat(postUrl("/api/job-postings/text-from-url", URL)).hasStatus(HttpStatus.UNPROCESSABLE_CONTENT)
+			.bodyJson()
+			.extractingPath("$.detail")
+			.isEqualTo(UNREADABLE_MESSAGE);
+	}
+
 	private MvcTestResult postUrl(String url) {
+		return postUrl("/api/job-postings/extraction/from-url", url);
+	}
+
+	private MvcTestResult postUrl(String path, String url) {
 		return mvc.post()
-			.uri("/api/job-postings/extraction/from-url")
+			.uri(path)
 			.contentType(MediaType.APPLICATION_JSON)
 			.content(JSON.writeValueAsString(Map.of("url", url)))
 			.exchange();

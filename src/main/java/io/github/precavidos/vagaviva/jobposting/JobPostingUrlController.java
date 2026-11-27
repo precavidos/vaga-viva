@@ -42,6 +42,18 @@ class JobPostingUrlController {
 			.from(limiter.call(() -> extractor.extract(reader.text(request.url()))));
 	}
 
+	/**
+	 * The posting's text, for the start page: a link pasted in the posting field is read here and the page then
+	 * plans from the text as if it had been pasted, so the clipping, the plan and the repository all use it.
+	 */
+	@PostMapping("/text-from-url")
+	PostingText textFromUrl(@Valid @RequestBody UrlExtractionRequest request) {
+		return new PostingText(limiter.call(() -> reader.text(request.url())));
+	}
+
+	record PostingText(String text) {
+	}
+
 	record UrlExtractionRequest(@NotBlank @Size(max = MAX_URL_LENGTH) String url) {
 	}
 
