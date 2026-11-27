@@ -108,7 +108,7 @@ Quem já recebeu nos últimos 6 dias é pulado, então rodar duas vezes não man
 
 ### Empresas seguidas
 
-Desligado por padrão. Ligado, quem recebe o e-mail semanal segue até 3 empresas em `/empresas`, e o e-mail de segunda ganha a seção "Vagas novas nas empresas que você segue". Quem lê as páginas é o workflow `.github/workflows/company-watch.yml`, que chama `POST /api/company-watch/checks` no domingo às 22h (horário de Brasília). Sem o segredo, a página e os endpoints respondem 404 e o e-mail semanal fica como era. Com um segredo errado, responde 401. Sem `FIRECRAWL_API_KEY`, responde 503.
+Desligado por padrão. Ligado, quem recebe o e-mail semanal segue até 3 empresas em `/companies`, e o e-mail de segunda ganha a seção "Vagas novas nas empresas que você segue". Quem lê as páginas é o workflow `.github/workflows/company-watch.yml`, que chama `POST /api/company-watch/checks` no domingo às 22h (horário de Brasília). Sem o segredo, a página e os endpoints respondem 404 e o e-mail semanal fica como era. Com um segredo errado, responde 401. Sem `FIRECRAWL_API_KEY`, responde 503.
 
 1. Gere outro segredo longo (por exemplo, `openssl rand -hex 32`).
 2. No Render, em *Environment*, cadastre `COMPANY_WATCH_SECRET` com esse valor. `FIRECRAWL_API_KEY` e o e-mail semanal também são necessários.

@@ -101,13 +101,19 @@ class WeeklyEmailUnsubscribeApiTests {
 
 	@Test
 	void pageDeletesNothingByItself() {
-		var response = mvc.get().uri("/descadastrar?t=tok").exchange();
+		var response = mvc.get().uri("/unsubscribe?t=tok").exchange();
 
-		assertThat(response).hasStatus(HttpStatus.OK).hasForwardedUrl("/descadastrar.html");
-		assertThat(mvc.get().uri("/descadastrar.html")).hasStatusOk().bodyText().contains("Parar de receber");
-		assertThat(new String(mvc.get().uri("/descadastrar.html").exchange().getResponse().getContentAsByteArray(),
-				StandardCharsets.UTF_8))
+		assertThat(response).hasStatus(HttpStatus.OK).bodyText().contains("Parar de receber");
+		assertThat(new String(response.getResponse().getContentAsByteArray(), StandardCharsets.UTF_8))
 			.contains("Este link de descadastro está incompleto. Use o link do último e-mail que você recebeu.");
+		assertThat(subscriptions.findByUnsubscribeToken("tok")).isPresent();
+	}
+
+	/** Every weekly e-mail already sent links to the old route; the token must reach the new page. */
+	@Test
+	void theOldRouteRedirectsForGoodWithTheToken() {
+		assertThat(mvc.get().uri("/descadastrar?t=tok")).hasStatus(HttpStatus.MOVED_PERMANENTLY)
+			.hasRedirectedUrl("/unsubscribe?t=tok");
 		assertThat(subscriptions.findByUnsubscribeToken("tok")).isPresent();
 	}
 

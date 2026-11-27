@@ -89,7 +89,7 @@ class DashboardApiTests {
 		assertThat(response).hasStatusOk();
 		var json = assertThat(response).bodyJson();
 		json.extractingPath("$.name").isEqualTo("Turma");
-		json.extractingPath("$.inviteUrl").isEqualTo("/turma/" + classroom.getJoinCode());
+		json.extractingPath("$.inviteUrl").isEqualTo("/join/" + classroom.getJoinCode());
 		json.extractingPath("$.archetypeName")
 			.isEqualTo(archetypes.archetype(StoredPlan.fromJson(classroom.getPlan()).archetype()).name());
 		json.extractingPath("$.counts.stuck").isEqualTo(1);

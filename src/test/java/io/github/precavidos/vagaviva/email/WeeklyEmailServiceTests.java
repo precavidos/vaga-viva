@@ -104,7 +104,7 @@ class WeeklyEmailServiceTests {
 		var email = sentEmail();
 		assertThat(email.to()).isEqualTo("maria@example.com");
 		assertThat(email.subject()).isEqualTo("Sua missão da semana: Cadastro de pacientes");
-		assertThat(email.text()).contains("https://vagaviva.dev/descadastrar?t=tok", "Releia o teste.");
+		assertThat(email.text()).contains("https://vagaviva.dev/unsubscribe?t=tok", "Releia o teste.");
 		assertThat(email.headers()).containsEntry("List-Unsubscribe",
 				"<https://vagaviva.dev/api/weekly-email/unsubscribe?t=tok>")
 			.containsEntry("List-Unsubscribe-Post", "List-Unsubscribe=One-Click");
@@ -125,7 +125,7 @@ class WeeklyEmailServiceTests {
 		service.sendDue();
 
 		assertThat(sentEmail().text()).contains("Dev Java — Compass (combina com o seu plano)",
-				"https://vagaviva.dev/#link=https%3A%2F%2Fcompass.gupy.io%2Fjobs%2F1", "https://vagaviva.dev/empresas");
+				"https://vagaviva.dev/#link=https%3A%2F%2Fcompass.gupy.io%2Fjobs%2F1", "https://vagaviva.dev/companies");
 	}
 
 	@Test

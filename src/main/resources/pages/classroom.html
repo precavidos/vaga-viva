@@ -17,7 +17,7 @@
 
     <div class="row between" style="align-items:flex-end">
       <div class="stack" style="min-width:0;max-width:100%">
-        <a class="link small" href="/professor" style="justify-self:start">← Suas turmas</a>
+        <a class="link small" href="/classrooms" style="justify-self:start">← Suas turmas</a>
         <div class="stack" id="head" hidden>
           <h1 id="class-name" tabindex="-1" style="overflow-wrap:anywhere"></h1>
           <div class="chips"><span class="chip dark"><span data-icon="stack"></span><span id="stack"></span></span><span class="chip"><span data-icon="users"></span><span id="students-count"></span></span><span class="chip"><span data-icon="clock"></span><span id="updated"></span></span></div>
@@ -94,7 +94,7 @@
   };
   const ORDER = ['STUCK', 'IDLE', 'ADVANCING', 'COMPLETED'];
 
-  const CLASSROOM_ID = (location.pathname.match(/^\/turmas\/([0-9a-f-]{36})\/?$/) ?? [])[1];
+  const CLASSROOM_ID = (location.pathname.match(/^\/classrooms\/([0-9a-f-]{36})\/?$/) ?? [])[1];
   const say = (text) => { $('#status').textContent = text; };
   const num = (value) => Math.max(0, Math.floor(Number(value) || 0));
   const statusOf = (value) => (STATUS[value] ? value : 'ADVANCING');
@@ -196,7 +196,7 @@
     const columns = columnsOf();
     const everyone = columns.flatMap((c) => c.students);
     const counts = Object.fromEntries(ORDER.map((status) => [status, everyone.filter((s) => s.status === status).length]));
-    const inviteUrl = /^\/turma\/[A-Za-z0-9]+$/.test(data.inviteUrl ?? '') ? location.origin + data.inviteUrl : '';
+    const inviteUrl = /^\/join\/[A-Za-z0-9]+$/.test(data.inviteUrl ?? '') ? location.origin + data.inviteUrl : '';
 
     $('#class-name').textContent = String(data.name ?? '');
     $('#stack').textContent = String(data.archetypeName ?? '');

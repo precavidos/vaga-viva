@@ -46,7 +46,7 @@ class CompanyWatchDisabledApiTests {
 		var maria = oauth2Login().clientRegistration(registrations.findByRegistrationId("github"))
 			.attributes(attributes -> attributes.put("login", "maria"));
 
-		assertThat(mvc.get().uri("/empresas").exchange()).hasStatus(HttpStatus.NOT_FOUND);
+		assertThat(mvc.get().uri("/companies").exchange()).hasStatus(HttpStatus.NOT_FOUND);
 		assertThat(mvc.get().uri("/api/company-follows").with(maria).exchange()).hasStatus(HttpStatus.NOT_FOUND);
 		assertThat(mvc.post()
 			.uri("/api/company-follows")

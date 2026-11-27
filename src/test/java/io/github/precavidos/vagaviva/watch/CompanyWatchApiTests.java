@@ -402,7 +402,15 @@ class CompanyWatchApiTests {
 
 	@Test
 	void theFollowPageIsOpen() {
-		assertThat(mvc.get().uri("/empresas").exchange()).hasStatus(HttpStatus.OK);
+		assertThat(mvc.get().uri("/companies")).hasStatus(HttpStatus.OK)
+			.bodyText()
+			.contains("<title>Vaga Viva — Empresas que você segue</title>");
+	}
+
+	/** The weekly e-mails already sent link to the old route. */
+	@Test
+	void theOldFollowRouteRedirectsForGood() {
+		assertThat(mvc.get().uri("/empresas")).hasStatus(HttpStatus.MOVED_PERMANENTLY).hasRedirectedUrl("/companies");
 	}
 
 	@Test

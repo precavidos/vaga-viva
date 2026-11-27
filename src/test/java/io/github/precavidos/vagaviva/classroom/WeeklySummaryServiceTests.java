@@ -54,7 +54,7 @@ class WeeklySummaryServiceTests {
 		assertThat(result).isEqualTo(new WeeklySummaryService.Result(2, 0));
 		verify(mailer).send(eq("ana@escola.dev"), startsWith("Turma — semana de 23/11"), anyString(), anyString(),
 				eq("classroom-summary/" + first.getId() + "/2026-11-23"));
-		verify(mailer).link("/turmas/" + second.getId());
+		verify(mailer).link("/classrooms/" + second.getId());
 		assertThat(pauses).containsExactly(WeeklySummaryService.PAUSE_BETWEEN_SENDS);
 	}
 
@@ -65,7 +65,7 @@ class WeeklySummaryServiceTests {
 		when(classrooms.findByTeacherEmailIsNotNullAndTeacherEmailConsentAtIsNotNullOrderByCreatedAt())
 			.thenReturn(List.of(broken, fine));
 		when(dashboards.dashboardForSummary(any())).thenAnswer((call) -> empty(call.getArgument(0)));
-		when(mailer.link(anyString())).thenReturn("https://vagaviva.dev/turmas/x");
+		when(mailer.link(anyString())).thenReturn("https://vagaviva.dev/classrooms/x");
 		doThrow(new IllegalStateException("Resend is down")).when(mailer)
 			.send(eq("ana@escola.dev"), anyString(), anyString(), anyString(), anyString());
 
@@ -80,7 +80,7 @@ class WeeklySummaryServiceTests {
 	}
 
 	private static Dashboard empty(Classroom classroom) {
-		return new Dashboard(classroom.getId(), classroom.getName(), "Java", "/turma/x", new Counts(0, 0, 0, 0),
+		return new Dashboard(classroom.getId(), classroom.getName(), "Java", "/join/x", new Counts(0, 0, 0, 0),
 				List.of(new Column(null, null, "Concluído", List.of())));
 	}
 

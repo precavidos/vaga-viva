@@ -127,7 +127,7 @@ public class WeeklyEmailService {
 		var repository = subscription.getRepositoryFullName();
 		var token = subscription.getUnsubscribeToken();
 		var publicUrl = properties.publicUrl();
-		var footerUrl = publicUrl + "/descadastrar?t=" + token;
+		var footerUrl = publicUrl + "/unsubscribe?t=" + token;
 		var headerUrl = publicUrl + "/api/weekly-email/unsubscribe?t=" + token;
 		var missions = snapshot.plan().missions();
 
