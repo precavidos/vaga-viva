@@ -103,9 +103,10 @@ final class WeeklyEmailTemplate {
 		}
 		for (var name : section.checkLinks()) {
 			var check = "Não conseguimos ler a página de vagas de " + name + " nas últimas "
-					+ CompanyWatch.FAILURES_TO_WARN + " semanas. Confira o link em " + followPage + ".";
-			text.append(check).append("\n\n");
-			html.append("<p>").append(HtmlUtils.htmlEscape(check)).append("</p>\n");
+					+ CompanyWatch.FAILURES_TO_WARN + " semanas. Confira o link em ";
+			text.append(check).append(followPage).append(".\n\n");
+			html.append("<p>").append(HtmlUtils.htmlEscape(check)).append(followLink)
+				.append(HtmlUtils.htmlEscape(followPage)).append("</a>.</p>\n");
 		}
 		text.append("Empresas que você segue: ").append(followPage).append("\n\n");
 		html.append("<p>").append(followLink).append("Empresas que você segue</a></p>\n");

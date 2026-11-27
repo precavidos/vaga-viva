@@ -113,6 +113,7 @@ class WeeklyEmailTemplateTests {
 
 		assertThat(reply.text()).contains(
 				"Não conseguimos ler a página de vagas de Compass nas últimas 3 semanas. Confira o link em https://vagaviva.dev/empresas.");
+		assertThat(reply.html()).contains("Confira o link em <a href=\"https://vagaviva.dev/empresas\">");
 	}
 
 	@Test
