@@ -44,6 +44,12 @@ class MeApiTests {
 		json.extractingPath("$.teaches").isEqualTo(false);
 	}
 
+	/** Off by default, so the bar does not link to a page that answers 404. */
+	@Test
+	void saysTheCompanyWatchIsOff() {
+		assertThat(me("maria")).hasStatusOk().bodyJson().extractingPath("$.companyWatch").isEqualTo(false);
+	}
+
 	@Test
 	void theOwnerOfAClassroomTeaches() {
 		classrooms.create("prof", "Desenvolvedora Java Júnior com Spring Boot, PostgreSQL e Docker.", "Turma", null,
