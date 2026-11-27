@@ -24,44 +24,22 @@ class JobPostingUrlController {
 	/** Longest URL accepted; career page URLs are far shorter. */
 	static final int MAX_URL_LENGTH = 2048;
 
-	private final JobPostingFetcher fetcher;
-
-	private final JobPostingPageReader reader;
+	private final JobPostingReader reader;
 
 	private final JobPostingExtractor extractor;
 
 	private final PageReadLimiter limiter;
 
-	private final RenderedPageReader rendered;
-
-	JobPostingUrlController(JobPostingFetcher fetcher, JobPostingPageReader reader, JobPostingExtractor extractor,
-			PageReadLimiter limiter, RenderedPageReader rendered) {
-		this.fetcher = fetcher;
+	JobPostingUrlController(JobPostingReader reader, JobPostingExtractor extractor, PageReadLimiter limiter) {
 		this.reader = reader;
 		this.extractor = extractor;
 		this.limiter = limiter;
-		this.rendered = rendered;
 	}
 
 	@PostMapping("/extraction/from-url")
 	ExtractionResponse extractFromUrl(@Valid @RequestBody UrlExtractionRequest request) {
 		return ExtractionResponse
-			.from(limiter.call(() -> extractor.extract(text(request.url()))));
-	}
-
-	/**
-	 * The page's text from the app's own download, or, when that page is a
-	 * JavaScript shell or its site refuses the download, from the rendered
-	 * reader. An unsafe URL never gets that far: {@link UnsafeUrlException} is
-	 * not caught here.
-	 */
-	private String text(String url) {
-		try {
-			return reader.read(fetcher.fetch(url));
-		}
-		catch (UnreadablePageException | PageFetchException ex) {
-			return rendered.read(url).orElseThrow(() -> ex);
-		}
+			.from(limiter.call(() -> extractor.extract(reader.text(request.url()))));
 	}
 
 	record UrlExtractionRequest(@NotBlank @Size(max = MAX_URL_LENGTH) String url) {

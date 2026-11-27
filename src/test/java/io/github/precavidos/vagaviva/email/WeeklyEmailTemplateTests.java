@@ -8,6 +8,7 @@ import java.util.Optional;
 import org.junit.jupiter.api.Test;
 
 import io.github.precavidos.vagaviva.plan.Mission;
+import io.github.precavidos.vagaviva.watch.CompanyNews;
 
 class WeeklyEmailTemplateTests {
 
@@ -65,6 +66,69 @@ class WeeklyEmailTemplateTests {
 
 		assertThat(reply.subject()).isEqualTo("Você concluiu o projeto!");
 		assertThat(reply.text()).contains(UNSUBSCRIBE, "https://github.com/maria/vaga-viva-x");
+	}
+
+	private static final String PUBLIC_URL = "https://vagaviva.dev";
+
+	private static final CompanyNews.Posting MATCHING = new CompanyNews.Posting("Dev Java <Júnior>", "Compass",
+			"https://compass.gupy.io/jobs/1", true);
+
+	private static final CompanyNews.Posting OTHER = new CompanyNews.Posting("Dev Python", "Compass",
+			"https://compass.gupy.io/jobs/2", false);
+
+	@Test
+	void listsTheNewPostingsOfTheFollowedCompanies() {
+		var reply = withCompanies(new CompanyNews.Section(List.of(MATCHING, OTHER), List.of(), true));
+
+		assertThat(reply.text()).contains("Vagas novas nas empresas que você segue",
+				"Dev Java <Júnior> — Compass (combina com o seu plano)", "https://compass.gupy.io/jobs/1",
+				"Montar meu plano para esta vaga: https://vagaviva.dev/#link=https%3A%2F%2Fcompass.gupy.io%2Fjobs%2F1",
+				"Dev Python — Compass\n", "Empresas que você segue: https://vagaviva.dev/empresas");
+		assertThat(reply.text().indexOf("Dev Java")).isLessThan(reply.text().indexOf("Dev Python"));
+		assertThat(reply.html()).contains(org.springframework.web.util.HtmlUtils.htmlEscape("Dev Java <Júnior>"),
+				"combina com o seu plano",
+				"href=\"https://vagaviva.dev/#link=https%3A%2F%2Fcompass.gupy.io%2Fjobs%2F1\"",
+				"Montar meu plano para esta vaga", "href=\"https://vagaviva.dev/empresas\"")
+			.doesNotContain("<Júnior>");
+	}
+
+	@Test
+	void saysWhenTheFollowedCompaniesHaveNothingNew() {
+		var reply = withCompanies(new CompanyNews.Section(List.of(), List.of(), true));
+
+		assertThat(reply.text()).contains("Nenhuma vaga nova de tecnologia nas empresas que você segue nesta semana.");
+	}
+
+	@Test
+	void invitesToFollowWhenTheStudentFollowsNobody() {
+		var reply = withCompanies(new CompanyNews.Section(List.of(), List.of(), false));
+
+		assertThat(reply.text()).contains("Siga até 3 empresas e receba aqui as vagas novas delas: https://vagaviva.dev/empresas")
+			.doesNotContain("Vagas novas nas empresas que você segue");
+	}
+
+	@Test
+	void asksToCheckTheLinkOfAPageThatKeepsFailing() {
+		var reply = withCompanies(new CompanyNews.Section(List.of(), List.of("Compass"), true));
+
+		assertThat(reply.text()).contains(
+				"Não conseguimos ler a página de vagas de Compass nas últimas 3 semanas. Confira o link em https://vagaviva.dev/empresas.");
+		assertThat(reply.html()).contains("Confira o link em <a href=\"https://vagaviva.dev/empresas\">");
+	}
+
+	@Test
+	void staysAsItWasWhileTheWatchIsOff() {
+		var before = WeeklyEmailTemplate.mission("maria/vaga-viva-x", 1, MISSION, true, Optional.empty(), UNSUBSCRIBE);
+		var after = WeeklyEmailTemplate.mission("maria/vaga-viva-x", 1, MISSION, true, Optional.empty(), UNSUBSCRIBE,
+				Optional.empty(), PUBLIC_URL);
+
+		assertThat(after).isEqualTo(before);
+		assertThat(after.text()).doesNotContain("empresas");
+	}
+
+	private static PlanReplyTemplate.Reply withCompanies(CompanyNews.Section section) {
+		return WeeklyEmailTemplate.mission("maria/vaga-viva-x", 1, MISSION, true, Optional.empty(), UNSUBSCRIBE,
+				Optional.of(section), PUBLIC_URL);
 	}
 
 }

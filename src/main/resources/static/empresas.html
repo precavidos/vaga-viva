@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>Vaga Viva — Empresas que você segue</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/vv.css">
+  <link rel="stylesheet" href="/vv-motion.css">
+  <style>
+    .follows { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+    .follows li { display: grid; gap: 8px; padding: 14px 16px; border: 1px solid var(--line); border-radius: var(--r-md); }
+    .follows .url { font: 400 13px/1.4 var(--mono); color: var(--ink-2); overflow-wrap: anywhere; }
+    .found { margin: 0; padding-left: 20px; display: grid; gap: 6px; }
+  </style>
+</head>
+<body>
+<main>
+  <div class="wrap narrow stack lg">
+    <p id="status" class="sr" role="status" aria-live="polite"></p>
+
+    <section class="board" id="loading" aria-busy="true">
+      <p class="status-line" id="loading-line" hidden><span data-dot-matrix="scan"></span><span class="status-label"></span><span class="status-timer"></span></p>
+    </section>
+
+    <section class="board" id="failed" hidden>
+      <div class="banner error" role="alert"><span data-icon="warning"></span><div><b>Não deu para abrir esta página.</b><span id="failed-text">Sem conexão com o Vaga Viva. Tente de novo.</span></div></div>
+    </section>
+
+    <section class="board stack lg" id="signed-out" hidden aria-labelledby="out-title">
+      <div class="stack">
+        <h1 id="out-title" tabindex="-1">Empresas que você segue.</h1>
+        <p class="lead">Entre com o GitHub, a mesma conta do seu projeto, para escolher até 3 empresas.</p>
+      </div>
+      <div class="row"><button type="button" class="btn" id="sign-in"><span data-icon="github"></span>Entrar com o GitHub</button></div>
+    </section>
+
+    <section class="board stack lg" id="off" hidden>
+      <h1 tabindex="-1">Empresas que você segue.</h1>
+      <p class="lead">Este recurso ainda não está disponível.</p>
+    </section>
+
+    <section class="board stack lg" id="not-subscribed" hidden aria-labelledby="ns-title">
+      <h1 id="ns-title" tabindex="-1">Empresas que você segue.</h1>
+      <p class="lead">Só quem recebe o e-mail semanal pode seguir empresas, porque as vagas novas chegam nele. Marque o e-mail semanal ao criar o seu projeto.</p>
+      <div class="row"><a class="btn" href="/">Criar meu projeto</a></div>
+    </section>
+
+    <section class="board stack lg" id="main" hidden aria-labelledby="main-title">
+      <div class="stack">
+        <h1 id="main-title" tabindex="-1">Empresas que você segue.</h1>
+        <p class="lead">Escolha até 3 empresas. Todo domingo à noite olhamos a página de vagas delas, e na segunda o e-mail semanal traz as vagas novas de tecnologia.</p>
+      </div>
+
+      <ul class="follows" id="follows"></ul>
+      <p class="muted" id="none">Você ainda não segue nenhuma empresa.</p>
+
+      <div class="banner" id="result" hidden tabindex="-1"><span data-icon="check"></span><div><b id="result-title"></b><ul class="found" id="result-list"></ul><span class="muted small" id="result-more"></span></div></div>
+
+      <form class="stack" id="add" style="gap:12px" novalidate>
+        <div class="stack field" style="gap:8px">
+          <label for="url">Link da página de vagas da empresa</label>
+          <input class="input" type="url" id="url" required maxlength="2048" placeholder="https://empresa.gupy.io/" autocomplete="off">
+          <span class="muted small">Funciona com Gupy, Greenhouse, Lever, Ashby, Workable, SmartRecruiters e Workday. Use o link da lista de vagas, não o de uma vaga.</span>
+        </div>
+        <div class="stack field" style="gap:8px">
+          <label for="name">Nome da empresa <span class="muted">(opcional)</span></label>
+          <input class="input" type="text" id="name" maxlength="80" autocomplete="off">
+        </div>
+        <div class="banner error" id="add-error" role="alert" tabindex="-1" hidden><span data-icon="warning"></span><div id="add-error-text"></div></div>
+        <div class="row"><button type="submit" class="btn" id="add-button">Seguir esta empresa</button></div>
+      </form>
+
+      <p class="muted small">Guardamos o link da página e o nome que você der, ligados ao seu login do GitHub. Ao parar de receber o e-mail semanal, apagamos tudo isso.</p>
+    </section>
+  </div>
+</main>
+
+<script src="/vv.js"></script>
+<script src="/vv-motion.js"></script>
+<script>
+  const { $, $$, ICON, esc } = VV;
+  document.querySelectorAll('[data-icon]').forEach((el) => { el.innerHTML = ICON[el.dataset.icon]; });
+  VV.chrome('Empresas');
+  VVMotion.init();
+
+  const say = (text) => { $('#status').textContent = text; };
+  const SECTIONS = ['loading', 'failed', 'signed-out', 'off', 'not-subscribed', 'main'];
+  const show = (id) => SECTIONS.forEach((s) => { $('#' + s).hidden = s !== id; });
+  const safeUrl = (url) => (typeof url === 'string' && url.startsWith('https://') ? url : '#');
+  let state = { max: 3, follows: [] };
+
+  async function start() {
+    show('loading');
+    const line = VVMotion.statusLine($('#loading-line'), 'Abrindo as empresas que você segue');
+    let response;
+    try { response = await fetch('/api/company-follows'); }
+    catch { line.stop(); show('failed'); say('Sem conexão com o Vaga Viva.'); return; }
+    if (response.status === 401) { line.done(); VV.setUser(null); show('signed-out'); return; }
+    if (response.status === 404) { line.done(); show('off'); return; }
+    if (!response.ok) { line.stop(); $('#failed-text').textContent = 'O Vaga Viva não respondeu como esperado.'; show('failed'); return; }
+    try { state = await response.json(); } catch { line.stop(); show('failed'); return; }
+    line.done();
+    try { const me = await (await fetch('/api/me')).json(); VV.setUser(me.login); } catch { /* the name is only a nicety */ }
+    if (!state.subscribed) { show('not-subscribed'); return; }
+    render();
+    show('main');
+  }
+
+  function render() {
+    $('#none').hidden = state.follows.length > 0;
+    $('#follows').innerHTML = state.follows.map((f) => `
+      <li data-id="${f.id}">
+        <div class="row between"><b class="name">${esc(f.name)}</b>
+          <span class="row" style="gap:8px">
+            <button type="button" class="link small" data-action="rename">Mudar o nome</button>
+            <button type="button" class="link small" data-action="remove">Deixar de seguir</button>
+          </span></div>
+        <a class="url" href="${esc(safeUrl(f.url))}" rel="noopener">${esc(f.url)}</a>
+        ${f.checkLink ? `<div class="banner warn"><span>${ICON.warning}</span><div>Não conseguimos ler esta página nas últimas 3 semanas. Confira se o link ainda é a lista de vagas da empresa.</div></div>` : ''}
+      </li>`).join('');
+    const full = state.follows.length >= state.max;
+    $('#add').hidden = full;
+    if (full) say(`Você já segue ${state.max} empresas.`);
+  }
+
+  function addError(message) {
+    $('#add-error-text').textContent = message;
+    $('#add-error').hidden = !message;
+    if (message) { say(message); $('#add-error').focus(); }
+  }
+
+  async function send(method, path, body) {
+    const response = await fetch(path, {
+      method,
+      headers: { 'Content-Type': 'application/json', 'X-XSRF-TOKEN': VV.csrfToken() },
+      body: body === undefined ? undefined : JSON.stringify(body),
+    });
+    return { status: response.status, ok: response.ok, body: await VV.problemDetail(response) };
+  }
+
+  $('#add').addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const url = $('#url').value.trim();
+    const name = $('#name').value.trim();
+    if (url === '') { addError('Cole o link da página de vagas da empresa.'); $('#url').focus(); return; }
+    addError('');
+    $('#result').hidden = true;
+    const button = $('#add-button');
+    VV.busy(button, 'Lendo a página de vagas', 'scan');
+    let answer;
+    try { answer = await send('POST', '/api/company-follows', name ? { url, name } : { url }); }
+    catch { VV.idle(button, false); addError('Sem conexão com o Vaga Viva. Tente de novo.'); return; }
+    if (answer.status === 401) { VV.idle(button, false); VV.signIn(); return; }
+    if (!answer.ok) { VV.idle(button, false); addError(answer.body.detail || 'Não deu para seguir esta empresa. Tente de novo.'); return; }
+    VV.idle(button);
+    const followed = answer.body;
+    state.follows.push({ id: followed.id, name: followed.name, url: followed.url, checkLink: false });
+    render();
+    $('#url').value = ''; $('#name').value = '';
+    const count = followed.count;
+    $('#result-title').textContent = count === 0
+      ? `Você segue ${followed.name}. Nenhuma vaga aberta agora; avisamos quando aparecer uma.`
+      : `Encontramos ${count} ${count === 1 ? 'vaga aberta' : 'vagas abertas'} agora em ${followed.name}. Daqui para frente, avisamos só das novas.`;
+    $('#result-list').innerHTML = followed.postings.map((p) =>
+      `<li><a href="${esc(safeUrl(p.url))}" rel="noopener">${esc(p.title || p.url)}</a></li>`).join('');
+    $('#result-more').textContent = count > followed.postings.length ? `E mais ${count - followed.postings.length}.` : '';
+    $('#result').hidden = false;
+    $('#result').focus();
+    say($('#result-title').textContent);
+  });
+
+  $('#follows').addEventListener('click', async (event) => {
+    const button = event.target.closest('button[data-action]');
+    if (!button) return;
+    const item = button.closest('li');
+    const id = Number(item.dataset.id);
+    const follow = state.follows.find((f) => f.id === id);
+    if (button.dataset.action === 'remove') {
+      const answer = await send('DELETE', `/api/company-follows/${id}`).catch(() => null);
+      if (!answer || (!answer.ok && answer.status !== 404)) { say('Não deu para deixar de seguir agora. Tente de novo.'); return; }
+      state.follows = state.follows.filter((f) => f.id !== id);
+      render();
+      say(`Você deixou de seguir ${follow.name}.`);
+      return;
+    }
+    const name = prompt('Nome da empresa', follow.name);
+    if (name === null || name.trim() === '' || name.trim() === follow.name) return;
+    const answer = await send('PATCH', `/api/company-follows/${id}`, { name: name.trim() }).catch(() => null);
+    if (!answer || !answer.ok) { say((answer && answer.body.detail) || 'Não deu para mudar o nome agora.'); return; }
+    follow.name = name.trim();
+    render();
+    say(`Nome mudado para ${follow.name}.`);
+  });
+
+  $('#sign-in').addEventListener('click', VV.signIn);
+  start();
+</script>
+</body>
+</html>

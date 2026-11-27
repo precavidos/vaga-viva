@@ -1,0 +1,15 @@
+name: Company watch
+on:
+  schedule:
+    # Sunday 22:00 in Brasília (Monday 01:00 UTC), the night before the weekly e-mail.
+    - cron: '0 1 * * 1'
+  workflow_dispatch:
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check the followed career pages
+        run: |
+          curl --fail-with-body --silent --show-error --max-time 3000 \
+            -X POST -H "X-Vaga-Viva-Secret: ${{ secrets.COMPANY_WATCH_SECRET }}" \
+            "${{ vars.VAGAVIVA_PUBLIC_URL }}/api/company-watch/checks"
