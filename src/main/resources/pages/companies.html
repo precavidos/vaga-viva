@@ -84,7 +84,7 @@
 <script>
   const { $, $$, ICON, esc } = VV;
   document.querySelectorAll('[data-icon]').forEach((el) => { el.innerHTML = ICON[el.dataset.icon]; });
-  VV.chrome('Empresas');
+  VV.chrome();
   VVMotion.init();
 
   const say = (text) => { $('#status').textContent = text; };
@@ -104,7 +104,6 @@
     if (!response.ok) { line.stop(); $('#failed-text').textContent = 'O Vaga Viva não respondeu como esperado.'; show('failed'); return; }
     try { state = await response.json(); } catch { line.stop(); show('failed'); return; }
     line.done();
-    try { const me = await (await fetch('/api/me')).json(); VV.setUser(me.login); } catch { /* the name is only a nicety */ }
     if (!state.subscribed) { show('not-subscribed'); return; }
     render();
     show('main');

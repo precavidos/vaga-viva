@@ -132,8 +132,8 @@
 
   // Anonymous visitors sign in first (the enrollment answers 403 for a missing CSRF token before it can say 401).
   // Name and consent do not survive the round trip, so signing in needs neither; the enrollment needs both.
-  async function refreshMe() {
-    try { signedIn = (await fetch('/api/me')).ok; } catch { signedIn = false; }
+  async function refreshMe(fresh = false) {
+    try { signedIn = Boolean(await VV.me({ fresh })); } catch { signedIn = false; }
     $('#join-label').textContent = signedIn ? 'Criar meu repositório' : 'Entrar com o GitHub e criar meu repositório';
     refresh();
     return signedIn;
@@ -242,7 +242,7 @@
   async function send(displayName) {
     const first = await post(displayName);
     if (first.status !== 403) return first;
-    if (!(await refreshMe())) return { status: 401, body: {} };
+    if (!(await refreshMe(true))) return { status: 401, body: {} };
     return post(displayName);
   }
 

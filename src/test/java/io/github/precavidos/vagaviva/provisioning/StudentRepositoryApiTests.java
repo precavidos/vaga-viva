@@ -67,16 +67,6 @@ class StudentRepositoryApiTests {
 	}
 
 	@Test
-	void meTellsWhoIsSignedIn() {
-		assertThat(mvc.get().uri("/api/me")).hasStatus(HttpStatus.UNAUTHORIZED);
-
-		var response = mvc.get().uri("/api/me").with(student()).exchange();
-
-		assertThat(response).hasStatusOk();
-		assertThat(response).bodyJson().extractingPath("$.login").isEqualTo("maria");
-	}
-
-	@Test
 	void sendsTheStudentToInstallTheAppWhenItIsMissing() {
 		given(github.isAppInstalledOn(TOKEN, "maria")).willReturn(false);
 

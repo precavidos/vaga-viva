@@ -78,8 +78,23 @@ h1 mark, h2 mark { color: inherit; }
 /* The logo: an ink square with a green check; in dark mode the square turns light and the check dark green. */
 .logo rect { fill: var(--ink); }
 .logo path { stroke: var(--logo-check); }
-.brand small { font: 600 11px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-2); padding: 5px 8px; border: 1px solid var(--line); border-radius: var(--r-xs); }
-.user { display: inline-flex; align-items: center; gap: 8px; padding: 4px 12px 4px 4px; border-radius: var(--r-sm); background: var(--card); border: 1px solid var(--line); font: 600 13px/1 var(--mono); }
+/* Links by what the person has (DESIGN.md 5.0); the current one is underlined in purple, like .link. */
+.top .nav { display: flex; align-items: center; gap: 4px; margin-right: auto; }
+.nav-link { display: inline-flex; align-items: center; min-height: 44px; padding: 0 12px; border-radius: var(--r-sm); font: 600 15px/1 var(--body); color: var(--ink-2); text-decoration: none; white-space: nowrap; }
+.nav-link:hover { color: var(--ink); }
+.nav-link[aria-current] { color: var(--ink); text-decoration: underline; text-underline-offset: 6px; text-decoration-thickness: 2px; text-decoration-color: var(--purple); }
+.account { position: relative; display: flex; align-items: center; gap: 8px; }
+.user { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 4px 10px 4px 4px; border-radius: var(--r-sm); background: var(--card); border: 1px solid var(--line); color: var(--ink); font: 600 13px/1 var(--mono); cursor: pointer; }
+.user:hover, .user[aria-expanded="true"] { border-color: var(--ink); }
+.user-login { max-width: 16ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.user .glyph { width: 16px; height: 16px; transition: transform var(--t-fast) var(--ease-out); }
+.user[aria-expanded="true"] .glyph { transform: rotate(180deg); }
+.menu { position: absolute; right: 0; top: calc(100% + 8px); z-index: 20; min-width: 220px; padding: 6px; background: var(--card); border: 1px solid var(--line); border-radius: var(--r-md); box-shadow: var(--rest); }
+.menu ul { list-style: none; margin: 0; padding: 0; }
+.menu-item { display: flex; align-items: center; width: 100%; min-height: 44px; padding: 0 12px; border: 0; border-radius: var(--r-sm); background: none; color: var(--ink); font: 600 15px/1.2 var(--body); text-align: left; text-decoration: none; cursor: pointer; }
+.menu-item:hover { background: var(--paper-2); }
+.menu-item[aria-current] { text-decoration: underline; text-underline-offset: 6px; text-decoration-thickness: 2px; text-decoration-color: var(--purple); }
+.menu-nav { display: none; }
 main { padding: 16px 0 96px; }
 
 /* Buttons: the primary is purple, one per screen; everything else is .ghost or a .link (DESIGN.md 4.1). */
@@ -361,7 +376,6 @@ a.classroom:hover { border-color: var(--ink); }
   .stat { padding: 12px; }
   .stat[aria-pressed="true"] { padding: 11px; }
   .stat .value { font-size: 28px; }
-  .brand small { display: none; }
 }
 
 /* Empty states */
@@ -409,4 +423,14 @@ a.classroom:hover { border-color: var(--ink); }
   .duo { grid-template-columns: 1fr; }
   .duo > .sticky { position: static; }
   .clip-text { max-height: 220px; }
+}
+
+/* Narrow screens: the links move into the account menu; signed out, the logo stands alone so "Entrar" fits. */
+@media (max-width: 640px) {
+  .top .nav { display: none; }
+  .top .wrap { gap: 8px; }
+  .menu-nav { display: list-item; }
+  .account .nav-link { padding: 0 8px; font-size: 14px; }
+  .top .wrap:has(#bar-sign-in) .brand-name { display: none; }
+  .user-login { max-width: 10ch; }
 }

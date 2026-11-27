@@ -109,7 +109,7 @@
     } catch { return ''; }
   }
 
-  VV.chrome('Professor');
+  VV.chrome();
   $$('[data-icon]').forEach((el) => { el.innerHTML = ICON[el.dataset.icon]; });
   $('#drawer-close').innerHTML = ICON.close;
   $('#empty-art').innerHTML = VV.ic('link', '', 'lg') + VV.ic('users', '', 'lg');
@@ -391,16 +391,6 @@
   drawer.addEventListener('click', (e) => { if (e.target === drawer) closeDrawer(); });
 
   drawer.addEventListener('close', () => drawer.classList.remove('in'));
-
-  // Who is signed in, for the top bar; the dashboard call decides about access, so a failure here is silent.
-  async function identify() {
-    try {
-      const response = await fetch('/api/me', { headers: { Accept: 'application/json' } });
-      if (response.ok) VV.setUser((await response.json()).login);
-    } catch { /* the top bar stays empty */ }
-  }
-
-  identify();
   load();
 </script>
 </body>

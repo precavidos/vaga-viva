@@ -18,7 +18,6 @@ import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.annotation.RegisteredOAuth2AuthorizedClient;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -63,12 +62,6 @@ class StudentRepositoryController {
 		this.installUrl = "https://github.com/apps/" + appSlug + "/installations/new";
 	}
 
-	/** Who is signed in; 401 when nobody is. */
-	@GetMapping("/me")
-	Me me(@AuthenticationPrincipal OAuth2User user) {
-		return new Me(login(user));
-	}
-
 	@PostMapping("/student-repositories")
 	ResponseEntity<?> create(@Valid @RequestBody CreateRequest request, @AuthenticationPrincipal OAuth2User user,
 			@RegisteredOAuth2AuthorizedClient("github") OAuth2AuthorizedClient client) {
@@ -104,9 +97,6 @@ class StudentRepositoryController {
 
 	/** @param adult the student confirmed being 18 or older; the MVP is not meant for minors */
 	record CreateRequest(@NotBlank @Size(max = JobPostingExtractor.MAX_LENGTH) String text, Boolean adult) {
-	}
-
-	record Me(String login) {
 	}
 
 	record CreatedRepository(String fullName, String htmlUrl, List<Issue> issues) {
