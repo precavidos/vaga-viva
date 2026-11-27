@@ -6,6 +6,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.net.URLEncoder;
 import java.util.Base64;
 import java.util.Optional;
 import java.util.zip.Deflater;
@@ -24,6 +25,8 @@ final class PostingLink {
 	static final int MAX_LENGTH = 8_000;
 
 	private static final String FRAGMENT = "/#vaga=";
+
+	private static final String URL_FRAGMENT = "/#link=";
 
 	private PostingLink() {
 	}
@@ -45,6 +48,15 @@ final class PostingLink {
 		finally {
 			deflater.end();
 		}
+	}
+
+	/**
+	 * A link that opens the start page with the posting at {@code postingUrl}:
+	 * the page reads its text and plans it. Used when the text itself is not at
+	 * hand, as for the postings of the companies a student follows.
+	 */
+	static String ofUrl(String publicUrl, String postingUrl) {
+		return publicUrl + URL_FRAGMENT + URLEncoder.encode(postingUrl, UTF_8);
 	}
 
 	static String decode(String fragmentValue) {

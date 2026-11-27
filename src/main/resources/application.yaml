@@ -67,6 +67,10 @@ vagaviva:
     idle-after: 5d
     teachers: ${CLASSROOM_TEACHERS:}
     summary-secret: ${CLASSROOM_SUMMARY_SECRET:}
+  company-watch:
+    # Students follow up to 3 companies and the Sunday workflow checks their career pages. Blank turns it off;
+    # it also needs FIRECRAWL_API_KEY.
+    secret: ${COMPANY_WATCH_SECRET:}
   firecrawl:
     # Reads career pages built by JavaScript when the app's own download finds no text. Blank turns it off.
     api-key: ${FIRECRAWL_API_KEY:}

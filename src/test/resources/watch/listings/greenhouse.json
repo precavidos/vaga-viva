@@ -1,0 +1,22 @@
+{
+ "success": true,
+ "data": {
+  "markdown": "# Current openings at GitLab\n\n[Manager, Support Engineering (AMER)\n\nRemote, Canada; Remote, United States](https://job-boards.greenhouse.io/gitlab/jobs/8877510002)\n\n[Senior Assigned Support Engineer (AMER)\n\nRemote, Canada; Remote, United States](https://job-boards.greenhouse.io/gitlab/jobs/8709925002)\n\n[Senior Support Engineer\n\nBangalore, India](https://job-boards.greenhouse.io/gitlab/jobs/8692874002)\n\n[Senior Support Engineer\n\nRemote, South Korea](https://job-boards.greenhouse.io/gitlab/jobs/8692880002)\n\n[Staff Data Analyst\n\nBangalore, India](https://job-boards.greenhouse.io/gitlab/jobs/8827370002)\n\n[Manager, Assigned Support Engineering (EMEA)\n\nRemote, United Kingdom](https://job-boards.greenhouse.io/gitlab/jobs/8861795002)\n\n[Powered by Greenhouse](https://www.greenhouse.io/)",
+  "links": [
+   "https://job-boards.greenhouse.io/gitlab/jobs/8877510002",
+   "https://job-boards.greenhouse.io/gitlab/jobs/8709925002",
+   "https://job-boards.greenhouse.io/gitlab/jobs/8692874002",
+   "https://job-boards.greenhouse.io/gitlab/jobs/8692880002",
+   "https://job-boards.greenhouse.io/gitlab/jobs/8827370002",
+   "https://job-boards.greenhouse.io/gitlab/jobs/8861795002",
+   "https://about.gitlab.com/jobs/",
+   "https://www.greenhouse.io/"
+  ],
+  "metadata": {
+   "title": "greenhouse",
+   "sourceURL": "https://job-boards.greenhouse.io/gitlab",
+   "url": "https://job-boards.greenhouse.io/gitlab",
+   "statusCode": 200
+  }
+ }
+}

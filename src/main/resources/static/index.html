@@ -131,6 +131,7 @@
             <a class="btn" id="open-mission" href="#" rel="noopener">Abrir a Missão 1 <span class="arrow" data-icon="arrow"></span></a>
             <a class="btn ghost" id="open-repo" href="#" rel="noopener">Ver o repositório</a>
           </div>
+          <div class="banner" id="follow-companies" hidden><span data-icon="eye"></span><div><b>Siga até 3 empresas.</b> Toda segunda, o e-mail semanal traz as vagas novas de tecnologia delas. <a href="/empresas">Escolher as empresas</a></div></div>
         </div>
       </section>
     </div>
@@ -476,6 +477,14 @@ Modelo híbrido, em São Paulo.`;
     }
   }
 
+  // Following companies is for weekly e-mail subscribers, and only while the feature is on (404 when off).
+  async function offerFollowing() {
+    try {
+      const response = await fetch('/api/company-follows');
+      if (response.ok) $('#follow-companies').hidden = false;
+    } catch { /* stays hidden */ }
+  }
+
   let swapped = false; // the dot swap runs once per flow
   async function toRepository(swap) {
     if (swapped) { swap(); return; }
@@ -507,7 +516,8 @@ Modelo híbrido, em São Paulo.`;
     remember(text, consent ? email : '', consent, true);
     // Runs after settle() in both paths below: the address is saved only once the repository exists.
     const keepEmail = async (outcome) => {
-      if (outcome.status !== 201 || !consent || (await saveWeeklyEmail(email, outcome.body.fullName))) return;
+      if (outcome.status !== 201 || !consent) return;
+      if (await saveWeeklyEmail(email, outcome.body.fullName)) { offerFollowing(); return; }
       $('#create-error-text').textContent = 'Não conseguimos salvar o seu e-mail. Tente de novo mais tarde.';
       $('#create-error').hidden = false;
       say('Não conseguimos salvar o seu e-mail. Tente de novo mais tarde.');
@@ -611,7 +621,20 @@ Modelo híbrido, em São Paulo.`;
 
   // A posting forwarded by e-mail arrives as #vaga=<base64url of the raw-deflated text>.
   // The fragment never reaches the server; it is cleared from the address bar once read.
+  // A posting from a followed company, in the weekly e-mail, arrives as #link=<its URL>: the server reads its text.
   async function postingFromLink() {
+    if (location.hash.startsWith('#link=')) {
+      const url = decodeURIComponent(location.hash.slice('#link='.length));
+      history.replaceState(null, '', '/');
+      const response = await fetch('/api/company-watch/posting-text', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url }),
+      });
+      const body = await VV.problemDetail(response);
+      if (!response.ok || typeof body.text !== 'string') throw new Error(body.detail || '');
+      return body.text;
+    }
     if (!location.hash.startsWith('#vaga=')) return null;
     const value = location.hash.slice('#vaga='.length);
     history.replaceState(null, '', '/');
@@ -628,7 +651,7 @@ Modelo híbrido, em São Paulo.`;
   // The teacher and invite pages leave their own address here before sending someone to GitHub.
   // It is read once and followed only when it is one of those pages, so it cannot become an open redirect.
   const RETURN_KEY = 'vagaviva.voltar';
-  const RETURN_PATH = /^\/(professor|turma\/[a-z0-9]{10}|turmas\/[0-9a-f-]{36})$/;
+  const RETURN_PATH = /^\/(professor|empresas|turma\/[a-z0-9]{10}|turmas\/[0-9a-f-]{36})$/;
   function takeReturnPath() {
     try {
       const path = sessionStorage.getItem(RETURN_KEY);
@@ -658,8 +681,8 @@ Modelo híbrido, em São Paulo.`;
         $('#posting').dispatchEvent(new Event('input'));
         start(text);
       }
-    }).catch(() => {
-      const message = 'Não conseguimos abrir a vaga desse link. Cole o texto aqui.';
+    }).catch((error) => {
+      const message = error?.message || 'Não conseguimos abrir a vaga desse link. Cole o texto aqui.';
       postingError(message);
       say(message);
     });

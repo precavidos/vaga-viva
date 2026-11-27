@@ -32,6 +32,7 @@ import io.github.precavidos.vagaviva.review.RepositorySnapshots;
 import io.github.precavidos.vagaviva.review.ReviewContext.FailedTest;
 import io.github.precavidos.vagaviva.review.ReviewContext.StudentPlan;
 import io.github.precavidos.vagaviva.review.TestReport;
+import io.github.precavidos.vagaviva.watch.CompanyNews;
 
 @ExtendWith(OutputCaptureExtension.class)
 class WeeklyEmailServiceTests {
@@ -53,6 +54,8 @@ class WeeklyEmailServiceTests {
 
 	private final ResendApi resend = mock(ResendApi.class);
 
+	private final CompanyNews companies = mock(CompanyNews.class);
+
 	private final List<Duration> pauses = new ArrayList<>();
 
 	private final java.util.Map<String, WeeklyEmailSubscription> rows = new java.util.HashMap<>();
@@ -64,7 +67,7 @@ class WeeklyEmailServiceTests {
 		var properties = new ResendProperties("key", "secret", "Vaga Viva <oi@vagaviva.dev>", "https://vagaviva.dev/",
 				5, 80);
 		service = new WeeklyEmailService(subscriptions, snapshots, standings, resend, properties,
-				Clock.fixed(NOW, ZoneOffset.UTC), pauses::add);
+				Clock.fixed(NOW, ZoneOffset.UTC), pauses::add, companies);
 		when(standings.forRepository(any())).thenReturn(Optional.empty());
 		when(subscriptions.findById(any()))
 			.thenAnswer(call -> Optional.ofNullable(rows.get(call.<String>getArgument(0))));
@@ -108,6 +111,21 @@ class WeeklyEmailServiceTests {
 		assertThat(email.idempotencyKey()).isEqualTo("weekly/maria/2026-11-16");
 		verify(subscriptions).markSent("maria", NOW);
 		verify(subscriptions, never()).save(any());
+	}
+
+	@Test
+	void addsTheNewPostingsOfTheFollowedCompanies() {
+		var maria = subscription("maria");
+		when(subscriptions.findDue(any())).thenReturn(List.of(maria));
+		when(snapshots.take("maria/vaga-viva-x")).thenReturn(Optional.of(onSecondMission()));
+		when(companies.forStudent("maria", "java-spring")).thenReturn(Optional.of(new CompanyNews.Section(
+				List.of(new CompanyNews.Posting("Dev Java", "Compass", "https://compass.gupy.io/jobs/1", true)),
+				List.of(), true)));
+
+		service.sendDue();
+
+		assertThat(sentEmail().text()).contains("Dev Java — Compass (combina com o seu plano)",
+				"https://vagaviva.dev/#link=https%3A%2F%2Fcompass.gupy.io%2Fjobs%2F1", "https://vagaviva.dev/empresas");
 	}
 
 	@Test

@@ -106,6 +106,17 @@ Quem marca o checkbox na página recebe toda segunda a missão da semana. Quem d
 
 Quem já recebeu nos últimos 6 dias é pulado, então rodar duas vezes não manda e-mail em dobro. O log registra o login do GitHub e o resultado, nunca o e-mail.
 
+### Empresas seguidas
+
+Desligado por padrão. Ligado, quem recebe o e-mail semanal segue até 3 empresas em `/empresas`, e o e-mail de segunda ganha a seção "Vagas novas nas empresas que você segue". Quem lê as páginas é o workflow `.github/workflows/company-watch.yml`, que chama `POST /api/company-watch/checks` no domingo às 22h (horário de Brasília). Sem o segredo, a página e os endpoints respondem 404 e o e-mail semanal fica como era. Com um segredo errado, responde 401. Sem `FIRECRAWL_API_KEY`, responde 503.
+
+1. Gere outro segredo longo (por exemplo, `openssl rand -hex 32`).
+2. No Render, em *Environment*, cadastre `COMPANY_WATCH_SECRET` com esse valor. `FIRECRAWL_API_KEY` e o e-mail semanal também são necessários.
+3. No GitHub, em *Settings > Secrets and variables > Actions*, cadastre o *secret* `COMPANY_WATCH_SECRET` com o mesmo valor. A variável `VAGAVIVA_PUBLIC_URL` é a mesma do e-mail semanal.
+4. Para testar sem esperar o domingo, rode o workflow *Company watch* em *Actions > Run workflow*. Uma execução verde significa que o endpoint respondeu 200 com `{"pages":n,"failed":n,"newPostings":n,"alerts":n}`.
+
+Para desligar, apague `COMPANY_WATCH_SECRET` no Render. As tabelas ficam, mas nada é lido nem enviado. O log registra o id da página e contagens, nunca um link.
+
 ### Resumo semanal do professor
 
 O professor que informa o e-mail e marca o consentimento ao criar a turma recebe toda segunda um resumo com os contadores, quem está travado ou parado e o link do painel. Quem dispara é o workflow `.github/workflows/classroom-summary.yml`, que chama `POST /api/classrooms/weekly-summaries`. Sem o segredo, o endpoint responde 404. Com um segredo errado, responde 401. Sem as variáveis `RESEND_*`, responde 503.

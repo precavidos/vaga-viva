@@ -19,6 +19,7 @@ import io.github.precavidos.vagaviva.classroom.MissionProgress;
 import io.github.precavidos.vagaviva.plan.Mission;
 import io.github.precavidos.vagaviva.review.RepositorySnapshot;
 import io.github.precavidos.vagaviva.review.RepositorySnapshots;
+import io.github.precavidos.vagaviva.watch.CompanyNews;
 
 /**
  * Sends the weekly mission e-mail to every subscriber who is due. The log names the GitHub login and the outcome,
@@ -44,8 +45,11 @@ public class WeeklyEmailService {
 
 	private final Pause pause;
 
+	private final CompanyNews companies;
+
 	WeeklyEmailService(WeeklyEmailSubscriptionRepository subscriptions, RepositorySnapshots snapshots,
-			ClassroomStandings standings, ResendApi resend, ResendProperties properties, Clock clock, Pause pause) {
+			ClassroomStandings standings, ResendApi resend, ResendProperties properties, Clock clock, Pause pause,
+			CompanyNews companies) {
 		this.subscriptions = subscriptions;
 		this.snapshots = snapshots;
 		this.standings = standings;
@@ -53,6 +57,7 @@ public class WeeklyEmailService {
 		this.properties = properties;
 		this.clock = clock;
 		this.pause = pause;
+		this.companies = companies;
 	}
 
 	public record Summary(int sent, int skipped, int failed) {
@@ -129,7 +134,8 @@ public class WeeklyEmailService {
 		var position = position(repository, missions, snapshot);
 		var reply = position.isEmpty() ? WeeklyEmailTemplate.completed(repository, footerUrl)
 				: WeeklyEmailTemplate.mission(repository, missions.indexOf(position.get()) + 1, position.get(),
-						testsSeen(snapshot), snapshot.lastReview(), footerUrl);
+						testsSeen(snapshot), snapshot.lastReview(), footerUrl,
+						companies.forStudent(subscription.getStudentLogin(), snapshot.plan().archetype()), publicUrl);
 
 		var monday = LocalDate.ofInstant(now, ZoneOffset.UTC).with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
 		var headers = Map.of("List-Unsubscribe", "<" + headerUrl + ">", "List-Unsubscribe-Post",

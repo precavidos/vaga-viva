@@ -33,7 +33,8 @@ class SecurityConfig {
 				.requestMatchers(api.matcher(HttpMethod.POST, "/api/classrooms/weekly-summaries"))
 				.permitAll()
 				.requestMatchers(api.matcher("/api/me"), api.matcher("/api/student-repositories/**"),
-						api.matcher("/api/classrooms/**"), api.matcher("/api/weekly-email"))
+						api.matcher("/api/classrooms/**"), api.matcher("/api/weekly-email"),
+						api.matcher("/api/company-follows"), api.matcher("/api/company-follows/**"))
 				.authenticated()
 				.anyRequest()
 				.permitAll())
@@ -49,7 +50,10 @@ class SecurityConfig {
 						// The unsubscribe token is the credential.
 						api.matcher("/api/weekly-email/unsubscribe"),
 						// The scheduled workflow sends a shared secret instead.
-						api.matcher("/api/weekly-emails"), api.matcher("/api/classrooms/weekly-summaries")))
+						api.matcher("/api/weekly-emails"), api.matcher("/api/classrooms/weekly-summaries"),
+						api.matcher("/api/company-watch/checks"),
+						// Open and sessionless, like the posting reader.
+						api.matcher("/api/company-watch/posting-text")))
 			.exceptionHandling((exceptions) -> exceptions.defaultAuthenticationEntryPointFor(
 					new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED), api.matcher("/api/**")))
 			.build();

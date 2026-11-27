@@ -13,6 +13,7 @@ import org.springframework.web.client.RestClient;
 import io.github.precavidos.vagaviva.classroom.ClassroomMailer;
 import io.github.precavidos.vagaviva.classroom.ClassroomStandings;
 import io.github.precavidos.vagaviva.review.RepositorySnapshots;
+import io.github.precavidos.vagaviva.watch.CompanyNews;
 
 @Configuration(proxyBeanMethods = false)
 @EnableConfigurationProperties({ ResendProperties.class, WeeklyEmailProperties.class })
@@ -40,9 +41,9 @@ class EmailConfig {
 	@Bean
 	WeeklyEmailService weeklyEmailService(WeeklyEmailSubscriptionRepository subscriptions,
 			RepositorySnapshots snapshots, ClassroomStandings standings, ResendApi resend,
-			ResendProperties properties, Clock clock) {
+			ResendProperties properties, Clock clock, CompanyNews companies) {
 		return new WeeklyEmailService(subscriptions, snapshots, standings, resend, properties, clock,
-				WeeklyEmailService.Pause.SLEEP);
+				WeeklyEmailService.Pause.SLEEP, companies);
 	}
 
 }

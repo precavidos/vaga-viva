@@ -21,4 +21,9 @@ class JobPostingConfig {
 		return new FirecrawlPageReader(firecrawl);
 	}
 
+	@Bean
+	ListingPageReader listingPageReader(FirecrawlProperties firecrawl) {
+		return firecrawl.apiKey().isBlank() ? ListingPageReader.NONE : new FirecrawlListingReader(firecrawl);
+	}
+
 }

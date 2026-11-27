@@ -115,6 +115,7 @@ Em `src/main/java/io/github/precavidos/vagaviva/`:
 | `review` | Webhooks, leitura do relatório JUnit, revisor socrático, dicas em 3 níveis e o filtro anti-código. |
 | `classroom` | Turmas, convites, matrícula com consentimento, progresso, painel e resumo semanal do professor. |
 | `email` | Vagas recebidas por e-mail (webhook assinado do Resend), e-mail semanal e descadastro. |
+| `watch` | Empresas que o aluno segue: lê as páginas de vagas no domingo à noite e leva as vagas novas de tecnologia ao e-mail de segunda. |
 | `login` | Segurança: login com GitHub por OAuth, sessão em memória, CSRF. |
 | `webhook` | Limite de tamanho do corpo dos webhooks. |
 | `github` | Cliente da API do GitHub. |
@@ -164,6 +165,8 @@ O princípio é guardar o mínimo, e só com consentimento ([ADR 0003](docs/adr/
 | --- | --- | --- |
 | Uso individual | Nada no banco. | — |
 | E-mail semanal (checkbox opcional) | Login do GitHub, e-mail, repositório, data do consentimento, token de descadastro, data do último envio. | O link de descadastro apaga a linha. |
+| Empresas que o aluno segue (só para quem recebe o e-mail semanal) | Login do GitHub, link da página de vagas e o nome dado à empresa, até 3. | Deixar de seguir apaga; descadastrar do e-mail semanal apaga todas. |
+| Páginas de vagas seguidas | O link público da página, quantas leituras seguidas falharam, e os links (e títulos) das vagas já vistas nela. Nada sobre o aluno. | Os links de vagas saem 90 dias depois da última vez que apareceram; a página e seus links saem assim que ninguém mais a segue. |
 | Aluno em turma (consentimento na matrícula) | Nome escolhido para o painel, login do GitHub, repositório, missão atual e desde quando, números dos PRs, testes que falham com as mensagens filtradas e a contagem de testes por missão, última pergunta do revisor, link do último PR, dicas por missão. | Exclusão manual no piloto, a pedido do aluno ou do professor ([`docs/deploy.md`](docs/deploy.md)). |
 | Professor | Login do GitHub e, se consentir, e-mail e data do consentimento. | Exclusão manual no piloto. |
 
@@ -178,7 +181,7 @@ O Vaga Viva é para **maiores de 18 anos**: toda rota que cria um repositório e
 | Serviço | O que recebe |
 | --- | --- |
 | Anthropic (Claude) | Os dados do plano (arquétipo, nível, competências, tecnologias e missões), nunca o texto da vaga. Na revisão e nas dicas: o diff do PR, o contrato da missão, os nomes e as mensagens dos testes que falham e os comentários anteriores do próprio app. Nenhum e-mail ou nome. |
-| Firecrawl | Só o link público da página de vaga, quando o leitor do próprio app não consegue lê-la. Nada sobre o aluno. |
+| Firecrawl | Só links públicos: o da página de vaga, quando o leitor do próprio app não consegue lê-la, e os das páginas de vagas das empresas seguidas, lidas ao seguir e todo domingo. Nada sobre o aluno, nem quem segue cada página. |
 | Resend | O e-mail encaminhado pelo aluno (com a vaga) e os e-mails enviados: endereço do destinatário e conteúdo, que no resumo do professor inclui os nomes escolhidos pelos alunos. |
 | Render | Hospeda a API; todas as requisições passam por ele. Região nos EUA, a mesma do banco. |
 | Neon | Hospeda o banco com os dados da tabela acima, em `AWS us-east-1`. |
@@ -211,6 +214,7 @@ set -a; . ./.env; set +a; ./mvnw spring-boot:run
 | `FIRECRAWL_API_KEY` | Leitura de páginas montadas por JavaScript | Essas páginas pedem o texto colado |
 | `RESEND_API_KEY`, `RESEND_WEBHOOK_SECRET`, `RESEND_FROM`, `VAGAVIVA_PUBLIC_URL` | Vaga por e-mail e envios | Endpoints de e-mail respondem 503 |
 | `WEEKLY_EMAIL_SECRET` | Disparo do e-mail semanal | Endpoint responde 503 |
+| `COMPANY_WATCH_SECRET` | Empresas seguidas e a leitura de domingo (precisa também de `FIRECRAWL_API_KEY`) | Página e endpoints respondem 404; o e-mail semanal fica como era |
 | `CLASSROOM_TEACHERS`, `CLASSROOM_SUMMARY_SECRET` | Modo turma (logins dos professores) e resumo semanal | Ninguém cria turma; resumo responde 404 |
 | `DATABASE_URL`, `DATABASE_URL_UNPOOLED` | Banco no Neon (`neon env pull`) | Banco local do `compose.yaml` |
 
@@ -229,7 +233,7 @@ A configuração do GitHub App está em [`docs/github-app.md`](docs/github-app.m
 
 ## Próximos passos
 
-- **Avisar de vagas novas:** o app já lê páginas de carreira montadas por JavaScript com o Firecrawl. O próximo passo é o aluno escolher as empresas que quer seguir, e o Vaga Viva avisar quando aparece uma vaga nova na página de carreira delas.
+- **Avisar de vagas novas:** construído e desligado por padrão (`COMPANY_WATCH_SECRET`). Quem recebe o e-mail semanal segue até 3 empresas na Gupy, Greenhouse, Lever, Ashby, Workable, SmartRecruiters ou Workday. Todo domingo à noite o app lê a página de vagas delas, e o e-mail de segunda traz as vagas novas de tecnologia, com um botão que monta o plano. Falta testar com alunos antes de ligar em produção. Como funciona: [`docs/empresas-seguidas.md`](docs/empresas-seguidas.md).
 - **Lembretes e avisos por WhatsApp, com a Nvoip:** o lembrete semanal e o aviso de vaga nova chegam também pelo WhatsApp, onde o aluno está. A API da Nvoip envia modelos de mensagem aprovados pela Meta. Para isso, o app passa a guardar o telefone do aluno, com consentimento e descadastro, como já faz com o e-mail.
 
 ## Licença

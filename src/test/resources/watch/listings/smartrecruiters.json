@@ -1,0 +1,16 @@
+{
+ "success": true,
+ "data": {
+  "markdown": "# Bosch Group\n\n[Brazil](https://careers.smartrecruiters.com/BoschGroup/brazil)\n\n[Desenvolvedor(a) Java Júnior\n\nCampinas, SP, Brazil](https://jobs.smartrecruiters.com/BoschGroup/744000098765432-desenvolvedor-a-java-junior)\n\n[Data Engineer\n\nCuritiba, PR, Brazil](https://jobs.smartrecruiters.com/BoschGroup/744000012345678-data-engineer)\n\n[Outra empresa](https://jobs.smartrecruiters.com/OtherCo/744000011111111-dev)",
+  "links": [
+   "https://jobs.smartrecruiters.com/BoschGroup/744000098765432-desenvolvedor-a-java-junior",
+   "https://jobs.smartrecruiters.com/BoschGroup/744000012345678-data-engineer",
+   "https://www.smartrecruiters.com/"
+  ],
+  "metadata": {
+   "title": "smartrecruiters",
+   "sourceURL": "https://careers.smartrecruiters.com/BoschGroup",
+   "statusCode": 200
+  }
+ }
+}

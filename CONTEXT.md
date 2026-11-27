@@ -153,3 +153,26 @@ _No código_: `ClassroomDashboard`
 Aluno que está há tempo demais na mesma missão sem progresso; o limite ainda não foi definido.
 _Evitar_: aluno parado, aluno atrasado
 _No código_: `StuckStudent`
+
+## Empresas seguidas
+
+**Empresa seguida**:
+Empresa que o aluno escolheu acompanhar, pela página de vagas dela, para receber as vagas novas no e-mail semanal; cada aluno segue até 3.
+_Evitar_: favorito, alerta, inscrição
+_No código_: `company_follow`, `CompanyWatchStore.Follow`
+
+**Página de vagas**:
+A lista pública de vagas de uma empresa numa plataforma conhecida (Gupy, Greenhouse, Lever, Ashby, Workable, SmartRecruiters ou Workday); uma só, mesmo que vários alunos sigam a empresa.
+_Evitar_: site da empresa, portal, página de carreira (quando é uma vaga só)
+_No código_: `career_page`, `CareerPageAddress`
+
+**Vaga vista**:
+Link de vaga já encontrado numa página de vagas; só um link que ainda não foi visto pode virar vaga nova.
+_Evitar_: vaga lida, histórico
+_No código_: `seen_posting`
+
+**Vaga nova**:
+Vaga vista pela primeira vez na leitura de domingo que cita ao menos uma tecnologia do vocabulário; o e-mail de segunda mostra as vagas novas, primeiro as que combinam com o arquétipo do plano do aluno.
+_Evitar_: notificação
+_No código_: `CompanyNews.Posting`; na tabela, `seen_posting.alert`
+
