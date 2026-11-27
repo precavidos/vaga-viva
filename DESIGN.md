@@ -345,7 +345,7 @@ Regras:
 A barra liga as telas entre si. Os links dependem do que a pessoa tem, e aparecem quando `/api/me` responde (antes disso, só o logo):
 
 - **Nova vaga** (`/`): sempre.
-- **Empresas** (`/companies`): para quem está logado, mesmo sem nenhuma empresa seguida.
+- **Empresas** (`/companies`): para quem está logado, mesmo sem nenhuma empresa seguida, enquanto o acompanhamento de empresas está ligado (`companyWatch`; desligado, a página responde 404).
 - **Minhas turmas** (`/classrooms`): só para quem tem turma (`teaches`).
 - **Para professores** (`/classrooms`): deslogado, ao lado de "Entrar"; logado sem turma, no menu da conta.
 

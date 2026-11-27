@@ -257,7 +257,7 @@ const VV = (() => {
     location.assign('/oauth2/authorization/github');
   }
 
-  // Who is signed in: { login, teaches }, or null when nobody is. Asked once per page and shared by the bar and the
+  // Who is signed in: { login, teaches, companyWatch }, or null when nobody is. Asked once per page and shared by the bar and the
   // page; `fresh` asks again. Rejects with a TypeError when the server cannot be reached, with an Error when it
   // answers something unexpected.
   let mePromise = null;
@@ -276,7 +276,7 @@ const VV = (() => {
   // The top bar (DESIGN.md 5.0). Its links depend on who is signed in, so they appear once `me` answers.
   const NAV = [
     { href: '/', label: 'Nova vaga', shown: () => true, here: (path) => path === '/' },
-    { href: '/companies', label: 'Empresas', shown: (user) => Boolean(user), here: (path) => path === '/companies' },
+    { href: '/companies', label: 'Empresas', shown: (user) => Boolean(user?.companyWatch), here: (path) => path === '/companies' },
     { href: '/classrooms', label: 'Minhas turmas', shown: (user) => Boolean(user?.teaches), here: (path) => path === '/classrooms' || path.startsWith('/classrooms/') },
   ];
   const FOR_TEACHERS = { href: '/classrooms', label: 'Para professores', here: (path) => path === '/classrooms' };
@@ -297,7 +297,7 @@ const VV = (() => {
     me().catch(() => { /* the bar stays with the logo only */ });
   }
 
-  // Fills the bar for `user` ({ login, teaches }) or for nobody (null). Pages call it with null when a session ends.
+  // Fills the bar for `user` ({ login, teaches, companyWatch }) or for nobody (null). Pages call it with null when a session ends.
   function setUser(user) {
     const nav = $('.top .nav');
     const account = $('.top .account');

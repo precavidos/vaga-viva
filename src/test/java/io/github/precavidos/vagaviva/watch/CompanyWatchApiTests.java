@@ -413,6 +413,15 @@ class CompanyWatchApiTests {
 		assertThat(mvc.get().uri("/empresas")).hasStatus(HttpStatus.MOVED_PERMANENTLY).hasRedirectedUrl("/companies");
 	}
 
+	/** The top bar links to "Empresas" only while the page exists. */
+	@Test
+	void meSaysTheCompanyWatchIsOn() {
+		assertThat(mvc.get().uri("/api/me").with(student("maria"))).hasStatusOk()
+			.bodyJson()
+			.extractingPath("$.companyWatch")
+			.isEqualTo(true);
+	}
+
 	@Test
 	void neverLogsAPageOrPostingUrl(CapturedOutput log) {
 		subscribe("maria");
