@@ -78,7 +78,7 @@ class WeeklySummaryService {
 				}
 				attempted = true;
 				WeeklySummary.Rendered summary = WeeklySummary.render(dashboards.dashboardForSummary(classroom),
-						monday, mailer.link("/turmas/" + classroom.getId()));
+						monday, mailer.link("/classrooms/" + classroom.getId()));
 				mailer.send(classroom.getTeacherEmail(), summary.subject(), summary.text(), summary.html(),
 						"classroom-summary/" + classroom.getId() + "/" + monday);
 				sent++;

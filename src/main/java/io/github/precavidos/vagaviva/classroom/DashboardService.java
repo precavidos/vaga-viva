@@ -113,7 +113,7 @@ class DashboardService {
 		}
 		columns.add(new Column(null, null, "Concluído", completed));
 		return new Dashboard(classroom.getId(), classroom.getName(), archetypes.archetype(plan.archetype()).name(),
-				"/turma/" + classroom.getJoinCode(),
+				"/join/" + classroom.getJoinCode(),
 				new Counts(counts.getOrDefault(StudentStatus.STUCK, 0), counts.getOrDefault(StudentStatus.IDLE, 0),
 						counts.getOrDefault(StudentStatus.ADVANCING, 0),
 						counts.getOrDefault(StudentStatus.COMPLETED, 0)),

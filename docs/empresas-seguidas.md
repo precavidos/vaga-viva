@@ -6,7 +6,7 @@ O recurso é desligado por padrão. Ele só liga com `COMPANY_WATCH_SECRET` e `F
 
 ## Como funciona
 
-1. **Seguir** (`/empresas`, com login do GitHub). O aluno cola o link da lista de vagas da empresa. O app lê a página na hora e grava todas as vagas abertas como já vistas, então elas não viram aviso. A resposta mostra "Encontramos N vagas abertas agora", com os links. O nome da empresa sai do link (subdomínio ou caminho), e o aluno pode mudar.
+1. **Seguir** (`/companies`, com login do GitHub). O aluno cola o link da lista de vagas da empresa. O app lê a página na hora e grava todas as vagas abertas como já vistas, então elas não viram aviso. A resposta mostra "Encontramos N vagas abertas agora", com os links. O nome da empresa sai do link (subdomínio ou caminho), e o aluno pode mudar.
 2. **Domingo, 22h (Brasília).** O workflow `company-watch.yml` chama `POST /api/company-watch/checks`. Cada página é lida uma vez, mesmo que vários alunos sigam a empresa. Os links de vaga da página são comparados com os já vistos. Das vagas novas, as 10 primeiras da página são lidas pelo mesmo leitor do link da vaga, e as de tecnologia (com ao menos uma tecnologia do vocabulário) viram aviso. As demais vagas novas são gravadas como vistas, sem aviso.
 3. **Segunda.** O e-mail semanal ganha a seção "Vagas novas nas empresas que você segue", com no máximo 10 vagas. As que citam a stack do arquétipo do plano do aluno vêm primeiro, marcadas "combina com o seu plano". O botão abre o site com `#link=<vaga>`: a página pede o texto da vaga ao servidor e monta o plano.
 
@@ -28,7 +28,7 @@ Qualquer outro endereço é recusado com uma mensagem que lista as plataformas. 
 
 ## Falhas
 
-Uma página que não pôde ser lida soma uma falha seguida. Na 3ª falha seguida, o e-mail pede que o aluno confira o link, e a página `/empresas` mostra o mesmo aviso. A empresa nunca é removida sozinha. Uma leitura que dá certo zera a contagem.
+Uma página que não pôde ser lida soma uma falha seguida. Na 3ª falha seguida, o e-mail pede que o aluno confira o link, e a página `/companies` mostra o mesmo aviso. A empresa nunca é removida sozinha. Uma leitura que dá certo zera a contagem.
 
 Uma página que tinha vagas e de repente não lista nenhuma também conta como falha: o mais provável é que o link tenha mudado. Uma vaga nova cujo texto não pôde ser lido é gravada como vista, sem aviso, para não gastar toda semana uma das 10 leituras. Os links de uma página que está falhando não são apagados aos 90 dias, para que as vagas abertas não voltem todas como novas quando a leitura voltar.
 

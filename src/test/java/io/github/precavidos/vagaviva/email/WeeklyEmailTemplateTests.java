@@ -12,7 +12,7 @@ import io.github.precavidos.vagaviva.watch.CompanyNews;
 
 class WeeklyEmailTemplateTests {
 
-	private static final String UNSUBSCRIBE = "https://vagaviva.dev/descadastrar?t=tok";
+	private static final String UNSUBSCRIBE = "https://vagaviva.dev/unsubscribe?t=tok";
 
 	private static final Mission MISSION = new Mission("patients-api", "Cadastro de pacientes", "Resumo", 2, true,
 			List.of());
@@ -83,12 +83,12 @@ class WeeklyEmailTemplateTests {
 		assertThat(reply.text()).contains("Vagas novas nas empresas que você segue",
 				"Dev Java <Júnior> — Compass (combina com o seu plano)", "https://compass.gupy.io/jobs/1",
 				"Montar meu plano para esta vaga: https://vagaviva.dev/#link=https%3A%2F%2Fcompass.gupy.io%2Fjobs%2F1",
-				"Dev Python — Compass\n", "Empresas que você segue: https://vagaviva.dev/empresas");
+				"Dev Python — Compass\n", "Empresas que você segue: https://vagaviva.dev/companies");
 		assertThat(reply.text().indexOf("Dev Java")).isLessThan(reply.text().indexOf("Dev Python"));
 		assertThat(reply.html()).contains(org.springframework.web.util.HtmlUtils.htmlEscape("Dev Java <Júnior>"),
 				"combina com o seu plano",
 				"href=\"https://vagaviva.dev/#link=https%3A%2F%2Fcompass.gupy.io%2Fjobs%2F1\"",
-				"Montar meu plano para esta vaga", "href=\"https://vagaviva.dev/empresas\"")
+				"Montar meu plano para esta vaga", "href=\"https://vagaviva.dev/companies\"")
 			.doesNotContain("<Júnior>");
 	}
 
@@ -103,7 +103,7 @@ class WeeklyEmailTemplateTests {
 	void invitesToFollowWhenTheStudentFollowsNobody() {
 		var reply = withCompanies(new CompanyNews.Section(List.of(), List.of(), false));
 
-		assertThat(reply.text()).contains("Siga até 3 empresas e receba aqui as vagas novas delas: https://vagaviva.dev/empresas")
+		assertThat(reply.text()).contains("Siga até 3 empresas e receba aqui as vagas novas delas: https://vagaviva.dev/companies")
 			.doesNotContain("Vagas novas nas empresas que você segue");
 	}
 
@@ -112,8 +112,8 @@ class WeeklyEmailTemplateTests {
 		var reply = withCompanies(new CompanyNews.Section(List.of(), List.of("Compass"), true));
 
 		assertThat(reply.text()).contains(
-				"Não conseguimos ler a página de vagas de Compass nas últimas 3 semanas. Confira o link em https://vagaviva.dev/empresas.");
-		assertThat(reply.html()).contains("Confira o link em <a href=\"https://vagaviva.dev/empresas\">");
+				"Não conseguimos ler a página de vagas de Compass nas últimas 3 semanas. Confira o link em https://vagaviva.dev/companies.");
+		assertThat(reply.html()).contains("Confira o link em <a href=\"https://vagaviva.dev/companies\">");
 	}
 
 	@Test

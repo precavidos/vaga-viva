@@ -348,7 +348,7 @@ Fluxo em três passos. Os dois primeiros usam a largura de 1160 px; o terceiro, 
 2. **Plano.** Duas colunas: o recorte da vaga à esquerda, fixo, e os achados à direita. A extração do item 3.1 acontece aqui. Quando termina, o plano aparece abaixo dos achados, com as missões em cascata e o botão primário "Criar meu repositório no GitHub". "Trocar a vaga" fica sob o recorte.
 3. **Repositório.** A passagem do Plano para cá usa a troca em pontos (`data-dot-swap`). Durante a criação: um painel escuro com a linha de status em `flip` e quatro etapas com a marca de etapa (copiando o modelo, gravando o plano, abrindo as missões, escrevendo o README). No fim: o visto surge, o título ganha o marca-texto e o painel escuro mostra o repositório e as issues, todas com ponto coral e a legenda "os testes ficam vermelhos até você implementar". Botão "Abrir a Missão 1".
 
-### 5.2 Professor: turmas (`professor.html`, rota `/professor`)
+### 5.2 Professor: turmas (`pages/classrooms.html`, rota `/classrooms`)
 
 - **Sem login:** bloco central com o título "Sua turma, de relance.", três linhas do que o professor ganha e "Entrar com o GitHub".
 - **Com login:** duas colunas em telas largas.
@@ -356,7 +356,7 @@ Fluxo em três passos. Os dois primeiros usam a largura de 1160 px; o terceiro, 
   - **Suas turmas:** cartões com o nome, a quantidade de alunos, uma barra empilhada com as situações e uma legenda em texto.
 - **Sem permissão (403):** aviso `info` com a mensagem do servidor ("Só professores do piloto podem criar turmas.").
 
-### 5.3 Convite (`turma.html`, rota `/turma/<código>`)
+### 5.3 Convite (`pages/join.html`, rota `/join/<código>`)
 
 Um único bloco de 760 px:
 
@@ -368,7 +368,7 @@ Um único bloco de 760 px:
 
 Depois de criar, a tela passa pela troca em pontos e mostra o mesmo passo 3 da página do aluno, com a marca de etapa na entrada na turma. Quem já está na turma vê direto o cartão do repositório, com "Você já está nesta turma."
 
-### 5.4 Painel da turma (`painel.html`, rota `/turmas/<id>`)
+### 5.4 Painel da turma (`pages/classroom.html`, rota `/classrooms/<id>`)
 
 - **Cabeçalho:** nome da turma, chips (stack, quantidade de alunos), o campo de cópia do convite e a hora da última atualização.
 - **Resumo da turma:** a barra de proporção e os quatro contadores (item 4.8), com a contagem animada. Clicar filtra.

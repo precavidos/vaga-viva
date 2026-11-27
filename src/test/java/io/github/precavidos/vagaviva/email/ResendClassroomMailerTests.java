@@ -26,8 +26,8 @@ class ResendClassroomMailerTests {
 
 	@Test
 	void linksUseThePublicUrl() {
-		assertThat(new ResendClassroomMailer(resend, properties("re_test")).link("/turmas/1"))
-			.isEqualTo("https://vagaviva.dev/turmas/1");
+		assertThat(new ResendClassroomMailer(resend, properties("re_test")).link("/classrooms/1"))
+			.isEqualTo("https://vagaviva.dev/classrooms/1");
 	}
 
 	@Test

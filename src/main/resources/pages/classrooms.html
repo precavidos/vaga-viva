@@ -299,7 +299,7 @@
 
   function showCreated(created) {
     $('#invite').innerHTML = VV.copyField(location.origin + created.inviteUrl);
-    $('#open-panel').href = '/turmas/' + encodeURIComponent(created.id);
+    $('#open-panel').href = '/classrooms/' + encodeURIComponent(created.id);
     go('f-done', 4);
     say('Turma criada.');
     $('#done-title').focus();
@@ -326,7 +326,7 @@
       const n = Number(c.students) || 0;
       const head = `<div class="row between"><h3>${esc(c.name)}</h3><span class="chip">${ICON.users}${n} ${n === 1 ? 'aluno' : 'alunos'}</span></div>`;
       const empty = n ? '' : '<p class="muted small">Ninguém entrou ainda. Mande o link do convite.</p>';
-      return `<a class="card classroom" href="/turmas/${encodeURIComponent(c.id)}">${head}${empty}<span class="mono muted small">/turma/${esc(c.joinCode)}</span></a>`;
+      return `<a class="card classroom" href="/classrooms/${encodeURIComponent(c.id)}">${head}${empty}<span class="mono muted small">/join/${esc(c.joinCode)}</span></a>`;
     }).join('');
   }
 

@@ -17,7 +17,7 @@ class WeeklySummaryTests {
 
 	private static final LocalDate MONDAY = LocalDate.of(2026, 11, 23);
 
-	private static final String URL = "https://vagaviva.dev/turmas/abc";
+	private static final String URL = "https://vagaviva.dev/classrooms/abc";
 
 	@Test
 	void listsStuckAndIdleStudentsWithTheirMission() {
@@ -77,7 +77,7 @@ class WeeklySummaryTests {
 
 	@Test
 	void escapesNamesInHtml() {
-		Dashboard dashboard = new Dashboard(UUID.randomUUID(), "<i>Turma</i>", "Java", "/turma/x",
+		Dashboard dashboard = new Dashboard(UUID.randomUUID(), "<i>Turma</i>", "Java", "/join/x",
 				new Counts(1, 0, 0, 0), List.of(column(1, "API <x>", card("<b>Ana</b>", StudentStatus.STUCK, 1,
 						"API <x>", "3 dias na missão 1, 0 PRs nesse período")), done()));
 
@@ -91,7 +91,7 @@ class WeeklySummaryTests {
 	}
 
 	private static Dashboard dashboard(Counts counts, List<Column> columns) {
-		return new Dashboard(UUID.randomUUID(), "Turma piloto", "Java + Spring Boot", "/turma/abc", counts, columns);
+		return new Dashboard(UUID.randomUUID(), "Turma piloto", "Java + Spring Boot", "/join/abc", counts, columns);
 	}
 
 	private static Column column(int order, String title, Card... cards) {

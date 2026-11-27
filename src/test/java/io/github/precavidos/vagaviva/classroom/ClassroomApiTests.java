@@ -44,7 +44,7 @@ class ClassroomApiTests {
 		json.extractingPath("$.joinCode").asString().matches("[a-z0-9]{10}");
 		json.extractingPath("$.id").asString().isNotBlank();
 		String code = (String) json.extractingPath("$.joinCode").actual();
-		json.extractingPath("$.inviteUrl").isEqualTo("/turma/" + code);
+		json.extractingPath("$.inviteUrl").isEqualTo("/join/" + code);
 	}
 
 	@Test

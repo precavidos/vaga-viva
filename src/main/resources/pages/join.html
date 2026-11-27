@@ -125,7 +125,7 @@
   const PARTS = ['loading', 'failed', 'unknown', 'invite', 'result'];
   const show = (id) => { PARTS.forEach((p) => { $(`#${p}`).hidden = p !== id; }); };
 
-  const code = (location.pathname.match(/^\/turma\/([^/]+)\/?$/) ?? [])[1] ?? '';
+  const code = (location.pathname.match(/^\/join\/([^/]+)\/?$/) ?? [])[1] ?? '';
   const name = $('#display-name'), consent = $('#consent'), adult = $('#adult'), button = $('#b-join');
   let classroom = null;
   let signedIn = false;

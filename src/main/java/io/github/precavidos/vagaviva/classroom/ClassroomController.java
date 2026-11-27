@@ -52,7 +52,7 @@ class ClassroomController {
 				request.teacherEmail(), request.emailConsent());
 		return ResponseEntity.status(HttpStatus.CREATED)
 			.body(new Created(classroom.getId().toString(), classroom.getJoinCode(),
-					"/turma/" + classroom.getJoinCode(), classroom.getName()));
+					"/join/" + classroom.getJoinCode(), classroom.getName()));
 	}
 
 	@GetMapping

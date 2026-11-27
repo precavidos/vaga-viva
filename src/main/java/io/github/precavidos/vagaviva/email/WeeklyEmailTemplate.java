@@ -69,7 +69,7 @@ final class WeeklyEmailTemplate {
 	/** "Vagas novas nas empresas que você segue", and the link to the page where the student picks them. */
 	private static void companies(CompanyNews.Section section, String publicUrl, StringBuilder text,
 			StringBuilder html) {
-		var followPage = publicUrl + "/empresas";
+		var followPage = publicUrl + "/companies";
 		var followLink = "<a href=\"" + HtmlUtils.htmlEscape(followPage) + "\">";
 		if (!section.following()) {
 			var invite = "Siga até " + CompanyWatch.MAX_FOLLOWS + " empresas e receba aqui as vagas novas delas";
