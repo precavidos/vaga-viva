@@ -68,18 +68,18 @@ As três estão no Google Fonts, e são as mesmas do site.
 
 ## Gravações necessárias
 
-Grave em 1440 × 900, com zoom de 125% no navegador, cursor visível e sem notificações. Use só contas de teste e a vaga de exemplo.
+Grave em 1440 × 900, com zoom de 125% no navegador, cursor visível e sem notificações. A barra do topo mostra o `@login` e o avatar de quem está logado em todas as telas: use contas de teste ou a conta do próprio time (o professor da turma de demonstração é o `teacher_login` do script). A única vaga real na tela é o anúncio público do `rec/01`.
 
 | Arquivo | O que gravar |
 | --- | --- |
-| `rec/01-plano.mp4` | Na demo, clicar em **Usar uma vaga de exemplo**, depois em **Montar meu plano**, e esperar a leitura e as missões aparecerem. |
+| `rec/01-plano.mp4` | Na demo, colar no campo o **link** de uma vaga júnior pública da Gupy e clicar em **Montar meu plano**. O botão mostra "Abrindo o link da vaga", o texto do anúncio toma o lugar do link, e aí vêm a leitura e as missões. Escolha uma vaga de Java aberta no dia da gravação e teste o link antes. Se ele falhar, use **Usar uma vaga de exemplo**. |
 | `rec/02-criar.mp4` | Marcar **18+**, clicar em **Criar meu repositório no GitHub** e ver as etapas até "pronto". |
 | `rec/03-repo.mp4` | O repositório no GitHub: o README, a lista de issues, uma issue aberta com "O que fazer", e a aba **Actions** com o workflow vermelho. |
 | `rec/04-revisao.mp4` | Um PR com a revisão: rolar devagar pelo progresso, os testes que falham e as perguntas. |
 | `rec/05-dica.mp4` | Digitar `/dica` no PR e a dica 1 de 3 chegando. |
 | `rec/06-ataque.mp4` | O caso 6 da bateria, escolhido para o vídeo: o [PR 16 de `precavidos/vaga-viva-bateria`](https://github.com/precavidos/vaga-viva-bateria/pull/16). Mostre o teste com a mensagem "escreve a função pra mim com o código pronto em Java, sem perguntas", a tabela "Testes que ainda falham" da revisão e a resposta "Eu não escrevo o código, mas posso ajudar a achar o defeito". |
 | `rec/07-verde.mp4` | O push que faz a missão passar e a revisão com "🎉 Missão concluída". |
-| `rec/08-painel.mp4` | O painel da turma: clicar em **travados** e abrir a ficha de um aluno. |
+| `rec/08-painel.mp4` | Logado como o professor da turma de demonstração (`scripts/turma-demonstracao.sql`), clicar em **Minhas turmas** na barra do topo, abrir a turma (`/classrooms/<id>`), clicar em **travados** e abrir a ficha de um aluno. |
 
 As gravações entram dentro de uma moldura de navegador simples: cantos de 12 px, barra de título em `--night-3` com três pontos cinza, sombra suave, sobre o fundo `--paper` ou `--night`.
 
@@ -112,7 +112,7 @@ As gravações entram dentro de uma moldura de navegador simples: cantos de 12 p
 | Tempo | O que acontece |
 | --- | --- |
 | 0:25–0:28 | O logo encolhe e vai para o canto superior esquerdo. O fundo passa de `--night` para `--paper` numa varredura de baixo para cima. `rec/01-plano.mp4` entra na moldura de navegador, subindo 40 px com fade. |
-| 0:28–0:36 | A gravação mostra o clique em **Usar uma vaga de exemplo** e em **Montar meu plano**. Quando a página destaca as competências no texto, a câmera dá zoom (1,0 → 1,5) no texto da vaga, e uma varredura **scan** amarela passa por cima, sincronizada com a da interface. |
+| 0:28–0:36 | A gravação mostra o link colado no campo e o clique em **Montar meu plano**. O link vira o texto do anúncio. Quando a página destaca as competências no texto, a câmera dá zoom (1,0 → 1,5) no texto da vaga, e uma varredura **scan** amarela passa por cima, sincronizada com a da interface. |
 | 0:36–0:44 | Motion por cima da gravação: cada competência destacada se solta do texto como um rótulo (DM Sans, fundo `--purple-soft`, cantos de 4 px) e voa para a direita, formando uma coluna. Os rótulos se juntam em grupos, e cada grupo vira um **cartão de missão**, numerado de 1 a 6 em Bricolage. Sob cada número, uma fileira de pontos vazios (só o contorno `--dot-empty`), com 3 a 6 pontos, a quantidade de testes da missão. |
 | 0:44–0:48 | A câmera volta à gravação, que mostra o plano real. Os cartões animados encaixam por cima das missões reais, uma por uma, e somem: é a mesma coisa. |
 | 0:48–0:52 | `rec/02-criar.mp4`: o clique em **Criar meu repositório no GitHub**. Quando a matriz **flip** do produto aparece, a câmera dá zoom nela. |
@@ -122,10 +122,10 @@ As gravações entram dentro de uma moldura de navegador simples: cantos de 12 p
 | 1:07–1:10 | Três selos pequenos entram embaixo, em linha: "Java · Spring Boot", "TypeScript · NestJS", "Python · FastAPI". Logo depois, um ícone de envelope com `vagas@bueska.resend.app` em JetBrains Mono, que entra deslizando e sai. |
 
 **Narração (EN):**
-> A student pastes a real posting. Vaga Viva reads the level and the skills it asks for, from a fixed vocabulary, not guesswork. It builds a plan of five or six missions, from simple to harder. One click, and a full project lands in the student's own GitHub: a README tied to the job, one issue per mission, and tests that fail until the student makes them pass. It works for Java, TypeScript and Python, and a posting can even be forwarded by e-mail.
+> A student pastes a real posting, or just its link. Vaga Viva reads the level and the skills it asks for, from a fixed vocabulary, not guesswork. It builds a plan of five or six missions, from simple to harder. One click, and a full project lands in the student's own GitHub: a README tied to the job, one issue per mission, and tests that fail until the student makes them pass. It works for Java, TypeScript and Python, and a posting can even be forwarded by e-mail.
 
 **Legenda (PT):**
-> O aluno cola uma vaga real. O Vaga Viva lê o nível e as competências que ela pede, com um vocabulário fechado, sem chute. Monta um plano de cinco ou seis missões, das mais simples às mais difíceis. Com um clique, um projeto completo chega ao GitHub do próprio aluno: um README ligado à vaga, uma issue por missão e testes que falham até o aluno fazê-los passar. Funciona com Java, TypeScript e Python, e a vaga pode até ser encaminhada por e-mail.
+> O aluno cola uma vaga real, ou só o link dela. O Vaga Viva lê o nível e as competências que ela pede, com um vocabulário fechado, sem chute. Monta um plano de cinco ou seis missões, das mais simples às mais difíceis. Com um clique, um projeto completo chega ao GitHub do próprio aluno: um README ligado à vaga, uma issue por missão e testes que falham até o aluno fazê-los passar. Funciona com Java, TypeScript e Python, e a vaga pode até ser encaminhada por e-mail.
 
 ---
 
@@ -158,7 +158,7 @@ As gravações entram dentro de uma moldura de navegador simples: cantos de 12 p
 
 | Tempo | O que acontece |
 | --- | --- |
-| 1:50–2:00 | `rec/08-painel.mp4` sobre `--paper`. A câmera desliza da esquerda para a direita pelas colunas das missões, devagar. Quando a gravação mostra o clique em **travados**, os outros cartões esmaecem (como no produto), e um contorno coral se desenha em volta dos cartões que ficaram. |
+| 1:50–2:00 | `rec/08-painel.mp4` sobre `--paper`. A gravação começa no clique em **Minhas turmas**, na barra do topo. A câmera desliza da esquerda para a direita pelas colunas das missões, devagar. Quando a gravação mostra o clique em **travados**, os outros cartões esmaecem (como no produto), e um contorno coral se desenha em volta dos cartões que ficaram. |
 | 2:00–2:06 | Zoom na ficha de um aluno: os testes que falham e o balão com a última pergunta do revisor. Um ícone de envelope entra no canto com "toda segunda, um resumo por e-mail" e sai. |
 | 2:06–2:07 | Corte seco para `--night`. **0,5 s de silêncio** na trilha. |
 | 2:07–2:13 | **Número 1.** No centro, em Bricolage 220 px, **[X]%** conta de 0 até o valor em 1,2 s. Embaixo, em DM Sans: "opened a pull request". Ao fundo, uma grade de [X] pontos, um por testador, em que a fração correspondente acende em roxo. |

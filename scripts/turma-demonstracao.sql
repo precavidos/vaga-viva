@@ -42,4 +42,4 @@ from matriculas join alunos on alunos.login = matriculas.student_login;
 
 commit;
 
-select 'https://vaga-viva-49kj.onrender.com/turmas/' || id as painel from classroom where join_code = 'demovv2026';
+select 'https://vaga-viva-49kj.onrender.com/classrooms/' || id as painel from classroom where join_code = 'demovv2026';
